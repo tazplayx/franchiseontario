@@ -274,7 +274,11 @@ export default function RegisterPage() {
                 ← Back
               </button>
               <button
-                onClick={() => setSubmitted(true)}
+                onClick={() => {
+                  const body = `New Franchise Registration\n\nPlan: ${selectedPlan}${addFeature ? ' + Homepage Feature ($14.99/wk)' : ''}\n\nPlease log in to the admin portal to review and approve:\nhttps://franchiseontario.com/admin`
+                  window.open(`mailto:cdeneire@proton.me?subject=[FranchiseOntario] New Registration — ${selectedPlan} Plan&body=${encodeURIComponent(body)}`)
+                  setSubmitted(true)
+                }}
                 className="flex-[2] btn-red py-3 rounded-xl font-bold text-sm"
               >
                 Submit Listing →

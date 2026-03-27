@@ -43,6 +43,12 @@ export default function Header() {
             <Link href="/pricing" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
               Pricing
             </Link>
+            <Link href="/faq" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
+              FAQ
+            </Link>
+            <Link href="/support" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
+              Support
+            </Link>
           </nav>
 
           {/* CTA Buttons */}
@@ -80,9 +86,11 @@ export default function Header() {
             { href: '/categories', label: 'Categories' },
             { href: '/news', label: 'News' },
             { href: '/pricing', label: 'Pricing' },
+            { href: '/faq', label: 'FAQ' },
+            { href: '/support', label: 'Support' },
           ].map((item) => (
             <Link
-              key={item.href}
+              key={item.label}
               href={item.href}
               className="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
               onClick={() => setMenuOpen(false)}
