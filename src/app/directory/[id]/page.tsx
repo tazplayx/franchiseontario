@@ -1,0 +1,347 @@
+import { notFound } from 'next/navigation'
+import Link from 'next/link'
+import { MapPin, Globe, Phone, Mail, Star, TrendingUp, Users, Calendar, Crown, ArrowLeft, ChevronRight, Building2, DollarSign, Percent, BadgeCheck, Video, ImageIcon } from 'lucide-react'
+import { franchises, getFranchiseById } from '@/data/franchises'
+
+export async function generateStaticParams() {
+  return franchises.map((f) => ({ id: f.id }))
+}
+
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((i) => (
+        <svg key={i} className={`w-5 h-5 ${i <= Math.round(rating) ? 'text-amber-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+        </svg>
+      ))}
+    </div>
+  )
+}
+
+export default function FranchiseProfilePage({ params }: { params: { id: string } }) {
+  const franchise = getFranchiseById(params.id)
+  if (!franchise) notFound()
+
+  const f = franchise
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero banner */}
+      <div
+        className="relative py-16 overflow-hidden"
+        style={{ background: `linear-gradient(135deg, ${f.logoBg}22 0%, ${f.logoBg}08 50%, #0F0F1A 100%)` }}
+      >
+        <div className="absolute inset-0 hero-gradient opacity-90" />
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+          {/* Breadcrumb */}
+          <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
+            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <ChevronRight size={14} />
+            <Link href="/directory" className="hover:text-white transition-colors">Directory</Link>
+            <ChevronRight size={14} />
+            <span className="text-gray-300">{f.name}</span>
+          </div>
+
+          <div className="flex flex-col md:flex-row items-start gap-8">
+            {/* Logo */}
+            <div
+              className="w-28 h-28 rounded-2xl flex items-center justify-center text-3xl font-black shadow-2xl shrink-0 border-4 border-white/20"
+              style={{ background: f.logoBg, color: f.logoColor }}
+            >
+              {f.logoInitials}
+            </div>
+
+            {/* Info */}
+            <div className="flex-1">
+              <div className="flex flex-wrap items-center gap-2 mb-2">
+                {f.isVIP && (
+                  <span className="vip-badge inline-flex items-center gap-1 text-xs font-black px-3 py-1 rounded-full">
+                    <Crown size={11} /> VIP Enterprise
+                  </span>
+                )}
+                <span className="bg-white/10 text-white text-xs font-medium px-2.5 py-1 rounded-full border border-white/20">
+                  {f.category}
+                </span>
+                <span className="bg-white/10 text-white text-xs font-medium px-2.5 py-1 rounded-full border border-white/20">
+                  Est. {f.established}
+                </span>
+              </div>
+
+              <h1 className="text-3xl md:text-4xl font-black text-white mb-1">{f.name}</h1>
+              <p className="text-gray-300 text-lg italic mb-4">"{f.tagline}"</p>
+
+              <div className="flex flex-wrap items-center gap-4">
+                <div className="flex items-center gap-2">
+                  <StarRating rating={f.rating} />
+                  <span className="text-white font-bold">{f.rating}</span>
+                  <span className="text-gray-400 text-sm">({f.reviews.toLocaleString()} reviews)</span>
+                </div>
+                <div className="flex items-center gap-1.5 text-gray-300 text-sm">
+                  <MapPin size={14} className="text-red-400" />
+                  {f.locations}+ Ontario Locations
+                </div>
+                <div className="flex items-center gap-1.5 text-gray-300 text-sm">
+                  <Building2 size={14} className="text-red-400" />
+                  {f.parent}
+                </div>
+              </div>
+            </div>
+
+            {/* Quick CTA */}
+            <div className="shrink-0 flex flex-col gap-3 w-full md:w-auto">
+              <a href={`mailto:${f.email}`} className="btn-red px-6 py-3 rounded-xl font-bold text-sm text-center">
+                Request Franchise Info
+              </a>
+              <a href={f.website} target="_blank" rel="noopener noreferrer" className="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-6 py-3 rounded-xl font-bold text-sm text-center transition-all">
+                Visit Website
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Main content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+          {/* Left column — main content */}
+          <div className="lg:col-span-2 space-y-7">
+
+            {/* About */}
+            <section className="bg-white rounded-2xl border border-gray-200 p-7">
+              <h2 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
+                <span className="w-1 h-6 rounded-full bg-red-600 inline-block" />
+                About {f.name}
+              </h2>
+              {f.longDescription.split('\n\n').map((para, i) => (
+                <p key={i} className="text-gray-600 text-sm leading-relaxed mb-3 last:mb-0">{para}</p>
+              ))}
+            </section>
+
+            {/* Media Gallery */}
+            <section className="bg-white rounded-2xl border border-gray-200 p-7">
+              <h2 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
+                <span className="w-1 h-6 rounded-full bg-amber-500 inline-block" />
+                Photos & Videos
+              </h2>
+
+              {/* Video placeholder */}
+              <div className="bg-gray-900 rounded-xl aspect-video flex flex-col items-center justify-center mb-4 border-2 border-dashed border-gray-700 group cursor-pointer hover:border-red-500 transition-colors">
+                <Video size={36} className="text-gray-600 group-hover:text-red-500 mb-2 transition-colors" />
+                <p className="text-gray-500 text-sm font-medium">Brand Video</p>
+                <p className="text-gray-600 text-xs mt-1">Added by franchise owner</p>
+              </div>
+
+              {/* Image grid */}
+              <div className="grid grid-cols-3 gap-3">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div
+                    key={i}
+                    className="aspect-square rounded-xl bg-gray-100 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors cursor-pointer"
+                    style={{ background: `${f.logoBg}08` }}
+                  >
+                    <ImageIcon size={22} className="text-gray-300 mb-1" />
+                    <span className="text-[10px] text-gray-300">Photo {i}</span>
+                  </div>
+                ))}
+              </div>
+              <p className="text-xs text-gray-400 mt-3 text-center">
+                Photos and videos are uploaded and managed by the franchise owner
+              </p>
+            </section>
+
+            {/* Key Highlights */}
+            <section className="bg-white rounded-2xl border border-gray-200 p-7">
+              <h2 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
+                <span className="w-1 h-6 rounded-full bg-green-500 inline-block" />
+                Franchise Highlights
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {f.highlights.map((h, i) => (
+                  <div key={i} className="flex items-start gap-3 p-3 bg-green-50 rounded-xl border border-green-100">
+                    <span className="w-5 h-5 rounded-full bg-green-500 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-white text-xs font-bold">✓</span>
+                    </span>
+                    <span className="text-sm text-gray-700 font-medium">{h}</span>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Ideal Candidate */}
+            <section className="bg-white rounded-2xl border border-gray-200 p-7">
+              <h2 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
+                <span className="w-1 h-6 rounded-full bg-blue-500 inline-block" />
+                Ideal Franchisee Profile
+              </h2>
+              <ul className="space-y-3">
+                {f.idealCandidate.map((item, i) => (
+                  <li key={i} className="flex items-start gap-3">
+                    <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 mt-0.5">
+                      <span className="text-blue-600 font-black text-xs">{i + 1}</span>
+                    </div>
+                    <span className="text-sm text-gray-700">{item}</span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            {/* Support Offered */}
+            <section className="bg-white rounded-2xl border border-gray-200 p-7">
+              <h2 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
+                <span className="w-1 h-6 rounded-full bg-purple-500 inline-block" />
+                Training & Support
+              </h2>
+              <div className="flex items-center gap-3 bg-purple-50 border border-purple-100 rounded-xl p-4 mb-4">
+                <div className="w-12 h-12 bg-purple-100 rounded-xl flex items-center justify-center">
+                  <Calendar size={22} className="text-purple-600" />
+                </div>
+                <div>
+                  <div className="font-bold text-gray-900">{f.trainingWeeks}-Week Training Program</div>
+                  <div className="text-xs text-gray-500">Comprehensive onboarding before your doors open</div>
+                </div>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                {f.supportOffered.map((s, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm text-gray-600">
+                    <BadgeCheck size={15} className="text-purple-500 shrink-0" />
+                    {s}
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* FAQ */}
+            <section className="bg-white rounded-2xl border border-gray-200 p-7">
+              <h2 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
+                <span className="w-1 h-6 rounded-full bg-orange-500 inline-block" />
+                Frequently Asked Questions
+              </h2>
+              <div className="space-y-3">
+                {f.faqs.map((faq, i) => (
+                  <details key={i} className="group border border-gray-200 rounded-xl">
+                    <summary className="flex items-center justify-between px-4 py-3.5 cursor-pointer font-semibold text-sm text-gray-900 hover:text-red-600 transition-colors">
+                      {faq.q}
+                      <span className="text-gray-400 group-open:rotate-180 transition-transform text-lg shrink-0 ml-2">▾</span>
+                    </summary>
+                    <div className="px-4 pb-4 text-sm text-gray-600 leading-relaxed border-t border-gray-100 pt-3">
+                      {faq.a}
+                    </div>
+                  </details>
+                ))}
+              </div>
+            </section>
+          </div>
+
+          {/* Right column — sidebar */}
+          <div className="space-y-5">
+
+            {/* Investment Summary */}
+            <div className="bg-white rounded-2xl border-2 border-amber-200 p-5 shadow-sm">
+              <div className="flex items-center gap-2 mb-4">
+                <DollarSign size={16} className="text-amber-600" />
+                <h3 className="font-black text-gray-900 text-base">Investment Summary</h3>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between items-center py-2.5 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Initial Franchise Fee</span>
+                  <span className="font-bold text-gray-900">{f.financials.franchiseFee}</span>
+                </div>
+                <div className="flex justify-between items-center py-2.5 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Total Investment Range</span>
+                  <div className="text-right">
+                    <span className="font-bold text-gray-900">${(f.financials.investmentMin / 1000).toFixed(0)}K</span>
+                    <span className="text-gray-400 text-xs"> – </span>
+                    <span className="font-bold text-gray-900">${(f.financials.investmentMax / 1000).toFixed(0)}K</span>
+                  </div>
+                </div>
+                <div className="flex justify-between items-center py-2.5 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Royalty Fee</span>
+                  <span className="font-bold text-gray-900">{f.financials.royaltyRate} of gross sales</span>
+                </div>
+                <div className="flex justify-between items-center py-2.5 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Marketing Fund</span>
+                  <span className="font-bold text-gray-900">{f.financials.marketingFee} of gross sales</span>
+                </div>
+                <div className="flex justify-between items-center py-2.5 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Avg. Unit Volume</span>
+                  <span className="font-bold text-green-600">{f.financials.averageUnitVolume}</span>
+                </div>
+                <div className="flex justify-between items-center py-2.5 border-b border-gray-100">
+                  <span className="text-sm text-gray-500">Liquid Capital Required</span>
+                  <span className="font-bold text-gray-900">{f.financials.liquidCapitalRequired}</span>
+                </div>
+                <div className="flex justify-between items-center py-2.5">
+                  <span className="text-sm text-gray-500">Net Worth Required</span>
+                  <span className="font-bold text-gray-900">{f.financials.netWorthRequired}</span>
+                </div>
+              </div>
+
+              {f.financials.royaltyNotes && (
+                <p className="text-[11px] text-gray-400 mt-3 leading-relaxed border-t border-gray-100 pt-3">
+                  * {f.financials.royaltyNotes}
+                </p>
+              )}
+            </div>
+
+            {/* Quick Stats */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-5">
+              <h3 className="font-black text-gray-900 text-base mb-4">Franchise Stats</h3>
+              <div className="space-y-3">
+                {[
+                  { icon: <Building2 size={15} className="text-red-500" />, label: 'Ontario Locations', value: `${f.locations}+` },
+                  { icon: <Users size={15} className="text-blue-500" />, label: 'Active Franchisees', value: f.franchiseeCount },
+                  { icon: <Calendar size={15} className="text-green-500" />, label: 'Years in Business', value: `${2026 - f.established} years` },
+                  { icon: <TrendingUp size={15} className="text-amber-500" />, label: 'Training Duration', value: `${f.trainingWeeks} weeks` },
+                  { icon: <MapPin size={15} className="text-purple-500" />, label: 'Territory', value: 'Protected' },
+                ].map((stat) => (
+                  <div key={stat.label} className="flex items-center justify-between py-2 border-b border-gray-50 last:border-0">
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      {stat.icon}
+                      {stat.label}
+                    </div>
+                    <span className="font-semibold text-gray-900 text-sm">{stat.value}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Contact card */}
+            <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-2xl p-5 text-white">
+              <h3 className="font-black text-base mb-1">Ready to Learn More?</h3>
+              <p className="text-red-100 text-xs mb-4 leading-relaxed">
+                Request the official franchise information package directly from {f.name}.
+              </p>
+              <div className="space-y-2.5 mb-4">
+                <a href={`mailto:${f.email}`} className="flex items-center gap-2 text-sm text-red-100 hover:text-white transition-colors">
+                  <Mail size={14} /> {f.email}
+                </a>
+                <a href={`tel:${f.phone}`} className="flex items-center gap-2 text-sm text-red-100 hover:text-white transition-colors">
+                  <Phone size={14} /> {f.phone}
+                </a>
+                <a href={f.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-red-100 hover:text-white transition-colors">
+                  <Globe size={14} /> {f.website.replace('https://', '')}
+                </a>
+              </div>
+              <a
+                href={`mailto:${f.email}?subject=Franchise Inquiry — ${f.name}&body=Hello, I am interested in learning more about a ${f.name} franchise opportunity in Ontario. Please send me your franchise information package.`}
+                className="block text-center bg-white text-red-600 font-bold text-sm py-2.5 rounded-xl hover:bg-red-50 transition-colors"
+              >
+                Send Inquiry Email
+              </a>
+            </div>
+
+            {/* Disclaimer */}
+            <div className="bg-gray-50 rounded-xl border border-gray-200 p-4">
+              <p className="text-[11px] text-gray-400 leading-relaxed">
+                <strong className="text-gray-500">Disclaimer:</strong> All financial figures are estimates based on publicly available franchise disclosure information and industry averages. Actual results will vary. Always review the Franchise Disclosure Document (FDD) and consult a qualified franchise attorney before investing.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}

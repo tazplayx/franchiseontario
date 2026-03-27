@@ -61,7 +61,7 @@ export default function Footer() {
                 ['Enterprise Listing ($199/mo)', '/pricing#enterprise'],
                 ['Advertise With Us', '/pricing'],
               ].map(([label, href]) => (
-                <li key={href}>
+                <li key={label}>
                   <Link href={href} className="text-gray-400 hover:text-red-400 transition-colors">
                     {label}
                   </Link>

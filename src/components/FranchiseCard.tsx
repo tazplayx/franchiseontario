@@ -140,7 +140,7 @@ export default function FranchiseCard({ franchise, showRank = false }: { franchi
             <TrendingUp size={12} className="text-green-500 shrink-0" />
             <span>
               Investment: <span className="font-semibold text-gray-700">
-                ${(franchise.investmentMin / 1000).toFixed(0)}K – ${(franchise.investmentMax / 1000).toFixed(0)}K
+                ${(franchise.financials.investmentMin / 1000).toFixed(0)}K – ${(franchise.financials.investmentMax / 1000).toFixed(0)}K
               </span>
             </span>
           </div>
