@@ -135,11 +135,9 @@ const websiteSchema = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en-CA">
-      <head>
+      <body className="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
-      </head>
-      <body className="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
