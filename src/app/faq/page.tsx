@@ -1,4 +1,19 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
+import JsonLd from '@/components/JsonLd'
+
+export const metadata: Metadata = {
+  title: 'Franchise Directory FAQ — Common Questions Answered',
+  description:
+    "Answers to common questions about listing your franchise in Ontario, plan pricing, the approval process, franchise disclosure requirements, buyer protection under the Arthur Wishart Act, and more.",
+  keywords: ['franchise FAQ Ontario', 'franchise listing questions', 'Arthur Wishart Act FAQ', 'FDD Ontario', 'franchise investment questions Canada'],
+  alternates: { canonical: 'https://www.franchiseontario.com/faq' },
+  openGraph: {
+    title: 'Franchise Directory FAQ — FranchiseOntario.com',
+    description: 'Find answers to common questions about franchise listings, pricing plans, Ontario franchise law, and the FDD process.',
+    url: 'https://www.franchiseontario.com/faq',
+  },
+}
 
 const faqs = [
   {
@@ -92,8 +107,23 @@ const faqs = [
 ]
 
 export default function FAQPage() {
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: faqs.flatMap((section) =>
+      section.items.map((item) => ({
+        '@type': 'Question',
+        name: item.q,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: item.a,
+        },
+      }))
+    ),
+  }
   return (
     <div className="min-h-screen bg-gray-50">
+      <JsonLd data={faqSchema} />
       {/* Header */}
       <div className="bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 py-14 text-center">
         <div className="max-w-2xl mx-auto px-4">

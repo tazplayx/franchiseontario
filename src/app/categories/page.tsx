@@ -1,6 +1,20 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { TrendingUp, Star, MapPin } from 'lucide-react'
 import { franchises, categories } from '@/data/franchises'
+
+export const metadata: Metadata = {
+  title: 'Ontario Franchise Categories — Browse by Industry',
+  description:
+    'Browse Ontario franchise opportunities by industry category: Bar & Grill, Coffee & Café, Seafood, Fast Food, Fitness, Retail, Home Services, Automotive, Education, Beauty, Pet Services, and more.',
+  keywords: ['franchise categories Ontario', 'food franchise Ontario', 'fitness franchise Canada', 'home services franchise Ontario', 'retail franchise Ontario'],
+  alternates: { canonical: 'https://www.franchiseontario.com/categories' },
+  openGraph: {
+    title: 'Ontario Franchise Categories — Browse by Industry',
+    description: 'Find franchise opportunities in your preferred industry across Ontario, Canada.',
+    url: 'https://www.franchiseontario.com/categories',
+  },
+}
 
 export default function CategoriesPage() {
   // Build category stats

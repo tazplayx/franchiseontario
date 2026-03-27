@@ -1,5 +1,19 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Check, Crown, Zap, Star, ArrowRight } from 'lucide-react'
+
+export const metadata: Metadata = {
+  title: 'Franchise Listing Plans & Pricing — Free, Premium & Enterprise',
+  description:
+    "List your franchise in Ontario for free, or upgrade to Premium ($79/mo) or Enterprise ($199/mo). Add a homepage feature spotlight for $14.99/week. No contracts. Cancel anytime.",
+  keywords: ['franchise listing pricing Ontario', 'advertise franchise Ontario', 'franchise directory cost Canada'],
+  alternates: { canonical: 'https://www.franchiseontario.com/pricing' },
+  openGraph: {
+    title: 'List Your Franchise in Ontario — Pricing & Plans',
+    description: "Free basic listing, Premium at $79/mo, Enterprise at $199/mo. Homepage feature spots at $14.99/week. Ontario's most active franchise directory.",
+    url: 'https://www.franchiseontario.com/pricing',
+  },
+}
 
 const plans = [
   {

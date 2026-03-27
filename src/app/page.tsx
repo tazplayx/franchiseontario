@@ -1,8 +1,24 @@
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Search, TrendingUp, Award, Zap, Star, ArrowRight, Crown, ChevronRight, Newspaper, BarChart3, MapPin, Users } from 'lucide-react'
 import { franchises, categories, getFeaturedFranchises, getTopRanked } from '@/data/franchises'
 import { tickerItems, newsArticles } from '@/data/news'
 import FranchiseCard from '@/components/FranchiseCard'
+import JsonLd from '@/components/JsonLd'
+
+const BASE = 'https://www.franchiseontario.com'
+
+export const metadata: Metadata = {
+  title: "Ontario's #1 Franchise Directory — Find Your Franchise",
+  description:
+    'FranchiseOntario.com — browse 500+ franchise opportunities across Ontario, Canada. Compare investment ranges, royalties, and brand details. Free to list. Trusted by top Canadian franchise brands.',
+  alternates: { canonical: BASE },
+  openGraph: {
+    title: "FranchiseOntario.com — Ontario's #1 Franchise Directory",
+    description: 'Browse 500+ franchise opportunities in Ontario, Canada. Compare brands, investment ranges, and connect directly with franchisors.',
+    url: BASE,
+  },
+}
 
 /* ── News Ticker ─────────────────────────────────── */
 function NewsTicker() {
@@ -479,8 +495,34 @@ function CTABanner() {
 
 /* ── Page ────────────────────────────────────────── */
 export default function HomePage() {
+  const itemListSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: 'Top Ontario Franchise Opportunities',
+    description: 'The top-ranked franchise brands available for investment in Ontario, Canada',
+    url: `${BASE}/directory`,
+    numberOfItems: franchises.length,
+    itemListElement: franchises.map((f, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: f.name,
+      url: `${BASE}/directory/${f.id}`,
+      description: f.description,
+    })),
+  }
+
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: BASE },
+    ],
+  }
+
   return (
     <>
+      <JsonLd data={itemListSchema} />
+      <JsonLd data={breadcrumbSchema} />
       <NewsTicker />
       <Hero />
       <FeaturedSpotlight />
