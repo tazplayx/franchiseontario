@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { useState } from 'react'
-import { Menu, X, MapPin, ChevronDown } from 'lucide-react'
+import { Menu, X, MapPin, Sparkles } from 'lucide-react'
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -26,12 +26,15 @@ export default function Header() {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
+          <nav className="hidden md:flex items-center gap-0.5">
             <Link href="/" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
               Home
             </Link>
             <Link href="/directory" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
               Directory
+            </Link>
+            <Link href="/ontario" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all flex items-center gap-1">
+              <MapPin size={12} className="text-red-400" /> Ontario
             </Link>
             <Link href="/categories" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
               Categories
@@ -40,24 +43,23 @@ export default function Header() {
               News
               <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span>
             </Link>
-            <Link href="/pricing" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
-              Pricing
+            <Link href="/resources" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
+              Resources
             </Link>
             <Link href="/faq" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
               FAQ
-            </Link>
-            <Link href="/support" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
-              Support
             </Link>
           </nav>
 
           {/* CTA Buttons */}
           <div className="hidden md:flex items-center gap-3">
+            {/* Quiz CTA — prominent differentiator */}
             <Link
-              href="/register"
-              className="text-sm font-medium text-gray-600 hover:text-red-600 transition-colors"
+              href="/quiz"
+              className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 px-3.5 py-2 rounded-lg text-xs font-bold transition-all"
             >
-              Sign In
+              <Sparkles size={12} />
+              Franchise Fit Quiz
             </Link>
             <Link
               href="/register"
@@ -83,10 +85,12 @@ export default function Header() {
           {[
             { href: '/', label: 'Home' },
             { href: '/directory', label: 'Directory' },
+            { href: '/ontario', label: '🍁 Ontario Cities' },
             { href: '/categories', label: 'Categories' },
             { href: '/news', label: 'News' },
-            { href: '/pricing', label: 'Pricing' },
+            { href: '/resources', label: 'Buyer Resources' },
             { href: '/faq', label: 'FAQ' },
+            { href: '/pricing', label: 'Pricing' },
             { href: '/support', label: 'Support' },
           ].map((item) => (
             <Link
@@ -98,7 +102,14 @@ export default function Header() {
               {item.label}
             </Link>
           ))}
-          <div className="pt-2 border-t border-gray-100">
+          <div className="pt-2 border-t border-gray-100 space-y-2">
+            <Link
+              href="/quiz"
+              className="flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-2 rounded-lg text-sm font-bold"
+              onClick={() => setMenuOpen(false)}
+            >
+              <Sparkles size={14} /> Franchise Fit Quiz
+            </Link>
             <Link
               href="/register"
               className="btn-red block text-center px-4 py-2 rounded-lg text-sm font-semibold"

@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Search, TrendingUp, Award, Zap, Star, ArrowRight, Crown, ChevronRight, Newspaper, BarChart3, MapPin, Users } from 'lucide-react'
+import { Search, TrendingUp, Award, Zap, Star, ArrowRight, Crown, ChevronRight, Newspaper, BarChart3, MapPin, Users, Sparkles } from 'lucide-react'
 import { franchises, categories, getFeaturedFranchises, getTopRanked } from '@/data/franchises'
 import { tickerItems, newsArticles } from '@/data/news'
 import FranchiseCard from '@/components/FranchiseCard'
@@ -235,6 +235,120 @@ function CategoryGrid() {
               <p className="text-[11px] font-semibold text-gray-700 group-hover:text-gray-900 leading-tight">
                 {cat.name}
               </p>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ── Quiz CTA ────────────────────────────────────── */
+function QuizCTA() {
+  const steps = [
+    { icon: '💰', label: 'Your budget' },
+    { icon: '🍽️', label: 'Industry fit' },
+    { icon: '🙋', label: 'Lifestyle' },
+    { icon: '📍', label: 'Ontario city' },
+  ]
+  return (
+    <section className="py-14 bg-gradient-to-br from-gray-900 to-gray-800 relative overflow-hidden">
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-amber-400 rounded-full blur-3xl" />
+        <div className="absolute bottom-0 left-0 w-64 h-64 bg-red-600 rounded-full blur-3xl" />
+      </div>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="flex flex-col lg:flex-row items-center gap-10">
+          {/* Left: copy */}
+          <div className="flex-1 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 bg-amber-400/20 border border-amber-400/30 rounded-full px-4 py-1.5 mb-4">
+              <Sparkles size={12} className="text-amber-400" />
+              <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Free · No Email Required</span>
+            </div>
+            <h2 className="text-2xl md:text-3xl font-black text-white mb-3">
+              Not Sure Which Franchise is Right For You?
+            </h2>
+            <p className="text-gray-300 text-sm leading-relaxed mb-6 max-w-md">
+              Take our 2-minute Franchise Fit Quiz. Answer 5 quick questions and we'll instantly match you to the Ontario franchise opportunities that fit your budget, lifestyle, and goals.
+            </p>
+            <div className="flex flex-wrap gap-3 justify-center lg:justify-start mb-6">
+              {steps.map((s) => (
+                <div key={s.label} className="flex items-center gap-1.5 bg-white/10 border border-white/10 rounded-full px-3 py-1">
+                  <span className="text-sm">{s.icon}</span>
+                  <span className="text-xs text-gray-300">{s.label}</span>
+                </div>
+              ))}
+            </div>
+            <Link
+              href="/quiz"
+              className="inline-flex items-center gap-2 bg-amber-400 hover:bg-amber-300 text-amber-900 font-black px-8 py-3.5 rounded-xl text-base transition-all shadow-lg shadow-amber-900/20"
+            >
+              <Sparkles size={16} />
+              Start the Franchise Fit Quiz
+              <ArrowRight size={16} />
+            </Link>
+          </div>
+          {/* Right: visual */}
+          <div className="flex-1 max-w-sm lg:max-w-none">
+            <div className="bg-white/10 border border-white/10 rounded-2xl p-6 space-y-3">
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">How it works</p>
+              {[
+                { num: '1', text: 'Answer 5 quick questions about your budget and lifestyle' },
+                { num: '2', text: 'Our algorithm scores all Ontario franchises against your profile' },
+                { num: '3', text: 'Receive your personalized match list — instantly, no email needed' },
+                { num: '4', text: 'Request info directly from matched brands you like' },
+              ].map((step) => (
+                <div key={step.num} className="flex items-start gap-3">
+                  <div className="w-6 h-6 rounded-full bg-amber-400 text-amber-900 flex items-center justify-center text-xs font-black shrink-0">
+                    {step.num}
+                  </div>
+                  <p className="text-sm text-gray-300">{step.text}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
+/* ── Ontario Cities Strip ─────────────────────────── */
+function OntarioCities() {
+  const cities = [
+    { name: 'Toronto', slug: 'toronto', icon: '🏙️' },
+    { name: 'Ottawa', slug: 'ottawa', icon: '🏛️' },
+    { name: 'Mississauga', slug: 'mississauga', icon: '🌆' },
+    { name: 'Hamilton', slug: 'hamilton', icon: '⚙️' },
+    { name: 'London', slug: 'london', icon: '🎓' },
+    { name: 'Kitchener-Waterloo', slug: 'kitchener', icon: '💻' },
+    { name: 'Windsor', slug: 'windsor', icon: '🚗' },
+    { name: 'Barrie', slug: 'barrie', icon: '⛵' },
+  ]
+  return (
+    <section className="py-10 bg-white border-b border-gray-100">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between mb-5">
+          <div>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="w-1 h-5 rounded-full bg-red-600" />
+              <span className="text-xs font-bold text-red-600 uppercase tracking-widest">Browse by City</span>
+            </div>
+            <h2 className="text-lg font-black text-gray-900">Ontario Franchise Markets</h2>
+          </div>
+          <Link href="/ontario" className="text-sm font-medium text-red-600 hover:text-red-700 flex items-center gap-1">
+            All Cities <ChevronRight size={14} />
+          </Link>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-8 gap-3">
+          {cities.map((city) => (
+            <Link
+              key={city.slug}
+              href={`/ontario/${city.slug}`}
+              className="group bg-gray-50 hover:bg-red-50 border border-gray-200 hover:border-red-200 rounded-xl p-3 text-center transition-all"
+            >
+              <div className="text-2xl mb-1">{city.icon}</div>
+              <p className="text-xs font-semibold text-gray-700 group-hover:text-red-700 leading-tight">{city.name}</p>
             </Link>
           ))}
         </div>
@@ -526,6 +640,8 @@ export default function HomePage() {
       <NewsTicker />
       <Hero />
       <FeaturedSpotlight />
+      <QuizCTA />
+      <OntarioCities />
       <CategoryGrid />
       <TopRanked />
       <LatestNews />

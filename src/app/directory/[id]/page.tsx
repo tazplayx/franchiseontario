@@ -390,6 +390,31 @@ export default function FranchiseProfilePage({ params }: { params: { id: string 
               </a>
             </div>
 
+            {/* Arthur Wishart Act — Ontario Buyer Protection */}
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+              <div className="flex items-start gap-2 mb-2">
+                <span className="text-base">⚖️</span>
+                <h4 className="font-bold text-amber-900 text-xs">Arthur Wishart Act Protection</h4>
+              </div>
+              <p className="text-[11px] text-amber-800 leading-relaxed mb-2">
+                As an Ontario franchise buyer, you are protected by the <strong>Arthur Wishart Act (Franchise Disclosure), 2000</strong>. Franchisors must provide a complete Franchise Disclosure Document (FDD) at least <strong>14 days</strong> before signing any agreement or paying any money.
+              </p>
+              <a href="/resources#arthur-wishart" className="text-[11px] text-amber-700 hover:underline font-medium">
+                Learn about your legal rights →
+              </a>
+            </div>
+
+            {/* Compare CTA */}
+            <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">
+              <p className="text-xs text-gray-500 mb-2">Want to compare this brand to others?</p>
+              <a
+                href={`/compare?ids=${f.id}`}
+                className="block text-center border-2 border-gray-200 hover:border-red-400 text-gray-700 hover:text-red-600 font-semibold text-sm py-2 rounded-xl transition-all"
+              >
+                Compare Franchises →
+              </a>
+            </div>
+
             {/* Disclaimer */}
             <div className="bg-gray-50 rounded-xl border border-gray-200 p-4">
               <p className="text-[11px] text-gray-400 leading-relaxed">
