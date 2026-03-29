@@ -3,67 +3,83 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { Menu, X, MapPin, Sparkles } from 'lucide-react'
 
+function FranchiseOntarioLogo() {
+  return (
+    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 shrink-0">
+      <rect width="40" height="40" rx="9" fill="#C8102E"/>
+      {/* F lettermark */}
+      <path d="M10 9 H30 V14 H15 V19.5 H27 V24.5 H15 V31 H10 Z" fill="white"/>
+    </svg>
+  )
+}
+
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 bg-white border-b border-gray-200 shadow-sm">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
+    <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
+      <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
+        <div className="flex items-center justify-between h-20">
+
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2 group">
-            <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center shadow-md group-hover:shadow-red-200 transition-shadow">
-              <span className="text-white font-bold text-sm">🍁</span>
-            </div>
-            <div className="flex flex-col leading-none">
-              <span className="font-bold text-gray-900 text-lg tracking-tight" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                Franchise<span className="text-red-600">Ontario</span>
-              </span>
-              <span className="text-[10px] text-gray-400 tracking-widest uppercase font-medium">
+          <Link href="/" className="flex items-center gap-3 group">
+            <FranchiseOntarioLogo />
+            <div>
+              <div className="font-bold text-[18px] leading-none tracking-tight text-gray-900"
+                style={{ fontFamily: 'Manrope, system-ui, sans-serif' }}>
+                Franchise<span className="text-[#C8102E]">Ontario</span>
+              </div>
+              <div className="text-[9px] text-gray-400 tracking-[0.14em] uppercase font-semibold mt-1 leading-none"
+                style={{ fontFamily: 'Manrope, system-ui, sans-serif' }}>
                 Canada's Franchise Hub
-              </span>
+              </div>
             </div>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-0.5">
-            <Link href="/" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
+          <nav className="hidden lg:flex items-center gap-0.5">
+            <Link href="/" className="px-4 py-2 text-[13px] font-semibold text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all tracking-wide">
               Home
             </Link>
-            <Link href="/directory" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
+            <Link href="/directory" className="px-4 py-2 text-[13px] font-semibold text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all tracking-wide">
               Directory
             </Link>
-            <Link href="/ontario" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all flex items-center gap-1">
-              <MapPin size={12} className="text-red-400" /> Ontario
+            <Link href="/ontario" className="px-4 py-2 text-[13px] font-semibold text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-1.5 tracking-wide">
+              <MapPin size={12} className="text-red-500" /> Ontario
             </Link>
-            <Link href="/categories" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
+            <Link href="/categories" className="px-4 py-2 text-[13px] font-semibold text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all tracking-wide">
               Categories
             </Link>
-            <Link href="/news" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all flex items-center gap-1">
+            <Link href="/news" className="px-4 py-2 text-[13px] font-semibold text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all flex items-center gap-1.5 tracking-wide">
               News
-              <span className="w-2 h-2 rounded-full bg-green-500 inline-block animate-pulse"></span>
+              <span className="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse" />
             </Link>
-            <Link href="/resources" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
+            <Link href="/resources" className="px-4 py-2 text-[13px] font-semibold text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all tracking-wide">
               Resources
             </Link>
-            <Link href="/faq" className="px-3 py-2 text-sm font-medium text-gray-600 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all">
+            <Link href="/faq" className="px-4 py-2 text-[13px] font-semibold text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all tracking-wide">
               FAQ
             </Link>
           </nav>
 
           {/* CTA Buttons */}
-          <div className="hidden md:flex items-center gap-3">
-            {/* Quiz CTA — prominent differentiator */}
+          <div className="hidden lg:flex items-center gap-3">
+            <Link
+              href="/dashboard"
+              className="px-4 py-2 text-[13px] font-semibold text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all tracking-wide"
+            >
+              My Dashboard
+            </Link>
             <Link
               href="/quiz"
-              className="flex items-center gap-1.5 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-700 px-3.5 py-2 rounded-lg text-xs font-bold transition-all"
+              className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition-all"
             >
-              <Sparkles size={12} />
+              <Sparkles size={13} className="text-amber-500" />
               Franchise Fit Quiz
             </Link>
             <Link
               href="/register"
-              className="btn-red px-4 py-2 rounded-lg text-sm font-semibold shadow-sm"
+              className="btn-red px-5 py-2.5 rounded-xl text-[13px] font-semibold shadow-sm"
             >
               List Your Franchise
             </Link>
@@ -71,7 +87,7 @@ export default function Header() {
 
           {/* Mobile hamburger */}
           <button
-            className="md:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100"
+            className="lg:hidden p-2 rounded-lg text-gray-500 hover:bg-gray-100 transition-colors"
             onClick={() => setMenuOpen(!menuOpen)}
           >
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
@@ -81,7 +97,7 @@ export default function Header() {
 
       {/* Mobile menu */}
       {menuOpen && (
-        <div className="md:hidden bg-white border-t border-gray-100 px-4 pb-4 pt-2 space-y-1">
+        <div className="lg:hidden bg-white border-t border-gray-100 px-6 pb-6 pt-3 space-y-1">
           {[
             { href: '/', label: 'Home' },
             { href: '/directory', label: 'Directory' },
@@ -96,23 +112,23 @@ export default function Header() {
             <Link
               key={item.label}
               href={item.href}
-              className="block px-3 py-2 text-sm font-medium text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
+              className="block px-4 py-2.5 text-sm font-semibold text-gray-700 hover:text-red-600 hover:bg-red-50 rounded-lg transition-all"
               onClick={() => setMenuOpen(false)}
             >
               {item.label}
             </Link>
           ))}
-          <div className="pt-2 border-t border-gray-100 space-y-2">
+          <div className="pt-3 border-t border-gray-100 space-y-2">
             <Link
               href="/quiz"
-              className="flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-2 rounded-lg text-sm font-bold"
+              className="flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-2.5 rounded-xl text-sm font-bold"
               onClick={() => setMenuOpen(false)}
             >
               <Sparkles size={14} /> Franchise Fit Quiz
             </Link>
             <Link
               href="/register"
-              className="btn-red block text-center px-4 py-2 rounded-lg text-sm font-semibold"
+              className="btn-red block text-center px-4 py-2.5 rounded-xl text-sm font-semibold"
               onClick={() => setMenuOpen(false)}
             >
               List Your Franchise

@@ -125,16 +125,16 @@ export default function FAQPage() {
     <div className="min-h-screen bg-gray-50">
       <JsonLd data={faqSchema} />
       {/* Header */}
-      <div className="bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 py-14 text-center">
+      <div className="bg-white border-b border-gray-100 py-14 text-center">
         <div className="max-w-2xl mx-auto px-4">
           <div className="text-4xl mb-4">❓</div>
-          <h1 className="text-3xl md:text-4xl font-black text-white mb-3">
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">
             Frequently Asked Questions
           </h1>
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-500 text-sm">
             Everything you need to know about listing your franchise and using FranchiseOntario.com.
             Can't find your answer?{' '}
-            <Link href="/support" className="text-red-400 hover:text-red-300 underline">
+            <Link href="/support" className="text-red-600 hover:text-red-700 underline">
               Submit a support ticket
             </Link>
             .
@@ -182,7 +182,7 @@ export default function FAQPage() {
         </div>
 
         {/* Still need help */}
-        <div className="mt-12 bg-gradient-to-br from-red-600 to-red-800 rounded-2xl p-8 text-center text-white">
+        <div className="mt-12 bg-red-600 rounded-2xl p-8 text-center text-white">
           <div className="text-3xl mb-3">💬</div>
           <h2 className="text-xl font-black mb-2">Still have a question?</h2>
           <p className="text-red-100 text-sm mb-5 max-w-md mx-auto">

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle, XCircle, Eye, LayoutDashboard, ListChecks, MessageSquare, LogOut } from 'lucide-react'
+import { CheckCircle, XCircle, Eye, LayoutDashboard, ListChecks, MessageSquare, LogOut, Building2 } from 'lucide-react'
 
 const initialPending = [
   { id: 'p1', name: 'Sunset Poutine Co.', category: 'Fast Food', plan: 'Premium', email: 'owner@sunsetpoutine.ca', submittedAt: '2026-03-25', city: 'Mississauga, ON', description: 'A Quebec-inspired poutine franchise bringing authentic curds and gravy to Ontario markets. 3 existing locations in Quebec.', status: 'pending' },
@@ -16,6 +16,7 @@ function AdminNav({ active }: { active: string }) {
   const router = useRouter()
   const nav = [
     { label: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard size={16} /> },
+    { label: 'Active Listings', href: '/admin/listings', icon: <Building2 size={16} /> },
     { label: 'Pending Listings', href: '/admin/franchises', icon: <ListChecks size={16} /> },
     { label: 'Support Tickets', href: '/admin/tickets', icon: <MessageSquare size={16} /> },
   ]

@@ -259,24 +259,24 @@ export default function QuizPage() {
 
   if (done) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 py-12">
+      <div className="min-h-screen bg-gray-50 py-12">
         <div className="max-w-3xl mx-auto px-4 sm:px-6">
           {/* Results header */}
           <div className="text-center mb-10">
-            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-4">
-              <CheckCircle2 size={14} className="text-green-400" />
-              <span className="text-xs font-bold text-green-400 uppercase tracking-widest">Quiz Complete</span>
+            <div className="inline-flex items-center gap-2 bg-green-50 border border-green-200 rounded-full px-4 py-1.5 mb-4">
+              <CheckCircle2 size={14} className="text-green-600" />
+              <span className="text-xs font-bold text-green-700 uppercase tracking-widest">Quiz Complete</span>
             </div>
-            <h1 className="text-3xl md:text-4xl font-black text-white mb-3">
+            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
               Your Franchise Matches
             </h1>
-            <p className="text-gray-300 text-sm max-w-md mx-auto">
+            <p className="text-gray-500 text-sm max-w-md mx-auto">
               Based on your answers, here are the Ontario franchise opportunities that best fit your profile. Results are ranked by compatibility.
             </p>
           </div>
 
           {/* Answer summary */}
-          <div className="bg-white/10 border border-white/10 rounded-xl p-4 mb-8 grid grid-cols-2 sm:grid-cols-5 gap-3 text-center">
+          <div className="bg-white border border-gray-200 rounded-xl p-4 mb-8 grid grid-cols-2 sm:grid-cols-5 gap-3 text-center shadow-sm">
             {steps.map((s) => {
               const ans = answers[s.id]
               const opt = s.options.find(o => o.value === ans)
@@ -284,7 +284,7 @@ export default function QuizPage() {
                 <div key={s.id} className="text-center">
                   <div className="text-xl mb-0.5">{opt?.icon}</div>
                   <div className="text-[10px] text-gray-400 uppercase tracking-wider">{s.id}</div>
-                  <div className="text-xs font-semibold text-white truncate">{opt?.label}</div>
+                  <div className="text-xs font-semibold text-gray-800 truncate">{opt?.label}</div>
                 </div>
               )
             })}
@@ -301,13 +301,13 @@ export default function QuizPage() {
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <button
               onClick={handleReset}
-              className="flex items-center justify-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all"
+              className="flex items-center justify-center gap-2 bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-3 rounded-xl text-sm font-semibold transition-all shadow-sm"
             >
               <RotateCcw size={14} /> Retake Quiz
             </button>
             <Link
               href="/directory"
-              className="flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all"
+              className="flex items-center justify-center gap-2 btn-red px-6 py-3 rounded-xl text-sm font-semibold"
             >
               Browse Full Directory <ChevronRight size={14} />
             </Link>
@@ -315,7 +315,7 @@ export default function QuizPage() {
 
           <p className="text-center text-gray-400 text-xs mt-6">
             Results shown are Ontario franchise opportunities listed on FranchiseOntario.com.{' '}
-            <Link href="/resources" className="text-red-400 hover:underline">Read our buyer's guide →</Link>
+            <Link href="/resources" className="text-red-600 hover:underline">Read our buyer's guide →</Link>
           </p>
         </div>
       </div>
@@ -323,18 +323,18 @@ export default function QuizPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 flex flex-col items-center justify-center py-12">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center py-12">
       <div className="w-full max-w-2xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-4">
-            <Star size={12} className="text-amber-400" />
-            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-widest">Free — No Email Required</span>
+          <div className="inline-flex items-center gap-2 bg-red-50 border border-red-100 rounded-full px-4 py-1.5 mb-4">
+            <Star size={12} className="text-red-500" />
+            <span className="text-[10px] font-bold text-red-600 uppercase tracking-widest">Free — No Email Required</span>
           </div>
-          <h1 className="text-2xl md:text-3xl font-black text-white mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
             Franchise Fit Quiz
           </h1>
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-500 text-sm">
             Step {step + 1} of {steps.length} — Answer honestly for the most accurate match
           </p>
         </div>
@@ -376,7 +376,7 @@ export default function QuizPage() {
           <button
             onClick={handleBack}
             disabled={step === 0}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-white/20 text-white text-sm font-medium disabled:opacity-30 hover:bg-white/10 transition-all"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 bg-white text-gray-600 text-sm font-medium disabled:opacity-30 hover:border-gray-300 transition-all shadow-sm"
           >
             <ChevronLeft size={16} /> Back
           </button>
@@ -384,16 +384,16 @@ export default function QuizPage() {
           <button
             onClick={handleNext}
             disabled={!selected}
-            className="flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:opacity-40 disabled:cursor-not-allowed text-white px-8 py-2.5 rounded-xl text-sm font-bold transition-all shadow-lg"
+            className="flex items-center gap-2 btn-red disabled:opacity-40 disabled:cursor-not-allowed px-8 py-2.5 rounded-xl text-sm font-semibold shadow-md"
           >
             {step === steps.length - 1 ? 'See My Matches' : 'Next'}
             <ChevronRight size={16} />
           </button>
         </div>
 
-        <p className="text-center text-gray-500 text-xs mt-6">
+        <p className="text-center text-gray-400 text-xs mt-6">
           Already know what you want?{' '}
-          <Link href="/directory" className="text-red-400 hover:underline">Browse the full directory →</Link>
+          <Link href="/directory" className="text-red-600 hover:underline">Browse the full directory →</Link>
         </p>
       </div>
     </div>

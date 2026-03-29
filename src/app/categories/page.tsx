@@ -31,12 +31,12 @@ export default function CategoriesPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 py-14 text-center">
+      <div className="bg-white border-b border-gray-100 py-14 text-center">
         <div className="max-w-3xl mx-auto px-4">
-          <h1 className="text-3xl md:text-4xl font-black text-white mb-3">
+          <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-3">
             Franchise Categories in Ontario
           </h1>
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-500 text-sm">
             Explore franchise opportunities organized by industry — from food & beverage to automotive, fitness, and beyond.
           </p>
         </div>
@@ -179,7 +179,7 @@ export default function CategoriesPage() {
         </div>
 
         {/* Add to category CTA */}
-        <div className="mt-10 bg-gradient-to-r from-red-600 to-red-800 rounded-2xl p-8 text-center text-white">
+        <div className="mt-10 bg-red-600 rounded-2xl p-8 text-center text-white">
           <div className="text-3xl mb-3">🏢</div>
           <h2 className="text-xl font-black mb-2">Don't See Your Category?</h2>
           <p className="text-red-100 text-sm mb-5 max-w-md mx-auto">

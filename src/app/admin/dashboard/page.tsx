@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Users, Clock, CheckCircle, Ticket, TrendingUp, LogOut, Menu, X, LayoutDashboard, ListChecks, MessageSquare, Settings } from 'lucide-react'
+import { Users, Clock, CheckCircle, Ticket, TrendingUp, LogOut, Menu, X, LayoutDashboard, ListChecks, MessageSquare, Settings, Building2 } from 'lucide-react'
 
 // Mock pending franchises
 const mockPending = [
@@ -36,6 +36,7 @@ function AdminNav({ active }: { active: string }) {
 
   const nav = [
     { label: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard size={16} /> },
+    { label: 'Active Listings', href: '/admin/listings', icon: <Building2 size={16} /> },
     { label: 'Pending Listings', href: '/admin/franchises', icon: <ListChecks size={16} /> },
     { label: 'Support Tickets', href: '/admin/tickets', icon: <MessageSquare size={16} /> },
   ]

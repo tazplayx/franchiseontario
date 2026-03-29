@@ -309,35 +309,35 @@ export default function CityPage({ params }: { params: { city: string } }) {
       </div>
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 py-12">
+      <div className="bg-white border-b border-gray-100 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center gap-3 mb-4">
             <span className="text-4xl">{city.icon}</span>
             <div>
               <div className="flex items-center gap-2 mb-0.5">
-                <MapPin size={12} className="text-red-400" />
+                <MapPin size={12} className="text-red-500" />
                 <span className="text-xs text-gray-400">{city.region}, Ontario, Canada</span>
               </div>
-              <h1 className="text-3xl md:text-4xl font-black text-white">
+              <h1 className="text-3xl md:text-4xl font-black text-gray-900">
                 {city.name} Franchise Opportunities
               </h1>
             </div>
           </div>
-          <p className="text-gray-300 text-sm max-w-2xl mb-6 leading-relaxed">{city.description}</p>
+          <p className="text-gray-500 text-sm max-w-2xl mb-6 leading-relaxed">{city.description}</p>
 
           <div className="flex flex-wrap gap-3">
-            <div className="bg-white/10 border border-white/10 rounded-xl px-4 py-2 flex items-center gap-2">
-              <Users size={14} className="text-red-400" />
-              <span className="text-sm text-white font-semibold">{city.pop}</span>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 flex items-center gap-2">
+              <Users size={14} className="text-red-500" />
+              <span className="text-sm text-gray-900 font-semibold">{city.pop}</span>
               <span className="text-xs text-gray-400">population</span>
             </div>
-            <div className="bg-white/10 border border-white/10 rounded-xl px-4 py-2 flex items-center gap-2">
-              <Building2 size={14} className="text-amber-400" />
-              <span className="text-xs text-gray-300">{franchises.length} Active Listings</span>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 flex items-center gap-2">
+              <Building2 size={14} className="text-amber-500" />
+              <span className="text-xs text-gray-700">{franchises.length} Active Listings</span>
             </div>
-            <div className="bg-white/10 border border-white/10 rounded-xl px-4 py-2 flex items-center gap-2">
-              <TrendingUp size={14} className="text-green-400" />
-              <span className="text-xs text-gray-300">Ontario-Wide Brands Expanding</span>
+            <div className="bg-gray-50 border border-gray-200 rounded-xl px-4 py-2 flex items-center gap-2">
+              <TrendingUp size={14} className="text-green-600" />
+              <span className="text-xs text-gray-700">Ontario-Wide Brands Expanding</span>
             </div>
           </div>
         </div>

@@ -107,15 +107,15 @@ export default function PricingPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 py-16 text-center">
+      <div className="bg-white border-b border-gray-100 py-16 text-center">
         <div className="max-w-3xl mx-auto px-4">
-          <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-4">
-            <span className="text-amber-400 text-xs font-bold uppercase tracking-widest">Simple, Transparent Pricing</span>
+          <div className="inline-flex items-center gap-2 bg-red-50 border border-red-100 rounded-full px-4 py-1.5 mb-4">
+            <span className="text-red-600 text-xs font-bold uppercase tracking-widest">Simple, Transparent Pricing</span>
           </div>
-          <h1 className="text-3xl md:text-5xl font-black text-white mb-4">
+          <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-4">
             List Your Franchise in Ontario
           </h1>
-          <p className="text-gray-300 text-base md:text-lg max-w-2xl mx-auto">
+          <p className="text-gray-500 text-base md:text-lg max-w-2xl mx-auto">
             Start free, upgrade as you grow. Join Ontario's most active franchise discovery platform and connect with serious investors.
           </p>
         </div>
@@ -289,13 +289,13 @@ export default function PricingPage() {
         </div>
 
         {/* CTA */}
-        <div className="mt-16 text-center bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 rounded-2xl p-10 text-white">
+        <div className="mt-16 text-center bg-red-600 rounded-2xl p-10 text-white">
           <div className="text-4xl mb-3">🚀</div>
           <h2 className="text-2xl font-black mb-2">Start Growing Your Franchise Today</h2>
-          <p className="text-gray-300 text-sm mb-6 max-w-md mx-auto">
+          <p className="text-red-100 text-sm mb-6 max-w-md mx-auto">
             Join the fastest-growing franchise directory in Ontario. Start free, no credit card required.
           </p>
-          <Link href="/register" className="btn-red inline-flex items-center gap-2 px-8 py-3.5 rounded-xl font-bold">
+          <Link href="/register" className="inline-flex items-center gap-2 bg-white text-red-600 font-bold px-8 py-3.5 rounded-xl hover:bg-red-50 transition-colors">
             Create Your Free Listing <ArrowRight size={16} />
           </Link>
         </div>

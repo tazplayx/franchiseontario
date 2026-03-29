@@ -61,26 +61,23 @@ export default function OntarioPage() {
       <JsonLd data={breadcrumbSchema} />
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 py-14">
+      <div className="bg-white border-b border-gray-100 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-red-400 animate-pulse" />
-            <span className="text-xs font-bold text-red-400 uppercase tracking-widest">Ontario, Canada</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-black text-white mb-3">
+          <p className="section-label mb-3"><MapPin size={10} /> Ontario, Canada</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">
             Franchise Opportunities Across Ontario
           </h1>
-          <p className="text-gray-300 text-base max-w-2xl mb-8">
-            Ontario is Canada's largest franchise market. Explore opportunities by city — from the GTA's 6+ million consumers to growing Northern Ontario markets. Find the right territory for your investment.
+          <p className="text-gray-500 text-base max-w-2xl mb-8 leading-relaxed">
+            Ontario is Canada's largest franchise market. Explore opportunities by city — from the GTA's 6+ million consumers to growing Northern Ontario markets.
           </p>
 
           {/* Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {stats.map((s) => (
-              <div key={s.label} className="bg-white/10 border border-white/10 rounded-xl p-4 text-center">
+              <div key={s.label} className="bg-gray-50 border border-gray-200 rounded-xl p-4 text-center">
                 <div className="text-2xl mb-1">{s.icon}</div>
-                <div className="text-xl font-black text-white">{s.value}</div>
-                <div className="text-xs text-gray-400 mt-0.5 leading-snug">{s.label}</div>
+                <div className="text-xl font-bold text-gray-900">{s.value}</div>
+                <div className="text-xs text-gray-500 mt-0.5 leading-snug">{s.label}</div>
               </div>
             ))}
           </div>
@@ -180,17 +177,17 @@ export default function OntarioPage() {
       </div>
 
       {/* CTA */}
-      <div className="bg-gradient-to-r from-red-600 to-red-800 py-12">
+      <div className="bg-red-600 py-12">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-2xl md:text-3xl font-black text-white mb-3">Not Sure Which Market is Right For You?</h2>
+          <h2 className="text-2xl font-bold text-white mb-3">Not Sure Which Market is Right For You?</h2>
           <p className="text-red-100 text-sm mb-6 max-w-xl mx-auto">
             Take our 2-minute Franchise Fit Quiz — we'll match you to the best Ontario franchise based on your budget, lifestyle, and target market.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/quiz" className="bg-white text-red-600 font-bold px-6 py-3 rounded-xl text-sm hover:bg-red-50 transition-colors">
+            <Link href="/quiz" className="bg-white text-red-600 font-semibold px-6 py-3 rounded-xl text-sm hover:bg-red-50 transition-colors">
               Take the Franchise Fit Quiz →
             </Link>
-            <Link href="/directory" className="bg-white/20 border border-white/30 text-white font-bold px-6 py-3 rounded-xl text-sm hover:bg-white/30 transition-colors">
+            <Link href="/directory" className="bg-white/15 border border-white/30 text-white font-semibold px-6 py-3 rounded-xl text-sm hover:bg-white/20 transition-colors">
               Browse All Franchises
             </Link>
           </div>

@@ -8,6 +8,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      maxWidth: {
+        '7xl': '90rem', // 1440px — wider than default 80rem (1280px)
+      },
       colors: {
         ontario: {
           red: '#CC0000',

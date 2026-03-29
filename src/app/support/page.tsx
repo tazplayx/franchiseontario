@@ -58,13 +58,13 @@ export default function SupportPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 py-12 text-center">
+      <div className="bg-white border-b border-gray-100 py-12 text-center">
         <div className="max-w-xl mx-auto px-4">
           <div className="text-4xl mb-3">🎫</div>
-          <h1 className="text-2xl md:text-3xl font-black text-white mb-2">Submit a Support Ticket</h1>
-          <p className="text-gray-400 text-sm">
+          <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-2">Submit a Support Ticket</h1>
+          <p className="text-gray-500 text-sm">
             We respond to all tickets within one business day. Before submitting, you may find a quick answer in our{' '}
-            <Link href="/faq" className="text-red-400 hover:text-red-300 underline">FAQ page</Link>.
+            <Link href="/faq" className="text-red-600 hover:text-red-700 underline">FAQ page</Link>.
           </p>
         </div>
       </div>

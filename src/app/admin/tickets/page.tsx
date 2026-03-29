@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, ListChecks, MessageSquare, LogOut, Mail } from 'lucide-react'
+import { LayoutDashboard, ListChecks, MessageSquare, LogOut, Mail, Building2 } from 'lucide-react'
 
 const initialTickets = [
   { id: 't1', name: 'Sarah M.', email: 'sarah.m@email.com', category: 'Billing & Payments', subject: 'Charged twice for Premium plan in March', message: 'Hello, I noticed I was billed twice for my Premium listing on March 1st and March 3rd. Could you please look into this and issue a refund for the duplicate charge? My invoice number is #PRE-2024-0891.', status: 'Open', submittedAt: '2026-03-25' },
@@ -16,6 +16,7 @@ function AdminNav({ active }: { active: string }) {
   const router = useRouter()
   const nav = [
     { label: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard size={16} /> },
+    { label: 'Active Listings', href: '/admin/listings', icon: <Building2 size={16} /> },
     { label: 'Pending Listings', href: '/admin/franchises', icon: <ListChecks size={16} /> },
     { label: 'Support Tickets', href: '/admin/tickets', icon: <MessageSquare size={16} /> },
   ]

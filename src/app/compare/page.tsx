@@ -107,10 +107,10 @@ function CompareTable({ franchiseList }: { franchiseList: Franchise[] }) {
           </tr>
 
           {/* CTA row */}
-          <tr className="bg-gray-900">
-            <td className="py-4 pl-4 pr-4 text-xs font-semibold text-gray-400">Actions</td>
+          <tr className="bg-gray-50 border-t border-gray-200">
+            <td className="py-4 pl-4 pr-4 text-xs font-semibold text-gray-500">Actions</td>
             {franchiseList.map((f) => (
-              <td key={f.id} className="py-4 px-4 border-l border-gray-700 text-center">
+              <td key={f.id} className="py-4 px-4 border-l border-gray-100 text-center">
                 <div className="flex flex-col gap-2">
                   <Link
                     href={`/directory/${f.id}`}
@@ -120,7 +120,7 @@ function CompareTable({ franchiseList }: { franchiseList: Franchise[] }) {
                   </Link>
                   <a
                     href={`mailto:${f.email}?subject=Franchise Inquiry — ${f.name}`}
-                    className="block border border-gray-600 text-gray-300 hover:border-red-400 hover:text-red-400 text-xs font-semibold py-2 rounded-lg transition-colors"
+                    className="block border border-gray-200 text-gray-600 hover:border-red-400 hover:text-red-600 text-xs font-semibold py-2 rounded-lg transition-colors"
                   >
                     Request Info
                   </a>
@@ -159,15 +159,16 @@ function CompareContent() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 py-10">
+      <div className="bg-white border-b border-gray-100 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <Link href="/directory" className="inline-flex items-center gap-1.5 text-gray-400 hover:text-white text-sm mb-4 transition-colors">
+          <Link href="/directory" className="inline-flex items-center gap-1.5 text-gray-400 hover:text-red-600 text-sm mb-4 transition-colors">
             <ArrowLeft size={14} /> Back to Directory
           </Link>
-          <h1 className="text-2xl md:text-3xl font-black text-white mb-1">
+          <p className="section-label mb-2">Side-by-Side Comparison</p>
+          <h1 className="text-2xl md:text-3xl font-black text-gray-900 mb-1">
             Franchise Comparison
           </h1>
-          <p className="text-gray-400 text-sm">
+          <p className="text-gray-500 text-sm">
             Comparing {franchiseList.length} Ontario franchise opportunities side by side
           </p>
         </div>

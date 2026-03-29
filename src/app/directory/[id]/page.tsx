@@ -85,25 +85,21 @@ export default function FranchiseProfilePage({ params }: { params: { id: string 
       <JsonLd data={localBusinessSchema} />
       <JsonLd data={breadcrumbSchema} />
       {/* Hero banner */}
-      <div
-        className="relative py-16 overflow-hidden"
-        style={{ background: `linear-gradient(135deg, ${f.logoBg}22 0%, ${f.logoBg}08 50%, #0F0F1A 100%)` }}
-      >
-        <div className="absolute inset-0 hero-gradient opacity-90" />
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+      <div className="bg-white border-b border-gray-200 py-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Breadcrumb */}
           <div className="flex items-center gap-2 text-sm text-gray-400 mb-6">
-            <Link href="/" className="hover:text-white transition-colors">Home</Link>
+            <Link href="/" className="hover:text-red-600 transition-colors">Home</Link>
             <ChevronRight size={14} />
-            <Link href="/directory" className="hover:text-white transition-colors">Directory</Link>
+            <Link href="/directory" className="hover:text-red-600 transition-colors">Directory</Link>
             <ChevronRight size={14} />
-            <span className="text-gray-300">{f.name}</span>
+            <span className="text-gray-700 font-medium">{f.name}</span>
           </div>
 
-          <div className="flex flex-col md:flex-row items-start gap-8">
+          <div className="flex flex-col md:flex-row items-start gap-7">
             {/* Logo */}
             <div
-              className="w-28 h-28 rounded-2xl flex items-center justify-center text-3xl font-black shadow-2xl shrink-0 border-4 border-white/20"
+              className="w-24 h-24 rounded-2xl flex items-center justify-center text-2xl font-bold shadow-md shrink-0 border border-gray-100"
               style={{ background: f.logoBg, color: f.logoColor }}
             >
               {f.logoInitials}
@@ -113,44 +109,44 @@ export default function FranchiseProfilePage({ params }: { params: { id: string 
             <div className="flex-1">
               <div className="flex flex-wrap items-center gap-2 mb-2">
                 {f.isVIP && (
-                  <span className="vip-badge inline-flex items-center gap-1 text-xs font-black px-3 py-1 rounded-full">
-                    <Crown size={11} /> VIP Enterprise
+                  <span className="vip-badge inline-flex items-center gap-1 text-xs font-bold px-3 py-1 rounded-full">
+                    <Crown size={10} /> VIP Enterprise
                   </span>
                 )}
-                <span className="bg-white/10 text-white text-xs font-medium px-2.5 py-1 rounded-full border border-white/20">
+                <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-1 rounded-full">
                   {f.category}
                 </span>
-                <span className="bg-white/10 text-white text-xs font-medium px-2.5 py-1 rounded-full border border-white/20">
+                <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-1 rounded-full">
                   Est. {f.established}
                 </span>
               </div>
 
-              <h1 className="text-3xl md:text-4xl font-black text-white mb-1">{f.name}</h1>
-              <p className="text-gray-300 text-lg italic mb-4">"{f.tagline}"</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">{f.name}</h1>
+              <p className="text-gray-400 text-base italic mb-4">"{f.tagline}"</p>
 
               <div className="flex flex-wrap items-center gap-4">
                 <div className="flex items-center gap-2">
                   <StarRating rating={f.rating} />
-                  <span className="text-white font-bold">{f.rating}</span>
+                  <span className="text-gray-900 font-semibold text-sm">{f.rating}</span>
                   <span className="text-gray-400 text-sm">({f.reviews.toLocaleString()} reviews)</span>
                 </div>
-                <div className="flex items-center gap-1.5 text-gray-300 text-sm">
-                  <MapPin size={14} className="text-red-400" />
+                <div className="flex items-center gap-1.5 text-gray-500 text-sm">
+                  <MapPin size={13} className="text-red-500" />
                   {f.locations}+ Ontario Locations
                 </div>
-                <div className="flex items-center gap-1.5 text-gray-300 text-sm">
-                  <Building2 size={14} className="text-red-400" />
+                <div className="flex items-center gap-1.5 text-gray-500 text-sm">
+                  <Building2 size={13} className="text-gray-400" />
                   {f.parent}
                 </div>
               </div>
             </div>
 
             {/* Quick CTA */}
-            <div className="shrink-0 flex flex-col gap-3 w-full md:w-auto">
-              <a href={`mailto:${f.email}`} className="btn-red px-6 py-3 rounded-xl font-bold text-sm text-center">
+            <div className="shrink-0 flex flex-col gap-2 w-full md:w-auto">
+              <a href={`mailto:${f.email}`} className="btn-red px-6 py-2.5 rounded-xl font-semibold text-sm text-center">
                 Request Franchise Info
               </a>
-              <a href={f.website} target="_blank" rel="noopener noreferrer" className="bg-white/10 hover:bg-white/20 border border-white/30 text-white px-6 py-3 rounded-xl font-bold text-sm text-center transition-all">
+              <a href={f.website} target="_blank" rel="noopener noreferrer" className="bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-2.5 rounded-xl font-semibold text-sm text-center transition-all">
                 Visit Website
               </a>
             </div>

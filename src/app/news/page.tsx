@@ -37,23 +37,23 @@ export default function NewsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 py-12 border-b border-gray-700">
+      <div className="bg-white border-b border-gray-100 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-start justify-between gap-4">
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="live-dot" />
-                <span className="text-green-400 text-xs font-bold uppercase tracking-widest">Live Feed</span>
+                <span className="text-green-600 text-xs font-bold uppercase tracking-widest">Live Feed</span>
               </div>
-              <h1 className="text-3xl md:text-4xl font-black text-white mb-2">
+              <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
                 Ontario Franchise News
               </h1>
-              <p className="text-gray-400 text-sm">
+              <p className="text-gray-500 text-sm">
                 The latest franchise industry news, expansions, and investment insights from across Ontario and Canada.
               </p>
             </div>
-            <div className="text-right text-xs text-gray-500 shrink-0">
-              <div className="flex items-center gap-1 justify-end text-green-400 mb-0.5">
+            <div className="text-right text-xs text-gray-400 shrink-0">
+              <div className="flex items-center gap-1 justify-end text-green-600 mb-0.5">
                 <RefreshCw size={10} className="animate-spin" style={{ animationDuration: '3s' }} />
                 <span className="font-medium">Auto-updating</span>
               </div>
@@ -200,7 +200,7 @@ export default function NewsPage() {
             </div>
 
             {/* Newsletter CTA */}
-            <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-xl p-5 text-white">
+            <div className="bg-red-600 rounded-xl p-5 text-white">
               <div className="text-2xl mb-2">📬</div>
               <h4 className="font-bold text-sm mb-1">Franchise News Weekly</h4>
               <p className="text-red-100 text-xs mb-3">Get the latest Ontario franchise news every Monday morning.</p>

@@ -207,24 +207,21 @@ export default function ResourcesPage() {
       <JsonLd data={faqSchema} />
 
       {/* Hero */}
-      <div className="bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 py-12">
+      <div className="bg-white border-b border-gray-100 py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center gap-2 mb-3">
-            <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-            <span className="text-xs font-bold text-amber-400 uppercase tracking-widest">Free Resources</span>
-          </div>
-          <h1 className="text-3xl md:text-4xl font-black text-white mb-3">Ontario Franchise Buyer's Hub</h1>
-          <p className="text-gray-300 text-sm max-w-2xl mb-6">
+          <p className="section-label mb-3">Free Resources</p>
+          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-3">Ontario Franchise Buyer's Hub</h1>
+          <p className="text-gray-500 text-sm max-w-2xl mb-6 leading-relaxed">
             Everything you need to make a confident, well-informed franchise investment in Ontario. Step-by-step guide, interactive checklist, Arthur Wishart Act explained, and financing resources — all free.
           </p>
           <div className="flex flex-wrap gap-3">
-            <a href="#guide" className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-lg text-sm font-bold transition-colors">
+            <a href="#guide" className="btn-red px-5 py-2 rounded-lg text-sm font-semibold">
               Buyer's Guide →
             </a>
-            <a href="#checklist" className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-5 py-2 rounded-lg text-sm font-bold transition-colors">
+            <a href="#checklist" className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2 rounded-lg text-sm font-semibold transition-colors">
               Due Diligence Checklist →
             </a>
-            <a href="#arthur-wishart" className="bg-white/10 hover:bg-white/20 border border-white/20 text-white px-5 py-2 rounded-lg text-sm font-bold transition-colors">
+            <a href="#arthur-wishart" className="bg-gray-100 hover:bg-gray-200 text-gray-700 px-5 py-2 rounded-lg text-sm font-semibold transition-colors">
               Arthur Wishart Act →
             </a>
           </div>
@@ -393,16 +390,16 @@ export default function ResourcesPage() {
         </section>
 
         {/* CTA */}
-        <div className="bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 rounded-2xl p-8 text-center">
-          <h2 className="text-2xl font-black text-white mb-3">Ready to Find Your Franchise?</h2>
-          <p className="text-gray-300 text-sm mb-6 max-w-md mx-auto">
+        <div className="bg-red-600 rounded-2xl p-8 text-center">
+          <h2 className="text-2xl font-bold text-white mb-3">Ready to Find Your Franchise?</h2>
+          <p className="text-red-100 text-sm mb-6 max-w-md mx-auto">
             Use the resources above to guide your decision, then take the quiz to find your match.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link href="/quiz" className="bg-amber-400 text-amber-900 font-bold px-6 py-3 rounded-xl text-sm hover:bg-amber-300 transition-colors">
+            <Link href="/quiz" className="bg-white text-red-600 font-semibold px-6 py-3 rounded-xl text-sm hover:bg-red-50 transition-colors">
               Take the Franchise Fit Quiz →
             </Link>
-            <Link href="/directory" className="bg-white/10 border border-white/20 text-white font-bold px-6 py-3 rounded-xl text-sm hover:bg-white/20 transition-colors">
+            <Link href="/directory" className="bg-white/15 border border-white/30 text-white font-semibold px-6 py-3 rounded-xl text-sm hover:bg-white/20 transition-colors">
               Browse Ontario Directory
             </Link>
           </div>

@@ -94,17 +94,17 @@ export default function DirectoryPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Page header */}
-      <div className="bg-gradient-to-br from-gray-900 via-red-950 to-gray-900 py-12">
+      <div className="bg-white border-b border-gray-200 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <h1 className="text-3xl md:text-4xl font-black text-white mb-2">
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
             Ontario Franchise Directory
           </h1>
-          <p className="text-gray-400 text-sm mb-6">
+          <p className="text-gray-500 text-sm mb-5">
             Browse {franchises.length} franchise listings across {categories.length} categories in Ontario
           </p>
 
           {/* Search */}
-          <div className="flex items-center bg-white rounded-xl shadow-lg overflow-hidden max-w-2xl">
+          <div className="flex items-center bg-white border-2 border-gray-200 rounded-xl overflow-hidden max-w-2xl focus-within:border-red-400 transition-colors">
             <div className="pl-4 text-gray-400">
               <Search size={18} />
             </div>
@@ -113,7 +113,7 @@ export default function DirectoryPage() {
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search by name, category, or keyword..."
-              className="flex-1 px-3 py-3.5 text-sm text-gray-700 outline-none"
+              className="flex-1 px-3 py-3 text-sm text-gray-700 outline-none"
             />
             {query && (
               <button onClick={() => setQuery('')} className="px-3 text-gray-400 hover:text-gray-600">
@@ -124,15 +124,15 @@ export default function DirectoryPage() {
 
           {/* Quick investment filter pills */}
           <div className="flex flex-wrap gap-2 mt-4">
-            <span className="text-xs text-gray-400 self-center mr-1">Budget:</span>
+            <span className="text-xs text-gray-500 self-center mr-1 font-medium">Budget:</span>
             {investmentBrackets.map((b) => (
               <button
                 key={b.key}
                 onClick={() => setInvestment(b.key)}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all border ${
                   investment === b.key
-                    ? 'bg-white text-red-700'
-                    : 'bg-white/10 text-gray-300 hover:bg-white/20 border border-white/20'
+                    ? 'bg-red-600 text-white border-red-600'
+                    : 'bg-white text-gray-600 border-gray-200 hover:border-red-300 hover:text-red-600'
                 }`}
               >
                 {b.label}
