@@ -47,15 +47,8 @@ export async function POST(req: NextRequest) {
       // Pre-fill customer info if provided
       customer_email: email || undefined,
 
-      // Automatic tax (HST 13% for Ontario, GST/PST for other provinces)
-      // Requires Stripe Tax to be enabled in your Stripe Dashboard → Settings → Tax
-      automatic_tax: { enabled: true },
-
-      // Collect billing address for accurate tax calculation
+      // Collect billing address
       billing_address_collection: 'required',
-
-      // Allow tax ID (HST number) collection for B2B customers
-      tax_id_collection: { enabled: true },
 
       // Metadata attached to the Checkout Session and carried to webhooks
       metadata: {
