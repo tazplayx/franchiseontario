@@ -3,14 +3,6 @@ import Link from 'next/link'
 import { useState, useEffect } from 'react'
 import { Menu, X, MapPin, Sparkles, LayoutDashboard, LogOut } from 'lucide-react'
 
-function FranchiseOntarioLogo() {
-  return (
-    <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 shrink-0">
-      <rect width="40" height="40" rx="9" fill="#C8102E"/>
-      <path d="M10 9 H30 V14 H15 V19.5 H27 V24.5 H15 V31 H10 Z" fill="white"/>
-    </svg>
-  )
-}
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
@@ -36,18 +28,12 @@ export default function Header() {
         <div className="flex items-center justify-between h-20">
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-3 group">
-            <FranchiseOntarioLogo />
-            <div>
-              <div className="font-bold text-[18px] leading-none tracking-tight text-gray-900"
-                style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-                Franchise<span className="text-[#C8102E]">Ontario</span>
-              </div>
-              <div className="text-[9px] text-gray-400 tracking-[0.14em] uppercase font-semibold mt-1 leading-none"
-                style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
-                Canada's Franchise Hub
-              </div>
-            </div>
+          <Link href="/" className="flex items-center group">
+            <img
+              src="/logo.png"
+              alt="FranchiseOntario — Canada's Franchise Hub"
+              className="h-12 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop Nav */}
