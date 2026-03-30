@@ -1,20 +1,38 @@
 export type FranchiseTier = 'basic' | 'premium' | 'enterprise';
 
 export type FranchiseCategory =
+  // Food & Beverage
   | 'Bar & Grill'
   | 'Seafood'
   | 'Coffee & Café'
   | 'Fast Food'
   | 'Pizza'
+  | 'Specialty Food'
+  | 'Bakery & Desserts'
+  | 'Healthy Eating'
+  // Health & Wellness
   | 'Fitness & Wellness'
-  | 'Retail'
+  | 'Health & Medical'
+  | 'Senior Care'
+  | 'Sports & Recreation'
+  // Home & Property
   | 'Home Services'
-  | 'Automotive'
+  | 'Cleaning Services'
+  | 'Real Estate'
+  // Children & Families
   | 'Education'
+  | "Children's Services"
+  // Professional Services
+  | 'Financial Services'
+  | 'Business Services'
+  | 'Technology & IT'
+  | 'Printing & Signs'
+  // Retail & Other
+  | 'Retail'
+  | 'Automotive'
   | 'Beauty & Salon'
   | 'Pet Services'
-  | 'Financial Services'
-  | 'Real Estate';
+  | 'Travel & Hospitality';
 
 export interface FranchiseFinancials {
   franchiseFee: string;
@@ -346,18 +364,36 @@ export const getFranchiseById = (id: string) =>
   franchises.find((f) => f.id === id);
 
 export const categories: { name: FranchiseCategory; icon: string; color: string; bg: string }[] = [
+  // Food & Beverage
   { name: 'Bar & Grill', icon: '🍺', color: '#C8102E', bg: '#FFF0F0' },
   { name: 'Coffee & Café', icon: '☕', color: '#6B3E26', bg: '#FFF8F0' },
   { name: 'Seafood', icon: '🦞', color: '#005A8E', bg: '#F0F8FF' },
   { name: 'Fast Food', icon: '🍔', color: '#E8A000', bg: '#FFFBF0' },
   { name: 'Pizza', icon: '🍕', color: '#D4001A', bg: '#FFF0F0' },
+  { name: 'Specialty Food', icon: '🥗', color: '#388E3C', bg: '#F0FFF4' },
+  { name: 'Bakery & Desserts', icon: '🧁', color: '#E91E63', bg: '#FFF0F8' },
+  { name: 'Healthy Eating', icon: '🥑', color: '#2E7D32', bg: '#F0FFF0' },
+  // Health & Wellness
   { name: 'Fitness & Wellness', icon: '💪', color: '#FF6B00', bg: '#FFF5F0' },
-  { name: 'Retail', icon: '🛍️', color: '#7B2D8B', bg: '#F8F0FF' },
+  { name: 'Health & Medical', icon: '🏥', color: '#0288D1', bg: '#F0F8FF' },
+  { name: 'Senior Care', icon: '❤️', color: '#C62828', bg: '#FFF0F0' },
+  { name: 'Sports & Recreation', icon: '⚽', color: '#1B5E20', bg: '#F0FFF0' },
+  // Home & Property
   { name: 'Home Services', icon: '🏠', color: '#2E7D32', bg: '#F0FFF0' },
-  { name: 'Automotive', icon: '🚗', color: '#1565C0', bg: '#F0F4FF' },
+  { name: 'Cleaning Services', icon: '🧹', color: '#039BE5', bg: '#F0FAFF' },
+  { name: 'Real Estate', icon: '🏡', color: '#795548', bg: '#FFF8F5' },
+  // Children & Families
   { name: 'Education', icon: '📚', color: '#0064C8', bg: '#F0F8FF' },
+  { name: "Children's Services", icon: '🧸', color: '#F57C00', bg: '#FFF8F0' },
+  // Professional Services
+  { name: 'Financial Services', icon: '💼', color: '#37474F', bg: '#F5F5F5' },
+  { name: 'Business Services', icon: '📊', color: '#283593', bg: '#F0F2FF' },
+  { name: 'Technology & IT', icon: '💻', color: '#0D47A1', bg: '#F0F4FF' },
+  { name: 'Printing & Signs', icon: '🖨️', color: '#4527A0', bg: '#F4F0FF' },
+  // Retail & Other
+  { name: 'Retail', icon: '🛍️', color: '#7B2D8B', bg: '#F8F0FF' },
+  { name: 'Automotive', icon: '🚗', color: '#1565C0', bg: '#F0F4FF' },
   { name: 'Beauty & Salon', icon: '💅', color: '#E91E8C', bg: '#FFF0F8' },
   { name: 'Pet Services', icon: '🐾', color: '#4CAF50', bg: '#F0FFF4' },
-  { name: 'Financial Services', icon: '💼', color: '#37474F', bg: '#F5F5F5' },
-  { name: 'Real Estate', icon: '🏡', color: '#795548', bg: '#FFF8F5' },
+  { name: 'Travel & Hospitality', icon: '✈️', color: '#00695C', bg: '#F0FFFD' },
 ];

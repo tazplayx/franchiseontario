@@ -1,5 +1,6 @@
 import Link from 'next/link'
-import { MapPin, Mail, Sparkles } from 'lucide-react'
+import { MapPin, Sparkles } from 'lucide-react'
+import ContactForm from './ContactForm'
 
 export default function Footer() {
   return (
@@ -106,13 +107,9 @@ export default function Footer() {
                 </li>
               ))}
             </ul>
-            <div className="space-y-2 text-sm text-gray-400">
-              <div className="flex items-center gap-2">
-                <Mail size={13} className="text-red-400" />
-                <a href="mailto:hello@franchiseontario.com" className="hover:text-red-400 transition-colors">
-                  hello@franchiseontario.com
-                </a>
-              </div>
+            <div>
+              <p className="text-xs text-white font-semibold uppercase tracking-widest mb-1">Contact Us</p>
+              <ContactForm />
             </div>
           </div>
         </div>

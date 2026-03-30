@@ -82,15 +82,38 @@ export default function NewsPage() {
             {/* Featured */}
             {featured && (
               <article className="bg-white rounded-2xl border border-gray-200 overflow-hidden card-hover group shadow-sm">
-                <div className="h-2 bg-gradient-to-r from-red-600 to-amber-500" />
+                {featured.thumbnailUrl ? (
+                  <div className="relative h-52 overflow-hidden">
+                    <img
+                      src={featured.thumbnailUrl}
+                      alt={featured.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                    <div className="absolute top-3 left-3 flex flex-wrap gap-2">
+                      <span className="bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        ⭐ Featured
+                      </span>
+                      <span className="bg-black/50 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full backdrop-blur-sm">
+                        {featured.category}
+                      </span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="h-2 bg-gradient-to-r from-red-600 to-amber-500" />
+                )}
                 <div className="p-6">
-                  <div className="flex flex-wrap items-center gap-2 mb-3">
-                    <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-                      ⭐ Featured
-                    </span>
-                    <span className="bg-gray-100 text-gray-600 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                      {featured.category}
-                    </span>
+                  {!featured.thumbnailUrl && (
+                    <div className="flex flex-wrap items-center gap-2 mb-3">
+                      <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                        ⭐ Featured
+                      </span>
+                      <span className="bg-gray-100 text-gray-600 text-[10px] font-semibold px-2 py-0.5 rounded-full">
+                        {featured.category}
+                      </span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 mb-3">
                     <span className="text-xs text-gray-400">{featured.source}</span>
                     <span className="text-xs text-gray-400">•</span>
                     <span className="text-xs text-gray-400">{featured.timeAgo}</span>
@@ -110,7 +133,7 @@ export default function NewsPage() {
                         </span>
                       ))}
                     </div>
-                    <a href="#" className="flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700">
+                    <a href={featured.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-semibold text-red-600 hover:text-red-700">
                       Read More <ExternalLink size={11} />
                     </a>
                   </div>
@@ -120,32 +143,43 @@ export default function NewsPage() {
 
             {/* Article list */}
             {list.map((article) => (
-              <article key={article.id} className="bg-white rounded-xl border border-gray-200 p-5 card-hover group">
-                <div className="flex flex-wrap items-center gap-2 mb-2.5">
-                  <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
-                    {article.category}
-                  </span>
-                  <span className="text-xs text-gray-400">{article.source}</span>
-                  <span className="text-xs text-gray-400">•</span>
-                  <span className="text-xs text-gray-400">{article.timeAgo}</span>
+              <article key={article.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden card-hover group flex flex-col sm:flex-row">
+                {/* Thumbnail */}
+                <div className="sm:w-40 sm:shrink-0 h-36 sm:h-auto overflow-hidden bg-gray-100 relative">
+                  <img
+                    src={article.thumbnailUrl || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=250&fit=crop&auto=format'}
+                    alt={article.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
                 </div>
-                <h3 className="text-base font-bold text-gray-900 leading-snug mb-2 group-hover:text-red-600 transition-colors">
-                  {article.title}
-                </h3>
-                <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2">
-                  {article.excerpt}
-                </p>
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-wrap gap-1">
-                    {article.tags.slice(0, 3).map((tag) => (
-                      <span key={tag} className="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">
-                        {tag}
-                      </span>
-                    ))}
+                {/* Content */}
+                <div className="p-5 flex flex-col flex-1">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                      {article.category}
+                    </span>
+                    <span className="text-xs text-gray-400">{article.source}</span>
+                    <span className="text-xs text-gray-400">•</span>
+                    <span className="text-xs text-gray-400">{article.timeAgo}</span>
                   </div>
-                  <a href="#" className="flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700">
-                    Read <ExternalLink size={10} />
-                  </a>
+                  <h3 className="text-base font-bold text-gray-900 leading-snug mb-2 group-hover:text-red-600 transition-colors">
+                    {article.title}
+                  </h3>
+                  <p className="text-xs text-gray-500 leading-relaxed mb-3 line-clamp-2 flex-1">
+                    {article.excerpt}
+                  </p>
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-wrap gap-1">
+                      {article.tags.slice(0, 3).map((tag) => (
+                        <span key={tag} className="text-[10px] bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                    <a href={article.sourceUrl} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1 text-xs font-medium text-red-600 hover:text-red-700">
+                      Read <ExternalLink size={10} />
+                    </a>
+                  </div>
                 </div>
               </article>
             ))}

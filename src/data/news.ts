@@ -9,6 +9,7 @@ export interface NewsArticle {
   timeAgo: string;
   isFeatured: boolean;
   tags: string[];
+  thumbnailUrl?: string;
 }
 
 export const newsArticles: NewsArticle[] = [
@@ -24,6 +25,7 @@ export const newsArticles: NewsArticle[] = [
     timeAgo: '6 days ago',
     isFeatured: true,
     tags: ['CFA', 'Economic Impact', 'Ontario', 'Industry Data'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=400&h=250&fit=crop&auto=format',
   },
   {
     id: 'arthur-wishart-act-guide',
@@ -37,6 +39,7 @@ export const newsArticles: NewsArticle[] = [
     timeAgo: '8 days ago',
     isFeatured: false,
     tags: ['Arthur Wishart Act', 'FDD', 'Ontario Law', 'Buyer Protection'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=400&h=250&fit=crop&auto=format',
   },
   {
     id: 'mty-group-expansion',
@@ -50,6 +53,7 @@ export const newsArticles: NewsArticle[] = [
     timeAgo: '11 days ago',
     isFeatured: false,
     tags: ['MTY Group', 'Expansion', 'Ontario', 'Multi-Brand'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?w=400&h=250&fit=crop&auto=format',
   },
   {
     id: 'recipe-unlimited-q4',
@@ -63,6 +67,7 @@ export const newsArticles: NewsArticle[] = [
     timeAgo: '14 days ago',
     isFeatured: false,
     tags: ['Recipe Unlimited', 'Swiss Chalet', "Harvey's", 'Ontario', 'TSX'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=400&h=250&fit=crop&auto=format',
   },
   {
     id: 'cfa-franchisee-satisfaction-2025',
@@ -76,6 +81,7 @@ export const newsArticles: NewsArticle[] = [
     timeAgo: '16 days ago',
     isFeatured: false,
     tags: ['CFA', 'Franchisee Satisfaction', 'Benchmarking', 'Food & Beverage'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=400&h=250&fit=crop&auto=format',
   },
   {
     id: 'aw-canada-satisfaction',
@@ -89,6 +95,7 @@ export const newsArticles: NewsArticle[] = [
     timeAgo: '18 days ago',
     isFeatured: false,
     tags: ['A&W Canada', 'Franchisee Satisfaction', 'Top Ranked', 'Ontario'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=400&h=250&fit=crop&auto=format',
   },
   {
     id: 'ontario-franchise-investment-guide',
@@ -102,6 +109,7 @@ export const newsArticles: NewsArticle[] = [
     timeAgo: '21 days ago',
     isFeatured: true,
     tags: ['First-Time Buyer', 'How-To', 'Ontario', 'FDD', 'BDC Financing'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1560472354-b33ff0c44a43?w=400&h=250&fit=crop&auto=format',
   },
   {
     id: 'rbi-ontario-growth',
@@ -115,6 +123,7 @@ export const newsArticles: NewsArticle[] = [
     timeAgo: '24 days ago',
     isFeatured: false,
     tags: ['Tim Hortons', 'Popeyes', 'RBI', 'Ontario', 'Expansion'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=400&h=250&fit=crop&auto=format',
   },
   {
     id: 'bdc-franchise-financing',
@@ -128,6 +137,7 @@ export const newsArticles: NewsArticle[] = [
     timeAgo: '26 days ago',
     isFeatured: false,
     tags: ['BDC', 'Financing', 'Small Business', 'Franchise Loans', 'Ontario'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1450101499163-c8848c66ca85?w=400&h=250&fit=crop&auto=format',
   },
   {
     id: 'gta-franchise-market',
@@ -141,6 +151,7 @@ export const newsArticles: NewsArticle[] = [
     timeAgo: '29 days ago',
     isFeatured: false,
     tags: ['GTA', 'Market Rankings', 'Investment', 'Mississauga', 'Brampton'],
+    thumbnailUrl: 'https://images.unsplash.com/photo-1517935706615-2717063c2225?w=400&h=250&fit=crop&auto=format',
   },
 ];
 

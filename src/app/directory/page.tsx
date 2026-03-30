@@ -289,7 +289,7 @@ export default function DirectoryPage() {
             {/* Quiz CTA */}
             <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-xl p-4 text-white">
               <div className="text-2xl mb-2">🎯</div>
-              <h4 className="font-bold text-sm mb-1">Not sure where to start?</h4>
+              <h4 className="font-bold text-sm mb-1 text-white">Not sure where to start?</h4>
               <p className="text-red-100 text-xs mb-3">Take our 2-min Franchise Fit Quiz to find your perfect match.</p>
               <Link href="/quiz" className="block text-center bg-white text-red-600 font-bold text-xs py-2 rounded-lg hover:bg-red-50 transition-colors">
                 Take the Quiz →
@@ -299,7 +299,7 @@ export default function DirectoryPage() {
             {/* List CTA */}
             <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl p-4 text-white">
               <div className="text-2xl mb-2">🏢</div>
-              <h4 className="font-bold text-sm mb-1">List Your Franchise</h4>
+              <h4 className="font-bold text-sm mb-1 text-white">List Your Franchise</h4>
               <p className="text-gray-400 text-xs mb-3">Start free — no credit card required</p>
               <Link href="/register" className="block text-center bg-white text-gray-900 font-bold text-xs py-2 rounded-lg hover:bg-gray-100 transition-colors">
                 Get Started →
