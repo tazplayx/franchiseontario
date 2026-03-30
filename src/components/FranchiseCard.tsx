@@ -2,6 +2,36 @@ import Link from 'next/link'
 import { Star, MapPin, TrendingUp, Crown, Award, Zap } from 'lucide-react'
 import type { Franchise } from '@/data/franchises'
 
+// Stock photos per category — used as card header backgrounds
+const CATEGORY_BG: Record<string, string> = {
+  'Bar & Grill':          'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600&h=240&fit=crop&auto=format',
+  'Seafood':              'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=600&h=240&fit=crop&auto=format',
+  'Coffee & Café':        'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=600&h=240&fit=crop&auto=format',
+  'Fast Food':            'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=600&h=240&fit=crop&auto=format',
+  'Pizza':                'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=600&h=240&fit=crop&auto=format',
+  'Specialty Food':       'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=600&h=240&fit=crop&auto=format',
+  'Bakery & Desserts':    'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=600&h=240&fit=crop&auto=format',
+  'Healthy Eating':       'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&h=240&fit=crop&auto=format',
+  'Fitness & Wellness':   'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=600&h=240&fit=crop&auto=format',
+  'Health & Medical':     'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=600&h=240&fit=crop&auto=format',
+  'Senior Care':          'https://images.unsplash.com/photo-1576765608866-5b51046452be?w=600&h=240&fit=crop&auto=format',
+  'Sports & Recreation':  'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=600&h=240&fit=crop&auto=format',
+  'Home Services':        'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&h=240&fit=crop&auto=format',
+  'Cleaning Services':    'https://images.unsplash.com/photo-1527515545081-5db817172677?w=600&h=240&fit=crop&auto=format',
+  'Real Estate':          'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=600&h=240&fit=crop&auto=format',
+  'Education':            'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=600&h=240&fit=crop&auto=format',
+  "Children's Services":  'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=600&h=240&fit=crop&auto=format',
+  'Financial Services':   'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=600&h=240&fit=crop&auto=format',
+  'Business Services':    'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=600&h=240&fit=crop&auto=format',
+  'Technology & IT':      'https://images.unsplash.com/photo-1518770660439-4636190af475?w=600&h=240&fit=crop&auto=format',
+  'Printing & Signs':     'https://images.unsplash.com/photo-1524234107056-1c1f48f64ab8?w=600&h=240&fit=crop&auto=format',
+  'Retail':               'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=600&h=240&fit=crop&auto=format',
+  'Automotive':           'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=600&h=240&fit=crop&auto=format',
+  'Beauty & Salon':       'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=600&h=240&fit=crop&auto=format',
+  'Pet Services':         'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=600&h=240&fit=crop&auto=format',
+  'Travel & Hospitality': 'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=600&h=240&fit=crop&auto=format',
+}
+
 function StarRating({ rating }: { rating: number }) {
   return (
     <div className="flex items-center gap-0.5">
@@ -73,32 +103,29 @@ export default function FranchiseCard({ franchise, showRank = false }: { franchi
           </div>
         )}
 
-        {/* Logo area */}
-        <div
-          className="h-32 flex items-center justify-center relative overflow-hidden"
-          style={{ background: franchise.logoUrl ? '#f8fafc' : `${franchise.logoBg}20` }}
-        >
-          {/* Background pattern — only when no image */}
-          {!franchise.logoUrl && (
-            <div
-              className="absolute inset-0 opacity-10"
-              style={{
-                backgroundImage: `radial-gradient(circle at 20% 80%, ${franchise.logoBg} 0%, transparent 50%), radial-gradient(circle at 80% 20%, ${franchise.logoBg} 0%, transparent 50%)`,
-              }}
-            />
-          )}
+        {/* Logo area — background photo + logo/initials centred on top */}
+        <div className="h-36 flex items-center justify-center relative overflow-hidden">
+          {/* Background: first media image, else category stock photo */}
+          <img
+            src={franchise.mediaImages?.[0] || CATEGORY_BG[franchise.category] || `https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600&h=240&fit=crop&auto=format`}
+            alt=""
+            aria-hidden="true"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+          {/* Dark gradient overlay for readability */}
+          <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/40 to-black/65" />
 
           {franchise.logoUrl ? (
-            /* Uploaded logo image */
+            /* Uploaded logo */
             <img
               src={franchise.logoUrl}
               alt={`${franchise.name} logo`}
-              className="w-24 h-24 rounded-2xl object-contain shadow-md relative z-10 bg-white p-1"
+              className="w-20 h-20 rounded-2xl object-contain shadow-lg relative z-10 bg-white p-1.5"
             />
           ) : (
-            /* Fallback: coloured initials */
+            /* Coloured initials */
             <div
-              className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg text-2xl font-black relative z-10"
+              className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg text-2xl font-black relative z-10 ring-2 ring-white/30"
               style={{ background: franchise.logoBg, color: franchise.logoColor }}
             >
               {franchise.logoInitials}

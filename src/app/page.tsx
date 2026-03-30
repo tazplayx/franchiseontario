@@ -395,13 +395,35 @@ function LatestNews() {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Featured Article */}
-          <div className="lg:col-span-2 bg-white rounded-xl border border-gray-200 overflow-hidden card-hover group">
-            <div className="h-3 bg-gradient-to-r from-red-600 to-amber-500" />
-            <div className="p-6">
-              <div className="flex items-center gap-2 mb-3">
-                <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+          <a
+            href={featured.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="lg:col-span-2 bg-white rounded-xl border border-gray-200 overflow-hidden card-hover group block"
+          >
+            {/* Thumbnail */}
+            {featured.thumbnailUrl ? (
+              <div className="h-52 overflow-hidden relative">
+                <img
+                  src={featured.thumbnailUrl}
+                  alt={featured.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                <span className="absolute bottom-3 left-3 bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wide">
                   {featured.category}
                 </span>
+              </div>
+            ) : (
+              <div className="h-3 bg-gradient-to-r from-red-600 to-amber-500" />
+            )}
+            <div className="p-6">
+              <div className="flex items-center gap-2 mb-3">
+                {!featured.thumbnailUrl && (
+                  <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase">
+                    {featured.category}
+                  </span>
+                )}
                 <span className="text-xs text-gray-400">{featured.source}</span>
                 <span className="text-xs text-gray-400">•</span>
                 <span className="text-xs text-gray-400">{featured.timeAgo}</span>
@@ -410,29 +432,48 @@ function LatestNews() {
                 {featured.title}
               </h3>
               <p className="text-sm text-gray-600 leading-relaxed mb-4 line-clamp-3">{featured.excerpt}</p>
-              <div className="flex flex-wrap gap-1.5">
+              <div className="flex flex-wrap items-center gap-1.5">
                 {featured.tags.map((tag) => (
                   <span key={tag} className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{tag}</span>
                 ))}
+                <span className="ml-auto text-xs font-semibold text-red-600 group-hover:underline">Read article →</span>
               </div>
             </div>
-          </div>
+          </a>
 
           {/* Article list */}
           <div className="space-y-3">
             {rest.map((article) => (
-              <div key={article.id} className="bg-white rounded-xl border border-gray-200 p-4 card-hover group">
-                <div className="flex items-center gap-2 mb-1.5">
-                  <span className="bg-gray-100 text-gray-600 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase">
-                    {article.category}
-                  </span>
-                  <span className="text-[10px] text-gray-400">{article.timeAgo}</span>
+              <a
+                key={article.id}
+                href={article.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="bg-white rounded-xl border border-gray-200 p-4 card-hover group flex gap-3 items-start block"
+              >
+                {/* Thumbnail */}
+                {article.thumbnailUrl && (
+                  <div className="w-16 h-14 rounded-lg overflow-hidden shrink-0 bg-gray-100">
+                    <img
+                      src={article.thumbnailUrl}
+                      alt=""
+                      className="w-full h-full object-cover"
+                    />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="bg-gray-100 text-gray-600 text-[9px] font-bold px-1.5 py-0.5 rounded uppercase shrink-0">
+                      {article.category}
+                    </span>
+                    <span className="text-[10px] text-gray-400">{article.timeAgo}</span>
+                  </div>
+                  <h4 className="text-sm font-semibold text-gray-900 leading-snug group-hover:text-red-600 transition-colors line-clamp-2">
+                    {article.title}
+                  </h4>
+                  <p className="text-xs text-gray-400 mt-1 truncate">{article.source}</p>
                 </div>
-                <h4 className="text-sm font-semibold text-gray-900 leading-snug group-hover:text-red-600 transition-colors line-clamp-2">
-                  {article.title}
-                </h4>
-                <p className="text-xs text-gray-500 mt-1">{article.source}</p>
-              </div>
+              </a>
             ))}
             <Link href="/news" className="block text-center text-sm font-medium text-red-600 hover:text-red-700 py-2">
               View All News →
