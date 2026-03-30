@@ -89,6 +89,7 @@ export const franchises: Franchise[] = [
     id: 'chucks-roadhouse',
     name: "Chuck's Roadhouse Bar and Grill",
     tagline: 'Get Your Hands Dirty',
+    logoUrl: 'https://logo.clearbit.com/chucksroadhouse.com',
     description:
       "Chuck's Roadhouse Bar and Grill® is Ontario's bold, no-nonsense bar & grill. Premium aged steaks, Just Wings®, Chucktails®, and real value — every day.",
     longDescription:
@@ -178,6 +179,7 @@ export const franchises: Franchise[] = [
     id: 'crabby-joes',
     name: "Crabby Joe's",
     tagline: 'Casual Dining with a Maritime Soul',
+    logoUrl: 'https://logo.clearbit.com/crabbyjoes.com',
     description:
       "Crabby Joe's has been serving Canadians since 1992, offering a relaxed atmosphere with fresh seafood, classic grill favourites, and ice-cold drinks.",
     longDescription:
@@ -267,6 +269,7 @@ export const franchises: Franchise[] = [
     id: 'coffee-culture',
     name: 'Coffee Culture Café & Eatery',
     tagline: 'Where Every Cup Tells a Story',
+    logoUrl: 'https://logo.clearbit.com/coffeeculture.ca',
     description:
       'Coffee Culture is a proudly Canadian coffee franchise serving specialty coffees, fresh-baked goods, and wholesome meals in a warm, welcoming environment.',
     longDescription:

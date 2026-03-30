@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, XCircle, Eye, LayoutDashboard, ListChecks, MessageSquare, LogOut, Building2 } from 'lucide-react'
-import { getPendingStatuses, savePendingStatus, type PendingStatus } from '@/lib/store'
+import { getPendingStatuses, savePendingStatus, saveApprovedListing, removeApprovedListing, type PendingStatus } from '@/lib/store'
+import type { Franchise, FranchiseCategory } from '@/data/franchises'
 
 const initialPending = [
   { id: 'p1', name: 'Sunset Poutine Co.', category: 'Fast Food', plan: 'Premium', email: 'owner@sunsetpoutine.ca', submittedAt: '2026-03-25', city: 'Mississauga, ON', description: 'A Quebec-inspired poutine franchise bringing authentic curds and gravy to Ontario markets. 3 existing locations in Quebec.', status: 'pending' },
@@ -12,6 +13,68 @@ const initialPending = [
   { id: 'p4', name: 'Paw Palace Pet Spa', category: 'Pet Services', plan: 'Basic', email: 'hello@pawpalace.ca', submittedAt: '2026-03-23', city: 'Hamilton, ON', description: 'Full-service pet grooming and boarding franchise. New concept with 2 pilot locations in Ontario.', status: 'pending' },
   { id: 'p5', name: 'TurboTech Auto Care', category: 'Automotive', plan: 'Premium', email: 'franchise@turbotech.ca', submittedAt: '2026-03-22', city: 'Brampton, ON', description: 'Quick-service automotive maintenance franchise specializing in EV-compatible service bays.', status: 'pending' },
 ]
+
+/** Convert a pending listing submission into a full Franchise object with sensible defaults. */
+function pendingToFranchise(p: typeof initialPending[0]): Franchise {
+  const tierMap: Record<string, Franchise['tier']> = {
+    Enterprise: 'enterprise',
+    Premium: 'premium',
+    Basic: 'basic',
+  }
+  const initials = p.name
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 3)
+    .map((w) => w[0])
+    .join('')
+    .toUpperCase()
+
+  return {
+    id: p.id,
+    name: p.name,
+    tagline: p.description.split('.')[0].trim(),
+    description: p.description,
+    longDescription: p.description,
+    category: p.category as FranchiseCategory,
+    tier: tierMap[p.plan] ?? 'basic',
+    isVIP: p.plan === 'Enterprise',
+    isFeatured: false,
+    logoInitials: initials,
+    logoColor: '#FFFFFF',
+    logoBg: '#6B7280',
+    locations: 0,
+    rating: 0,
+    reviews: 0,
+    established: new Date().getFullYear(),
+    financials: {
+      franchiseFee: 'Contact for details',
+      royaltyRate: 'Contact for details',
+      marketingFee: 'Contact for details',
+      investmentMin: 0,
+      investmentMax: 0,
+      averageUnitVolume: 'Contact for details',
+      netWorthRequired: 'Contact for details',
+      liquidCapitalRequired: 'Contact for details',
+    },
+    website: '',
+    phone: '',
+    email: p.email,
+    city: p.city,
+    highlights: [],
+    popularityScore: 0,
+    rank: 999,
+    badges: [],
+    trainingWeeks: 0,
+    territory: '',
+    franchiseeCount: 0,
+    parent: '',
+    idealCandidate: [],
+    supportOffered: [],
+    mediaImages: [],
+    videoUrl: '',
+    faqs: [],
+  }
+}
 
 function AdminNav({ active }: { active: string }) {
   const router = useRouter()
@@ -72,6 +135,15 @@ export default function AdminFranchisesPage() {
 
   const update = (id: string, status: 'approved' | 'rejected') => {
     savePendingStatus(id, status)
+    const listing = initialPending.find((l) => l.id === id)
+    if (listing) {
+      if (status === 'approved') {
+        saveApprovedListing(pendingToFranchise(listing))
+      } else {
+        // Remove from approved store in case it was previously approved then rejected
+        removeApprovedListing(id)
+      }
+    }
     setListings((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)))
     setSelected(null)
   }

@@ -17,6 +17,7 @@ import type { Franchise } from '@/data/franchises'
 // ── Storage keys ──────────────────────────────────────────────────────────────
 const LISTING_OVERRIDES_KEY   = 'fo_listing_overrides_v1'
 const LISTING_REMOVED_KEY     = 'fo_listing_removed_v1'
+const APPROVED_LISTINGS_KEY   = 'fo_approved_listings_v1'
 const TICKET_STATUSES_KEY     = 'fo_ticket_statuses_v1'
 const USER_TICKETS_KEY        = 'fo_user_tickets_v1'
 const PENDING_STATUSES_KEY    = 'fo_pending_statuses_v1'
@@ -79,16 +80,43 @@ export function isListingRemoved(id: string): boolean {
   return getRemovedIds().includes(id)
 }
 
+/** Returns all admin-approved pending listings (stored as full Franchise objects). */
+export function getApprovedListings(): Franchise[] {
+  return read<Franchise[]>(APPROVED_LISTINGS_KEY, [])
+}
+
+/** Save/update an approved listing. Replaces any existing entry with the same id. */
+export function saveApprovedListing(franchise: Franchise): void {
+  const existing = getApprovedListings()
+  const others = existing.filter((f) => f.id !== franchise.id)
+  write(APPROVED_LISTINGS_KEY, [...others, franchise])
+}
+
+/** Remove an approved listing (e.g. when admin rejects after prior approval). */
+export function removeApprovedListing(id: string): void {
+  const existing = getApprovedListings()
+  write(APPROVED_LISTINGS_KEY, existing.filter((f) => f.id !== id))
+}
+
 /**
- * Apply stored overrides + removals to a base franchise array.
- * Returns a new array with edits merged and removed entries excluded.
+ * Apply stored overrides + removals + approved pending listings to a base array.
+ * Returns a new array with edits merged, removed entries excluded, and approved
+ * pending listings appended (unless they have since been removed).
  */
 export function applyListingStore(base: Franchise[]): Franchise[] {
   const overrides = getListingOverrides()
   const removed   = new Set(getRemovedIds())
-  return base
+  const approved  = getApprovedListings()
+
+  const baseMerged = base
     .filter((f) => !removed.has(f.id))
     .map((f) => overrides[f.id] ? { ...f, ...overrides[f.id] } : f)
+
+  // Append approved pending listings that aren't in the seed base and haven't been removed
+  const baseIds = new Set(base.map((f) => f.id))
+  const newApproved = approved.filter((f) => !baseIds.has(f.id) && !removed.has(f.id))
+
+  return [...baseMerged, ...newApproved]
 }
 
 // ── Support tickets (admin) ────────────────────────────────────────────────────

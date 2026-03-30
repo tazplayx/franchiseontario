@@ -26,8 +26,9 @@ export default function DirectoryPage() {
   const [investment, setInvestment] = useState<InvestmentBracket>('all')
   const [compareList, setCompareList] = useState<string[]>([])
 
-  // Apply localStorage overrides (admin edits + removals) on the client
+  // Apply localStorage overrides (admin edits + removals + approved pending) on the client
   const [liveListings, setLiveListings] = useState<Franchise[]>(franchises)
+  const SEED_IDS = useMemo(() => new Set(franchises.map((f) => f.id)), [])
   useEffect(() => {
     setLiveListings(applyListingStore(franchises))
   }, [])
@@ -82,7 +83,7 @@ export default function DirectoryPage() {
     }
 
     return list
-  }, [query, tier, category, sort, investment])
+  }, [query, tier, category, sort, investment, liveListings])
 
   const tierCounts = {
     all: franchises.length,
@@ -373,7 +374,11 @@ export default function DirectoryPage() {
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
                 {filtered.map((franchise) => (
                   <div key={franchise.id} className="relative">
-                    <FranchiseCard franchise={franchise} showRank />
+                    <FranchiseCard
+                      franchise={franchise}
+                      showRank
+                      detailHref={SEED_IDS.has(franchise.id) ? undefined : `mailto:${franchise.email}`}
+                    />
                     {/* Compare checkbox */}
                     <div className="absolute top-2 left-2 z-20">
                       <label className="flex items-center gap-1.5 bg-white/90 backdrop-blur border border-gray-200 rounded-full px-2.5 py-1 cursor-pointer shadow-sm hover:border-blue-400 transition-all group">

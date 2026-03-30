@@ -26,6 +26,7 @@ export default function ClientLogoDisplay({
   logoInitials,
 }: Props) {
   const [logoUrl, setLogoUrl] = useState<string | undefined>(seedLogoUrl)
+  const [imgError, setImgError] = useState(false)
 
   useEffect(() => {
     const overrides = getListingOverrides()
@@ -35,12 +36,13 @@ export default function ClientLogoDisplay({
     }
   }, [id])
 
-  if (logoUrl) {
+  if (logoUrl && !imgError) {
     return (
       <img
         src={logoUrl}
         alt="Franchise logo"
         className="w-24 h-24 rounded-2xl object-contain shadow-md shrink-0 border border-gray-100 bg-white p-1"
+        onError={() => setImgError(true)}
       />
     )
   }

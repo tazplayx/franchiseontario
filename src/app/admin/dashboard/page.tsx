@@ -2,24 +2,50 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Users, Clock, CheckCircle, Ticket, TrendingUp, LogOut, Menu, X, LayoutDashboard, ListChecks, MessageSquare, Settings, Building2 } from 'lucide-react'
+import { Users, Clock, Ticket, TrendingUp, LogOut, LayoutDashboard, ListChecks, MessageSquare, Building2 } from 'lucide-react'
+import {
+  applyListingStore,
+  applyTicketStore,
+  getPendingStatuses,
+  savePendingStatus,
+  saveApprovedListing,
+  removeApprovedListing,
+  getUserSubmittedTickets,
+} from '@/lib/store'
+import type { Franchise, FranchiseCategory } from '@/data/franchises'
+import { franchises as seedFranchises } from '@/data/franchises'
 
-// Mock pending franchises
-const mockPending = [
-  { id: 'p1', name: 'Sunset Poutine Co.', category: 'Fast Food', plan: 'Premium', email: 'owner@sunsetpoutine.ca', submittedAt: '2026-03-25', city: 'Mississauga, ON' },
-  { id: 'p2', name: 'CleanPro Home Services', category: 'Home Services', plan: 'Basic', email: 'info@cleanpro.ca', submittedAt: '2026-03-24', city: 'Ottawa, ON' },
-  { id: 'p3', name: 'GlowBar Beauty Studio', category: 'Beauty & Salon', plan: 'Enterprise', email: 'franchise@glowbar.ca', submittedAt: '2026-03-24', city: 'Toronto, ON' },
-  { id: 'p4', name: 'Paw Palace Pet Spa', category: 'Pet Services', plan: 'Basic', email: 'hello@pawpalace.ca', submittedAt: '2026-03-23', city: 'Hamilton, ON' },
-  { id: 'p5', name: 'TurboTech Auto Care', category: 'Automotive', plan: 'Premium', email: 'franchise@turbotech.ca', submittedAt: '2026-03-22', city: 'Brampton, ON' },
+// Seed pending listings (same as admin/franchises/page)
+const allPending = [
+  { id: 'p1', name: 'Sunset Poutine Co.', category: 'Fast Food', plan: 'Premium', email: 'owner@sunsetpoutine.ca', submittedAt: '2026-03-25', city: 'Mississauga, ON', description: 'A Quebec-inspired poutine franchise.' },
+  { id: 'p2', name: 'CleanPro Home Services', category: 'Home Services', plan: 'Basic', email: 'info@cleanpro.ca', submittedAt: '2026-03-24', city: 'Ottawa, ON', description: 'Professional residential and commercial cleaning franchise.' },
+  { id: 'p3', name: 'GlowBar Beauty Studio', category: 'Beauty & Salon', plan: 'Enterprise', email: 'franchise@glowbar.ca', submittedAt: '2026-03-24', city: 'Toronto, ON', description: 'Premium eyebrow and lash bar franchise.' },
+  { id: 'p4', name: 'Paw Palace Pet Spa', category: 'Pet Services', plan: 'Basic', email: 'hello@pawpalace.ca', submittedAt: '2026-03-23', city: 'Hamilton, ON', description: 'Full-service pet grooming and boarding franchise.' },
+  { id: 'p5', name: 'TurboTech Auto Care', category: 'Automotive', plan: 'Premium', email: 'franchise@turbotech.ca', submittedAt: '2026-03-22', city: 'Brampton, ON', description: 'Quick-service automotive maintenance franchise.' },
 ]
 
-// Mock support tickets
-const mockTickets = [
-  { id: 't1', name: 'Sarah M.', category: 'Billing & Payments', subject: 'Charged twice for Premium plan', status: 'Open', submittedAt: '2026-03-25' },
-  { id: 't2', name: 'James T.', category: 'Listing Issue', subject: 'My photos are not showing on my profile', status: 'Open', submittedAt: '2026-03-24' },
-  { id: 't3', name: 'Priya K.', category: 'General Enquiry', subject: 'Question about Enterprise upgrade process', status: 'Resolved', submittedAt: '2026-03-23' },
-  { id: 't4', name: 'Marcus L.', category: 'Account Access', subject: 'Cannot reset my password', status: 'Open', submittedAt: '2026-03-22' },
+// Seed support tickets
+const seedTickets = [
+  { id: 't1', name: 'Sarah M.', email: 'sarah@example.com', category: 'Billing & Payments', subject: 'Charged twice for Premium plan', message: '', status: 'Open' as const, submittedAt: '2026-03-25' },
+  { id: 't2', name: 'James T.', email: 'james@example.com', category: 'Listing Issue', subject: 'My photos are not showing on my profile', message: '', status: 'Open' as const, submittedAt: '2026-03-24' },
+  { id: 't3', name: 'Priya K.', email: 'priya@example.com', category: 'General Enquiry', subject: 'Question about Enterprise upgrade process', message: '', status: 'Resolved' as const, submittedAt: '2026-03-23' },
+  { id: 't4', name: 'Marcus L.', email: 'marcus@example.com', category: 'Account Access', subject: 'Cannot reset my password', message: '', status: 'Open' as const, submittedAt: '2026-03-22' },
 ]
+
+function pendingToFranchise(p: typeof allPending[0]): Franchise {
+  const tierMap: Record<string, Franchise['tier']> = { Enterprise: 'enterprise', Premium: 'premium', Basic: 'basic' }
+  const initials = p.name.split(' ').filter(Boolean).slice(0, 3).map((w) => w[0]).join('').toUpperCase()
+  return {
+    id: p.id, name: p.name, tagline: p.description, description: p.description, longDescription: p.description,
+    category: p.category as FranchiseCategory, tier: tierMap[p.plan] ?? 'basic', isVIP: p.plan === 'Enterprise',
+    isFeatured: false, logoInitials: initials, logoColor: '#FFFFFF', logoBg: '#6B7280',
+    locations: 0, rating: 0, reviews: 0, established: new Date().getFullYear(),
+    financials: { franchiseFee: 'Contact', royaltyRate: 'Contact', marketingFee: 'Contact', investmentMin: 0, investmentMax: 0, averageUnitVolume: 'Contact', netWorthRequired: 'Contact', liquidCapitalRequired: 'Contact' },
+    website: '', phone: '', email: p.email, city: p.city, highlights: [], popularityScore: 0, rank: 999,
+    badges: [], trainingWeeks: 0, territory: '', franchiseeCount: 0, parent: '', idealCandidate: [],
+    supportOffered: [], mediaImages: [], videoUrl: '', faqs: [],
+  }
+}
 
 function useAdminAuth() {
   const router = useRouter()
@@ -88,10 +114,49 @@ function AdminNav({ active }: { active: string }) {
 export default function AdminDashboardPage() {
   useAdminAuth()
 
+  // Live stats computed from localStorage on mount
+  const [totalListings, setTotalListings] = useState(seedFranchises.length)
+  const [pendingCount, setPendingCount] = useState(allPending.length)
+  const [openTickets, setOpenTickets] = useState(seedTickets.filter(t => t.status === 'Open').length)
+  const [pendingListings, setPendingListings] = useState(allPending.slice(0, 3))
+
+  useEffect(() => {
+    const live = applyListingStore(seedFranchises)
+    setTotalListings(live.length)
+
+    const pendingStatuses = getPendingStatuses()
+    const stillPending = allPending.filter(p => !pendingStatuses[p.id] || pendingStatuses[p.id] === 'pending')
+    setPendingCount(stillPending.length)
+    setPendingListings(stillPending.slice(0, 3))
+
+    const allTickets = applyTicketStore(seedTickets)
+    setOpenTickets(allTickets.filter(t => t.status === 'Open').length)
+  }, [])
+
+  const handleQuickApprove = (id: string) => {
+    savePendingStatus(id, 'approved')
+    const listing = allPending.find(p => p.id === id)
+    if (listing) saveApprovedListing(pendingToFranchise(listing))
+    const pendingStatuses = getPendingStatuses()
+    const stillPending = allPending.filter(p => !pendingStatuses[p.id] || pendingStatuses[p.id] === 'pending')
+    setPendingCount(stillPending.length)
+    setPendingListings(stillPending.slice(0, 3))
+    setTotalListings(applyListingStore(seedFranchises).length)
+  }
+
+  const handleQuickReject = (id: string) => {
+    savePendingStatus(id, 'rejected')
+    removeApprovedListing(id)
+    const pendingStatuses = getPendingStatuses()
+    const stillPending = allPending.filter(p => !pendingStatuses[p.id] || pendingStatuses[p.id] === 'pending')
+    setPendingCount(stillPending.length)
+    setPendingListings(stillPending.slice(0, 3))
+  }
+
   const stats = [
-    { label: 'Total Listings', value: '3', sub: '3 enterprise VIP', icon: <Users size={18} />, color: 'bg-blue-500' },
-    { label: 'Pending Approval', value: mockPending.length, sub: 'Awaiting review', icon: <Clock size={18} />, color: 'bg-amber-500' },
-    { label: 'Open Tickets', value: mockTickets.filter(t => t.status === 'Open').length, sub: 'Need response', icon: <Ticket size={18} />, color: 'bg-red-500' },
+    { label: 'Total Listings', value: totalListings, sub: `${seedFranchises.filter(f => f.tier === 'enterprise').length} enterprise VIP`, icon: <Users size={18} />, color: 'bg-blue-500' },
+    { label: 'Pending Approval', value: pendingCount, sub: 'Awaiting review', icon: <Clock size={18} />, color: 'bg-amber-500' },
+    { label: 'Open Tickets', value: openTickets, sub: 'Need response', icon: <Ticket size={18} />, color: 'bg-red-500' },
     { label: 'This Month Revenue', value: '$597', sub: '3 active paid plans', icon: <TrendingUp size={18} />, color: 'bg-green-500' },
   ]
 
@@ -126,17 +191,25 @@ export default function AdminDashboardPage() {
               <Link href="/admin/franchises" className="text-xs text-red-600 hover:underline font-medium">View all →</Link>
             </div>
             <div className="divide-y divide-gray-50">
-              {mockPending.slice(0, 3).map((f) => (
+              {pendingListings.length === 0 ? (
+                <div className="px-5 py-6 text-center text-xs text-gray-400">No pending listings</div>
+              ) : pendingListings.map((f) => (
                 <div key={f.id} className="px-5 py-3.5 flex items-center justify-between gap-3">
                   <div>
                     <div className="text-sm font-semibold text-gray-900">{f.name}</div>
                     <div className="text-xs text-gray-400">{f.category} · {f.city} · {f.plan}</div>
                   </div>
                   <div className="flex gap-2 shrink-0">
-                    <button className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-lg hover:bg-green-200 transition-colors">
+                    <button
+                      onClick={() => handleQuickApprove(f.id)}
+                      className="px-2.5 py-1 bg-green-100 text-green-700 text-xs font-bold rounded-lg hover:bg-green-200 transition-colors"
+                    >
                       Approve
                     </button>
-                    <button className="px-2.5 py-1 bg-red-100 text-red-600 text-xs font-bold rounded-lg hover:bg-red-200 transition-colors">
+                    <button
+                      onClick={() => handleQuickReject(f.id)}
+                      className="px-2.5 py-1 bg-red-100 text-red-600 text-xs font-bold rounded-lg hover:bg-red-200 transition-colors"
+                    >
                       Reject
                     </button>
                   </div>
@@ -152,7 +225,7 @@ export default function AdminDashboardPage() {
               <Link href="/admin/tickets" className="text-xs text-red-600 hover:underline font-medium">View all →</Link>
             </div>
             <div className="divide-y divide-gray-50">
-              {mockTickets.slice(0, 3).map((t) => (
+              {applyTicketStore(seedTickets).slice(0, 3).map((t) => (
                 <div key={t.id} className="px-5 py-3.5 flex items-center justify-between gap-3">
                   <div>
                     <div className="text-sm font-semibold text-gray-900 line-clamp-1">{t.subject}</div>

@@ -1,3 +1,4 @@
+'use client'
 import Link from 'next/link'
 import { Star, MapPin, TrendingUp, Crown, Award, Zap } from 'lucide-react'
 import type { Franchise } from '@/data/franchises'
@@ -71,7 +72,7 @@ function TierBadge({ tier }: { tier: Franchise['tier'] }) {
   )
 }
 
-export default function FranchiseCard({ franchise, showRank = false }: { franchise: Franchise; showRank?: boolean }) {
+export default function FranchiseCard({ franchise, showRank = false, detailHref }: { franchise: Franchise; showRank?: boolean; detailHref?: string }) {
   const isEnterprise = franchise.tier === 'enterprise'
   const isPremium = franchise.tier === 'premium'
 
@@ -121,6 +122,7 @@ export default function FranchiseCard({ franchise, showRank = false }: { franchi
               src={franchise.logoUrl}
               alt={`${franchise.name} logo`}
               className="w-20 h-20 rounded-2xl object-contain shadow-lg relative z-10 bg-white p-1.5"
+              onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
             />
           ) : (
             /* Coloured initials */
@@ -206,7 +208,7 @@ export default function FranchiseCard({ franchise, showRank = false }: { franchi
           {/* CTA */}
           <div className="mt-auto">
             <Link
-              href={`/directory/${franchise.id}`}
+              href={detailHref ?? `/directory/${franchise.id}`}
               className={`block text-center w-full py-2 rounded-lg text-sm font-semibold transition-all ${
                 isEnterprise
                   ? 'btn-gold'
@@ -215,7 +217,13 @@ export default function FranchiseCard({ franchise, showRank = false }: { franchi
                   : 'bg-gray-100 hover:bg-gray-200 text-gray-700'
               }`}
             >
-              {isEnterprise ? 'View Enterprise Profile' : isPremium ? 'View Premium Profile' : 'View Listing'}
+              {detailHref
+                ? 'Enquire Now'
+                : isEnterprise
+                ? 'View Enterprise Profile'
+                : isPremium
+                ? 'View Premium Profile'
+                : 'View Listing'}
             </Link>
           </div>
         </div>
