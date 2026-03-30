@@ -76,21 +76,34 @@ export default function FranchiseCard({ franchise, showRank = false }: { franchi
         {/* Logo area */}
         <div
           className="h-32 flex items-center justify-center relative overflow-hidden"
-          style={{ background: `${franchise.logoBg}20` }}
+          style={{ background: franchise.logoUrl ? '#f8fafc' : `${franchise.logoBg}20` }}
         >
-          {/* Background pattern */}
-          <div
-            className="absolute inset-0 opacity-10"
-            style={{
-              backgroundImage: `radial-gradient(circle at 20% 80%, ${franchise.logoBg} 0%, transparent 50%), radial-gradient(circle at 80% 20%, ${franchise.logoBg} 0%, transparent 50%)`,
-            }}
-          />
-          <div
-            className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg text-2xl font-black relative z-10"
-            style={{ background: franchise.logoBg, color: franchise.logoColor }}
-          >
-            {franchise.logoInitials}
-          </div>
+          {/* Background pattern — only when no image */}
+          {!franchise.logoUrl && (
+            <div
+              className="absolute inset-0 opacity-10"
+              style={{
+                backgroundImage: `radial-gradient(circle at 20% 80%, ${franchise.logoBg} 0%, transparent 50%), radial-gradient(circle at 80% 20%, ${franchise.logoBg} 0%, transparent 50%)`,
+              }}
+            />
+          )}
+
+          {franchise.logoUrl ? (
+            /* Uploaded logo image */
+            <img
+              src={franchise.logoUrl}
+              alt={`${franchise.name} logo`}
+              className="w-24 h-24 rounded-2xl object-contain shadow-md relative z-10 bg-white p-1"
+            />
+          ) : (
+            /* Fallback: coloured initials */
+            <div
+              className="w-20 h-20 rounded-2xl flex items-center justify-center shadow-lg text-2xl font-black relative z-10"
+              style={{ background: franchise.logoBg, color: franchise.logoColor }}
+            >
+              {franchise.logoInitials}
+            </div>
+          )}
 
           {/* Rank badge */}
           {showRank && (

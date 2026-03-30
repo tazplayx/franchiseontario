@@ -1,13 +1,12 @@
 'use client'
 import Link from 'next/link'
-import { useState } from 'react'
-import { Menu, X, MapPin, Sparkles } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Menu, X, MapPin, Sparkles, LayoutDashboard, LogOut } from 'lucide-react'
 
 function FranchiseOntarioLogo() {
   return (
     <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" className="w-10 h-10 shrink-0">
       <rect width="40" height="40" rx="9" fill="#C8102E"/>
-      {/* F lettermark */}
       <path d="M10 9 H30 V14 H15 V19.5 H27 V24.5 H15 V31 H10 Z" fill="white"/>
     </svg>
   )
@@ -15,6 +14,21 @@ function FranchiseOntarioLogo() {
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [loggedIn, setLoggedIn] = useState(false)
+
+  useEffect(() => {
+    const check = () => setLoggedIn(sessionStorage.getItem('fo_user') === 'authenticated')
+    check()
+    // Re-check when tab regains focus (e.g. after logging in from another tab)
+    window.addEventListener('focus', check)
+    return () => window.removeEventListener('focus', check)
+  }, [])
+
+  const handleSignOut = () => {
+    sessionStorage.removeItem('fo_user')
+    setLoggedIn(false)
+    window.location.href = '/'
+  }
 
   return (
     <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-gray-100 shadow-sm">
@@ -26,11 +40,11 @@ export default function Header() {
             <FranchiseOntarioLogo />
             <div>
               <div className="font-bold text-[18px] leading-none tracking-tight text-gray-900"
-                style={{ fontFamily: 'Manrope, system-ui, sans-serif' }}>
+                style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                 Franchise<span className="text-[#C8102E]">Ontario</span>
               </div>
               <div className="text-[9px] text-gray-400 tracking-[0.14em] uppercase font-semibold mt-1 leading-none"
-                style={{ fontFamily: 'Manrope, system-ui, sans-serif' }}>
+                style={{ fontFamily: "'DM Sans', system-ui, sans-serif" }}>
                 Canada's Franchise Hub
               </div>
             </div>
@@ -63,19 +77,39 @@ export default function Header() {
           </nav>
 
           {/* CTA Buttons */}
-          <div className="hidden lg:flex items-center gap-3">
-            <Link
-              href="/dashboard"
-              className="px-4 py-2 text-[13px] font-semibold text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all tracking-wide"
-            >
-              My Dashboard
-            </Link>
+          <div className="hidden lg:flex items-center gap-2">
+            {loggedIn ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-gray-600 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all"
+                >
+                  <LayoutDashboard size={14} className="text-red-500" />
+                  My Dashboard
+                </Link>
+                <button
+                  onClick={handleSignOut}
+                  className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-gray-400 hover:text-red-600 rounded-lg hover:bg-red-50 transition-all"
+                >
+                  <LogOut size={14} />
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-gray-500 hover:text-gray-900 rounded-lg hover:bg-gray-50 transition-all"
+              >
+                <LayoutDashboard size={14} className="text-gray-400" />
+                Franchisor Login
+              </Link>
+            )}
             <Link
               href="/quiz"
               className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold text-amber-700 bg-amber-50 hover:bg-amber-100 border border-amber-200 rounded-xl transition-all"
             >
               <Sparkles size={13} className="text-amber-500" />
-              Franchise Fit Quiz
+              Fit Quiz
             </Link>
             <Link
               href="/register"
@@ -119,6 +153,31 @@ export default function Header() {
             </Link>
           ))}
           <div className="pt-3 border-t border-gray-100 space-y-2">
+            {loggedIn ? (
+              <>
+                <Link
+                  href="/dashboard"
+                  className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-xl"
+                  onClick={() => setMenuOpen(false)}
+                >
+                  <LayoutDashboard size={15} className="text-red-500" /> My Dashboard
+                </Link>
+                <button
+                  onClick={() => { handleSignOut(); setMenuOpen(false) }}
+                  className="w-full flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 rounded-xl"
+                >
+                  <LogOut size={15} /> Sign Out
+                </button>
+              </>
+            ) : (
+              <Link
+                href="/dashboard"
+                className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-gray-50 rounded-xl"
+                onClick={() => setMenuOpen(false)}
+              >
+                <LayoutDashboard size={15} className="text-gray-400" /> Franchisor Login
+              </Link>
+            )}
             <Link
               href="/quiz"
               className="flex items-center justify-center gap-2 bg-amber-50 border border-amber-200 text-amber-700 px-4 py-2.5 rounded-xl text-sm font-bold"

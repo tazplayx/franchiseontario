@@ -32,6 +32,7 @@ export interface Franchise {
   id: string;
   name: string;
   tagline: string;
+  logoUrl?: string;        // uploaded logo image — used as listing thumbnail when present
   description: string;
   longDescription: string;
   category: FranchiseCategory;
