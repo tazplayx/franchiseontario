@@ -32,7 +32,7 @@ export default function Header() {
             <img
               src="/logo.png"
               alt="FranchiseOntario — Canada's Franchise Hub"
-              className="h-12 w-auto object-contain"
+              className="h-12 w-auto max-w-[250px] object-contain"
             />
           </Link>
 
