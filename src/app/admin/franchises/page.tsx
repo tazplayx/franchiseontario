@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, XCircle, Eye, LayoutDashboard, ListChecks, MessageSquare, LogOut, Building2 } from 'lucide-react'
+import { getPendingStatuses, savePendingStatus, type PendingStatus } from '@/lib/store'
 
 const initialPending = [
   { id: 'p1', name: 'Sunset Poutine Co.', category: 'Fast Food', plan: 'Premium', email: 'owner@sunsetpoutine.ca', submittedAt: '2026-03-25', city: 'Mississauga, ON', description: 'A Quebec-inspired poutine franchise bringing authentic curds and gravy to Ontario markets. 3 existing locations in Quebec.', status: 'pending' },
@@ -52,11 +53,25 @@ export default function AdminFranchisesPage() {
     }
   }, [router])
 
-  const [listings, setListings] = useState(initialPending)
+  const [listings, setListings] = useState(() => {
+    const statuses = getPendingStatuses()
+    return initialPending.map((l) =>
+      statuses[l.id] ? { ...l, status: statuses[l.id] as PendingStatus } : l
+    )
+  })
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
   const [selected, setSelected] = useState<typeof initialPending[0] | null>(null)
 
+  // Re-apply store on mount (handles SSR hydration)
+  useEffect(() => {
+    const statuses = getPendingStatuses()
+    setListings(initialPending.map((l) =>
+      statuses[l.id] ? { ...l, status: statuses[l.id] as PendingStatus } : l
+    ))
+  }, [])
+
   const update = (id: string, status: 'approved' | 'rejected') => {
+    savePendingStatus(id, status)
     setListings((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)))
     setSelected(null)
   }

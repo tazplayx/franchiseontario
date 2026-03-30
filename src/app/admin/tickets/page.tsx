@@ -3,8 +3,9 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutDashboard, ListChecks, MessageSquare, LogOut, Mail, Building2 } from 'lucide-react'
+import { applyTicketStore, saveTicketStatus, type StoredTicket } from '@/lib/store'
 
-const initialTickets = [
+const seedTickets: StoredTicket[] = [
   { id: 't1', name: 'Sarah M.', email: 'sarah.m@email.com', category: 'Billing & Payments', subject: 'Charged twice for Premium plan in March', message: 'Hello, I noticed I was billed twice for my Premium listing on March 1st and March 3rd. Could you please look into this and issue a refund for the duplicate charge? My invoice number is #PRE-2024-0891.', status: 'Open', submittedAt: '2026-03-25' },
   { id: 't2', name: 'James T.', email: 'james.t@sunsetpoutine.ca', category: 'Listing Issue', subject: 'Uploaded photos are not appearing on my profile', message: 'I uploaded 4 photos to my franchise listing 3 days ago but they are still not showing on my public profile page. I am on the Premium plan. Please advise.', status: 'Open', submittedAt: '2026-03-24' },
   { id: 't3', name: 'Priya K.', email: 'priya@glowbar.ca', category: 'General Enquiry', subject: 'Question about upgrading to Enterprise', message: 'Hi, I currently have a Premium listing and I am considering upgrading to Enterprise. I had a few questions about what the account manager support looks like and whether the press release feature is included immediately upon upgrade.', status: 'Resolved', submittedAt: '2026-03-23' },
@@ -52,11 +53,17 @@ export default function AdminTicketsPage() {
     }
   }, [router])
 
-  const [tickets, setTickets] = useState(initialTickets)
+  const [tickets, setTickets] = useState<StoredTicket[]>(() => applyTicketStore(seedTickets))
   const [filter, setFilter] = useState<'all' | 'Open' | 'Resolved'>('all')
-  const [selected, setSelected] = useState<typeof initialTickets[0] | null>(null)
+  const [selected, setSelected] = useState<StoredTicket | null>(null)
+
+  // Re-apply store on mount to pick up any user-submitted tickets added since render
+  useEffect(() => {
+    setTickets(applyTicketStore(seedTickets))
+  }, [])
 
   const resolve = (id: string) => {
+    saveTicketStatus(id, 'Resolved')
     setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'Resolved' } : t)))
     setSelected(null)
   }

@@ -6,6 +6,13 @@ import {
   Pencil, Trash2, X, Save, AlertTriangle, CheckCircle,
   ExternalLink, Star, Crown, TrendingUp, Eye, Loader2,
 } from 'lucide-react'
+import {
+  getUserFranchiseOverrides,
+  saveUserFranchise,
+  removeUserFranchise,
+  isUserFranchiseRemoved,
+  addUserTicket,
+} from '@/lib/store'
 
 // Simulated logged-in franchisee data
 const MOCK_USER = {
@@ -165,24 +172,38 @@ function ListingTab() {
   const [removeConfirm, setRemoveConfirm] = useState(false)
   const [removed, setRemoved] = useState(false)
   const [saved, setSaved] = useState(false)
+
+  // Merge stored overrides on top of the seed franchise
+  const storedOverrides = getUserFranchiseOverrides()
+  const merged = { ...franchise, ...storedOverrides } as typeof franchise
+
+  const [current, setCurrent] = useState(merged)
   const [form, setForm] = useState<EditForm>({
-    name: franchise.name,
-    tagline: franchise.tagline,
-    description: franchise.description,
-    city: franchise.city,
-    phone: franchise.phone,
-    website: franchise.website,
+    name: merged.name,
+    tagline: merged.tagline,
+    description: merged.description,
+    city: merged.city,
+    phone: merged.phone,
+    website: merged.website,
   })
-  const [current, setCurrent] = useState({ ...franchise })
+
+  // Check removal flag on first render
+  useEffect(() => {
+    if (isUserFranchiseRemoved()) setRemoved(true)
+  }, [])
 
   const handleSave = () => {
-    setCurrent({ ...current, ...form })
+    const updated = { ...current, ...form }
+    // Persist to localStorage
+    saveUserFranchise(form as Record<string, unknown>)
+    setCurrent(updated)
     setIsEditing(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
   }
 
   const handleRemove = () => {
+    removeUserFranchise()
     setRemoveConfirm(false)
     setRemoved(true)
   }
@@ -258,7 +279,7 @@ function ListingTab() {
         </div>
         <div className="flex border-t border-gray-100 divide-x divide-gray-100">
           <button
-            onClick={() => { setIsEditing(true); setForm({ name: current.name, tagline: current.tagline, description: current.description, city: current.city, phone: current.phone, website: current.website }) }}
+            onClick={() => { setIsEditing(true); setForm({ name: current.name, tagline: current.tagline ?? '', description: current.description, city: current.city, phone: current.phone, website: current.website }) }}
             className="flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-colors"
           >
             <Pencil size={14} /> Edit Listing
@@ -448,6 +469,17 @@ function SupportTab() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.subject || !form.message) return
+    // Route the ticket to the admin panel via localStorage
+    addUserTicket({
+      id: `user_${Date.now()}`,
+      name: MOCK_USER.name,
+      email: MOCK_USER.email,
+      category: form.category,
+      subject: form.subject,
+      message: form.message,
+      status: 'Open',
+      submittedAt: new Date().toISOString().split('T')[0],
+    })
     setSubmitted(true)
   }
 

@@ -8,6 +8,7 @@ import {
   Plus, ImagePlus, Video, Image as ImageIcon, Eye,
 } from 'lucide-react'
 import { franchises, type Franchise, type FranchiseTier } from '@/data/franchises'
+import { applyListingStore, saveListing, removeListing } from '@/lib/store'
 
 function AdminNav({ active }: { active: string }) {
   const router = useRouter()
@@ -158,7 +159,7 @@ export default function AdminListingsPage() {
     }
   }, [router])
 
-  const [listings, setListings] = useState<Franchise[]>(franchises)
+  const [listings, setListings] = useState<Franchise[]>(() => applyListingStore(franchises))
   const [filter, setFilter] = useState<'all' | FranchiseTier>('all')
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<Franchise | null>(null)
@@ -207,23 +208,26 @@ export default function AdminListingsPage() {
 
   const saveEdit = () => {
     if (!editing || !editForm) return
+    const updatedFields: Partial<Franchise> = {
+      name: editForm.name,
+      tagline: editForm.tagline,
+      description: editForm.description,
+      tier: editForm.tier,
+      isVIP: editForm.isVIP,
+      isFeatured: editForm.isFeatured,
+      city: editForm.city,
+      email: editForm.email,
+      phone: editForm.phone,
+      website: editForm.website,
+      logoUrl: editForm.logoUrl || undefined,
+      videoUrl: editForm.videoUrl || undefined,
+      mediaImages: editForm.mediaImages,
+    }
+    // Persist to localStorage
+    saveListing(editing.id, updatedFields)
+    // Update React state
     setListings((prev) =>
-      prev.map((l) => l.id === editing.id ? {
-        ...l,
-        name: editForm.name,
-        tagline: editForm.tagline,
-        description: editForm.description,
-        tier: editForm.tier,
-        isVIP: editForm.isVIP,
-        isFeatured: editForm.isFeatured,
-        city: editForm.city,
-        email: editForm.email,
-        phone: editForm.phone,
-        website: editForm.website,
-        logoUrl: editForm.logoUrl || undefined,
-        videoUrl: editForm.videoUrl || undefined,
-        mediaImages: editForm.mediaImages,
-      } : l)
+      prev.map((l) => l.id === editing.id ? { ...l, ...updatedFields } : l)
     )
     setEditing(null)
     setEditForm(null)
@@ -233,6 +237,9 @@ export default function AdminListingsPage() {
 
   const confirmDelete = () => {
     if (!deleteTarget) return
+    // Persist removal to localStorage
+    removeListing(deleteTarget.id)
+    // Update React state
     setListings((prev) => prev.filter((l) => l.id !== deleteTarget.id))
     setDeleteTarget(null)
   }
