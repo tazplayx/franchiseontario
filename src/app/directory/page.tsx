@@ -1,6 +1,7 @@
 'use client'
-import { useState, useMemo, useEffect } from 'react'
-import { Search, SlidersHorizontal, TrendingUp, Star, Crown, Zap, DollarSign, MapPin, Filter, X } from 'lucide-react'
+import { useState, useMemo, useEffect, useRef } from 'react'
+import { useRouter } from 'next/navigation'
+import { Search, SlidersHorizontal, Crown, Zap, DollarSign, Filter, X, ArrowRight } from 'lucide-react'
 import { franchises, categories } from '@/data/franchises'
 import type { Franchise, FranchiseTier } from '@/data/franchises'
 import FranchiseCard from '@/components/FranchiseCard'
@@ -19,12 +20,19 @@ const investmentBrackets: { key: InvestmentBracket; label: string; sub: string }
 ]
 
 export default function DirectoryPage() {
+  const router = useRouter()
   const [query, setQuery] = useState('')
   const [tier, setTier] = useState<FranchiseTier | 'all'>('all')
   const [category, setCategory] = useState('all')
   const [sort, setSort] = useState<SortKey>('rank')
   const [investment, setInvestment] = useState<InvestmentBracket>('all')
   const [compareList, setCompareList] = useState<string[]>([])
+
+  // Live search dropdown state
+  const [dropdownOpen, setDropdownOpen] = useState(false)
+  const [dropdownFranchises, setDropdownFranchises] = useState<Franchise[]>([])
+  const [dropdownCategories, setDropdownCategories] = useState<typeof categories>([])
+  const searchRef = useRef<HTMLDivElement>(null)
 
   // Apply localStorage overrides (admin edits + removals + approved pending) on the client
   const [liveListings, setLiveListings] = useState<Franchise[]>(franchises)
@@ -34,7 +42,6 @@ export default function DirectoryPage() {
   }, [])
 
   // Seed filters from URL params (?q=… and ?category=…)
-  // Runs once on mount — works with homepage search bar and popular tag links
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const q = params.get('q')
@@ -46,6 +53,57 @@ export default function DirectoryPage() {
     if (sortParam) setSort(sortParam)
     if (tierParam) setTier(tierParam)
   }, [])
+
+  // Live dropdown — fires on every keystroke
+  useEffect(() => {
+    const q = query.trim().toLowerCase()
+    if (!q) {
+      setDropdownFranchises([])
+      setDropdownCategories([])
+      setDropdownOpen(false)
+      return
+    }
+
+    // Match franchises by brand name, tagline, or category
+    const matchedFranchises = liveListings
+      .filter(
+        (f) =>
+          f.name.toLowerCase().includes(q) ||
+          f.category.toLowerCase().includes(q) ||
+          f.tagline.toLowerCase().includes(q)
+      )
+      .slice(0, 6)
+
+    // Match categories by name
+    const matchedCategories = categories
+      .filter((c) => c.name.toLowerCase().includes(q))
+      .slice(0, 3)
+
+    setDropdownFranchises(matchedFranchises)
+    setDropdownCategories(matchedCategories)
+    setDropdownOpen(matchedFranchises.length > 0 || matchedCategories.length > 0)
+  }, [query, liveListings])
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(e.target as Node)) {
+        setDropdownOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const goToListing = (id: string) => {
+    setDropdownOpen(false)
+    router.push(SEED_IDS.has(id) ? `/directory/${id}` : `/contact`)
+  }
+
+  const pickCategory = (catName: string) => {
+    setDropdownOpen(false)
+    setCategory(catName)
+  }
 
   const filtered = useMemo(() => {
     let list = [...liveListings]
@@ -86,10 +144,10 @@ export default function DirectoryPage() {
   }, [query, tier, category, sort, investment, liveListings])
 
   const tierCounts = {
-    all: franchises.length,
-    enterprise: franchises.filter((f) => f.tier === 'enterprise').length,
-    premium: franchises.filter((f) => f.tier === 'premium').length,
-    basic: franchises.filter((f) => f.tier === 'basic').length,
+    all: liveListings.length,
+    enterprise: liveListings.filter((f) => f.tier === 'enterprise').length,
+    premium: liveListings.filter((f) => f.tier === 'premium').length,
+    basic: liveListings.filter((f) => f.tier === 'basic').length,
   }
 
   const activeFiltersCount = [
@@ -122,25 +180,121 @@ export default function DirectoryPage() {
             Ontario Franchise Directory
           </h1>
           <p className="text-gray-500 text-sm mb-5">
-            Browse {franchises.length} franchise listings across {categories.length} categories in Ontario
+            Browse {liveListings.length} franchise listings across {categories.length} categories in Ontario
           </p>
 
-          {/* Search */}
-          <div className="flex items-center bg-white border-2 border-gray-200 rounded-xl overflow-hidden max-w-2xl focus-within:border-red-400 transition-colors">
-            <div className="pl-4 text-gray-400">
-              <Search size={18} />
+          {/* Search with live dropdown */}
+          <div ref={searchRef} className="relative max-w-2xl">
+            <div className="flex items-center bg-white border-2 border-gray-200 rounded-xl overflow-hidden focus-within:border-red-400 transition-colors">
+              <div className="pl-4 text-gray-400 shrink-0">
+                <Search size={18} />
+              </div>
+              <input
+                type="text"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') setDropdownOpen(false)
+                }}
+                onFocus={() => (dropdownFranchises.length > 0 || dropdownCategories.length > 0) && setDropdownOpen(true)}
+                placeholder="Search by brand name, category, or keyword..."
+                className="flex-1 px-3 py-3 text-sm text-gray-700 outline-none bg-transparent"
+                autoComplete="off"
+              />
+              {query && (
+                <button
+                  onClick={() => { setQuery(''); setDropdownOpen(false) }}
+                  className="px-3 text-gray-400 hover:text-gray-600 shrink-0"
+                >
+                  <X size={15} />
+                </button>
+              )}
             </div>
-            <input
-              type="text"
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search by name, category, or keyword..."
-              className="flex-1 px-3 py-3 text-sm text-gray-700 outline-none"
-            />
-            {query && (
-              <button onClick={() => setQuery('')} className="px-3 text-gray-400 hover:text-gray-600">
-                ✕
-              </button>
+
+            {/* Live dropdown */}
+            {dropdownOpen && (dropdownFranchises.length > 0 || dropdownCategories.length > 0) && (
+              <div className="absolute top-full left-0 right-0 mt-1.5 bg-white rounded-2xl border border-gray-200 shadow-2xl z-50 overflow-hidden">
+
+                {/* Category shortcuts */}
+                {dropdownCategories.length > 0 && (
+                  <>
+                    <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4 pt-3 pb-1">
+                      Browse Category
+                    </p>
+                    {dropdownCategories.map((cat) => (
+                      <button
+                        key={cat.name}
+                        onMouseDown={() => pickCategory(cat.name)}
+                        className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-red-50 transition-colors text-left"
+                      >
+                        <span
+                          className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0"
+                          style={{ background: cat.bg }}
+                        >
+                          {cat.icon}
+                        </span>
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-gray-900 text-sm">{cat.name}</div>
+                          <div className="text-[11px] text-gray-400">Filter by category</div>
+                        </div>
+                        <ArrowRight size={13} className="text-gray-300 shrink-0" />
+                      </button>
+                    ))}
+                  </>
+                )}
+
+                {/* Brand results */}
+                {dropdownFranchises.length > 0 && (
+                  <>
+                    <p className={`text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4 pb-1 ${dropdownCategories.length > 0 ? 'pt-2 border-t border-gray-100 mt-1' : 'pt-3'}`}>
+                      Matching Brands
+                    </p>
+                    {dropdownFranchises.map((f) => (
+                      <button
+                        key={f.id}
+                        onMouseDown={() => goToListing(f.id)}
+                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-left border-t border-gray-50 first:border-0"
+                      >
+                        {f.logoUrl ? (
+                          <img
+                            src={f.logoUrl}
+                            alt=""
+                            className="w-9 h-9 rounded-xl object-contain bg-gray-50 border border-gray-100 shrink-0 p-0.5"
+                            onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                          />
+                        ) : (
+                          <div
+                            className="w-9 h-9 rounded-xl flex items-center justify-center text-[10px] font-black shrink-0"
+                            style={{ background: f.logoBg, color: f.logoColor }}
+                          >
+                            {f.logoInitials}
+                          </div>
+                        )}
+                        <div className="flex-1 min-w-0">
+                          <div className="font-semibold text-gray-900 text-sm leading-tight truncate">{f.name}</div>
+                          <div className="text-[11px] text-gray-400 mt-0.5">{f.category} · {f.city}</div>
+                        </div>
+                        <span className={`text-[9px] font-bold px-1.5 py-0.5 rounded-full shrink-0 ${
+                          f.tier === 'enterprise' ? 'bg-amber-100 text-amber-700' :
+                          f.tier === 'premium' ? 'bg-blue-100 text-blue-700' :
+                          'bg-gray-100 text-gray-500'
+                        }`}>
+                          {f.tier.toUpperCase()}
+                        </span>
+                        <ArrowRight size={13} className="text-gray-300 shrink-0" />
+                      </button>
+                    ))}
+                  </>
+                )}
+
+                {/* See all */}
+                <button
+                  onMouseDown={() => setDropdownOpen(false)}
+                  className="w-full px-4 py-2.5 text-xs font-semibold text-red-600 hover:bg-red-50 transition-colors border-t border-gray-100 text-left"
+                >
+                  See all {filtered.length} results below →
+                </button>
+              </div>
             )}
           </div>
 
@@ -158,6 +312,7 @@ export default function DirectoryPage() {
                 }`}
               >
                 {b.label}
+                {investment === b.key && ' ✓'}
               </button>
             ))}
           </div>
@@ -171,7 +326,7 @@ export default function DirectoryPage() {
             <span className="text-sm font-bold shrink-0">Compare ({compareList.length}/3):</span>
             <div className="flex gap-2 flex-wrap">
               {compareList.map((id) => {
-                const f = franchises.find(x => x.id === id)
+                const f = liveListings.find(x => x.id === id)
                 return f ? (
                   <span key={id} className="bg-blue-500 border border-blue-400 text-xs px-2 py-0.5 rounded-full flex items-center gap-1">
                     {f.name}
@@ -205,16 +360,44 @@ export default function DirectoryPage() {
           {/* Sidebar filters */}
           <aside className="lg:w-64 shrink-0 space-y-5">
 
-            {/* Active filters count */}
+            {/* Active filters summary */}
             {activeFiltersCount > 0 && (
-              <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-center justify-between">
-                <div className="flex items-center gap-2 text-sm">
-                  <Filter size={14} className="text-red-500" />
-                  <span className="text-red-700 font-semibold">{activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active</span>
+              <div className="bg-red-50 border border-red-200 rounded-xl p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <Filter size={14} className="text-red-500" />
+                    <span className="text-red-700 font-semibold">{activeFiltersCount} filter{activeFiltersCount > 1 ? 's' : ''} active</span>
+                  </div>
+                  <button onClick={clearAllFilters} className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1">
+                    <X size={12} /> Clear all
+                  </button>
                 </div>
-                <button onClick={clearAllFilters} className="text-xs text-red-500 hover:text-red-700 font-medium flex items-center gap-1">
-                  <X size={12} /> Clear all
-                </button>
+                <div className="flex flex-wrap gap-1.5">
+                  {query && (
+                    <span className="inline-flex items-center gap-1 bg-white border border-red-200 text-red-700 text-[11px] font-semibold px-2 py-1 rounded-full">
+                      Search: "{query}"
+                      <button onMouseDown={() => setQuery('')}><X size={10} /></button>
+                    </span>
+                  )}
+                  {tier !== 'all' && (
+                    <span className="inline-flex items-center gap-1 bg-white border border-red-200 text-red-700 text-[11px] font-semibold px-2 py-1 rounded-full capitalize">
+                      Tier: {tier}
+                      <button onMouseDown={() => setTier('all')}><X size={10} /></button>
+                    </span>
+                  )}
+                  {category !== 'all' && (
+                    <span className="inline-flex items-center gap-1 bg-white border border-red-200 text-red-700 text-[11px] font-semibold px-2 py-1 rounded-full">
+                      {categories.find(c => c.name === category)?.icon} {category}
+                      <button onMouseDown={() => setCategory('all')}><X size={10} /></button>
+                    </span>
+                  )}
+                  {investment !== 'all' && (
+                    <span className="inline-flex items-center gap-1 bg-white border border-red-200 text-red-700 text-[11px] font-semibold px-2 py-1 rounded-full">
+                      {investmentBrackets.find(b => b.key === investment)?.label}
+                      <button onMouseDown={() => setInvestment('all')}><X size={10} /></button>
+                    </span>
+                  )}
+                </div>
               </div>
             )}
 
@@ -224,19 +407,24 @@ export default function DirectoryPage() {
                 <DollarSign size={14} className="text-green-500" />
                 Investment Budget
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {investmentBrackets.map(({ key, label, sub }) => (
                   <button
                     key={key}
                     onClick={() => setInvestment(key)}
-                    className={`w-full flex flex-col items-start px-3 py-2 rounded-lg text-sm transition-all ${
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
                       investment === key
                         ? 'bg-red-600 text-white font-semibold'
                         : 'text-gray-600 hover:bg-gray-50'
                     }`}
                   >
-                    <span>{label}</span>
-                    {sub && <span className={`text-[10px] mt-0.5 ${investment === key ? 'text-red-100' : 'text-gray-400'}`}>{sub}</span>}
+                    <div className="flex flex-col items-start">
+                      <span>{label}</span>
+                      {sub && <span className={`text-[10px] mt-0.5 ${investment === key ? 'text-red-100' : 'text-gray-400'}`}>{sub}</span>}
+                    </div>
+                    {investment === key && (
+                      <span className="text-white text-xs font-bold ml-2">✓</span>
+                    )}
                   </button>
                 ))}
               </div>
@@ -248,7 +436,7 @@ export default function DirectoryPage() {
                 <Crown size={14} className="text-amber-500" />
                 Listing Tier
               </h3>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {(
                   [
                     { key: 'all', label: 'All Tiers', icon: null },
@@ -270,9 +458,12 @@ export default function DirectoryPage() {
                       {icon}
                       {label}
                     </span>
-                    <span className={`text-xs ${tier === key ? 'text-red-100' : 'text-gray-400'}`}>
-                      {tierCounts[key]}
-                    </span>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-xs ${tier === key ? 'text-red-100' : 'text-gray-400'}`}>
+                        {tierCounts[key]}
+                      </span>
+                      {tier === key && <span className="text-white text-xs font-bold">✓</span>}
+                    </div>
                   </button>
                 ))}
               </div>
@@ -287,22 +478,26 @@ export default function DirectoryPage() {
               <div className="space-y-1">
                 <button
                   onClick={() => setCategory('all')}
-                  className={`w-full text-left px-3 py-1.5 rounded-lg text-sm transition-all ${
+                  className={`w-full flex items-center justify-between text-left px-3 py-1.5 rounded-lg text-sm transition-all ${
                     category === 'all' ? 'bg-red-600 text-white font-semibold' : 'text-gray-600 hover:bg-gray-50'
                   }`}
                 >
-                  All Categories
+                  <span>All Categories</span>
+                  {category === 'all' && <span className="text-white text-xs font-bold">✓</span>}
                 </button>
                 {categories.map((cat) => (
                   <button
                     key={cat.name}
                     onClick={() => setCategory(cat.name)}
-                    className={`w-full flex items-center gap-2 text-left px-3 py-1.5 rounded-lg text-sm transition-all ${
+                    className={`w-full flex items-center justify-between text-left px-3 py-1.5 rounded-lg text-sm transition-all ${
                       category === cat.name ? 'bg-red-600 text-white font-semibold' : 'text-gray-600 hover:bg-gray-50'
                     }`}
                   >
-                    <span>{cat.icon}</span>
-                    <span>{cat.name}</span>
+                    <span className="flex items-center gap-2">
+                      <span>{cat.icon}</span>
+                      <span>{cat.name}</span>
+                    </span>
+                    {category === cat.name && <span className="text-white text-xs font-bold shrink-0">✓</span>}
                   </button>
                 ))}
               </div>
@@ -332,10 +527,10 @@ export default function DirectoryPage() {
           {/* Main content */}
           <div className="flex-1 min-w-0">
             {/* Sort bar */}
-            <div className="bg-white rounded-xl border border-gray-200 p-3 mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="bg-white rounded-xl border border-gray-200 p-3 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <p className="text-sm text-gray-500">
-                  Showing <span className="font-semibold text-gray-900">{filtered.length}</span> franchises
+                  Showing <span className="font-semibold text-gray-900">{filtered.length}</span> franchise{filtered.length !== 1 ? 's' : ''}
                   {query && <span> for "<span className="text-red-600">{query}</span>"</span>}
                 </p>
                 {compareList.length < 3 && filtered.length > 0 && (
@@ -357,6 +552,55 @@ export default function DirectoryPage() {
                 </select>
               </div>
             </div>
+
+            {/* Active filter chips — inline above results */}
+            {activeFiltersCount > 0 && (
+              <div className="flex flex-wrap items-center gap-2 mb-4">
+                <span className="text-xs text-gray-500 font-medium">Filtering by:</span>
+                {query && (
+                  <span className="inline-flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+                    <Search size={11} />
+                    &ldquo;{query}&rdquo;
+                    <button onClick={() => setQuery('')} className="hover:text-red-900 ml-0.5">
+                      <X size={11} />
+                    </button>
+                  </span>
+                )}
+                {tier !== 'all' && (
+                  <span className="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold px-3 py-1.5 rounded-full capitalize">
+                    <Crown size={11} />
+                    {tier}
+                    <button onClick={() => setTier('all')} className="hover:text-amber-900 ml-0.5">
+                      <X size={11} />
+                    </button>
+                  </span>
+                )}
+                {category !== 'all' && (
+                  <span className="inline-flex items-center gap-1.5 bg-blue-50 border border-blue-200 text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+                    {categories.find(c => c.name === category)?.icon}
+                    {category}
+                    <button onClick={() => setCategory('all')} className="hover:text-blue-900 ml-0.5">
+                      <X size={11} />
+                    </button>
+                  </span>
+                )}
+                {investment !== 'all' && (
+                  <span className="inline-flex items-center gap-1.5 bg-green-50 border border-green-200 text-green-700 text-xs font-semibold px-3 py-1.5 rounded-full">
+                    <DollarSign size={11} />
+                    {investmentBrackets.find(b => b.key === investment)?.label}
+                    <button onClick={() => setInvestment('all')} className="hover:text-green-900 ml-0.5">
+                      <X size={11} />
+                    </button>
+                  </span>
+                )}
+                <button
+                  onClick={clearAllFilters}
+                  className="text-xs text-gray-400 hover:text-red-600 font-medium underline underline-offset-2 ml-1"
+                >
+                  Clear all
+                </button>
+              </div>
+            )}
 
             {filtered.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-200 p-16 text-center">

@@ -2,33 +2,49 @@
 import { useState, useRef, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { Search, ArrowRight } from 'lucide-react'
-import { franchises } from '@/data/franchises'
+import { franchises, categories } from '@/data/franchises'
 import type { Franchise } from '@/data/franchises'
 import { applyListingStore } from '@/lib/store'
 
 export default function HeroSearch() {
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState<Franchise[]>([])
+  const [brandResults, setBrandResults] = useState<Franchise[]>([])
+  const [categoryResults, setCategoryResults] = useState<typeof categories>([])
   const [open, setOpen] = useState(false)
   const router = useRouter()
   const containerRef = useRef<HTMLDivElement>(null)
 
-  // Live filter as user types
+  // Live filter as user types — matches both brands and categories
   useEffect(() => {
     const q = query.trim().toLowerCase()
-    if (!q) { setResults([]); setOpen(false); return }
+    if (!q) {
+      setBrandResults([])
+      setCategoryResults([])
+      setOpen(false)
+      return
+    }
 
     // Apply any admin overrides / removals before searching
     const live = applyListingStore(franchises)
-    const matched = live.filter((f) =>
-      f.name.toLowerCase().includes(q) ||
-      f.category.toLowerCase().includes(q) ||
-      f.tagline.toLowerCase().includes(q) ||
-      f.city.toLowerCase().includes(q)
-    ).slice(0, 7)
 
-    setResults(matched)
-    setOpen(matched.length > 0)
+    // Brand matches: name, tagline, city
+    const matchedBrands = live
+      .filter(
+        (f) =>
+          f.name.toLowerCase().includes(q) ||
+          f.tagline.toLowerCase().includes(q) ||
+          f.city.toLowerCase().includes(q)
+      )
+      .slice(0, 5)
+
+    // Category matches
+    const matchedCategories = categories
+      .filter((c) => c.name.toLowerCase().includes(q))
+      .slice(0, 3)
+
+    setBrandResults(matchedBrands)
+    setCategoryResults(matchedCategories)
+    setOpen(matchedBrands.length > 0 || matchedCategories.length > 0)
   }, [query])
 
   // Close dropdown on outside click
@@ -54,6 +70,12 @@ export default function HeroSearch() {
     router.push(`/directory/${id}`)
   }
 
+  const goToCategory = (catName: string) => {
+    setOpen(false)
+    setQuery('')
+    router.push(`/directory?category=${encodeURIComponent(catName)}`)
+  }
+
   return (
     <div ref={containerRef} className="relative max-w-xl">
       {/* Input row */}
@@ -69,7 +91,7 @@ export default function HeroSearch() {
             if (e.key === 'Enter') goSearch()
             if (e.key === 'Escape') setOpen(false)
           }}
-          onFocus={() => results.length > 0 && setOpen(true)}
+          onFocus={() => (brandResults.length > 0 || categoryResults.length > 0) && setOpen(true)}
           placeholder="Search franchises, categories, or brands..."
           className="flex-1 px-4 py-4 text-sm text-gray-700 outline-none bg-transparent"
           autoComplete="off"
@@ -83,39 +105,75 @@ export default function HeroSearch() {
       </div>
 
       {/* Live results dropdown */}
-      {open && results.length > 0 && (
+      {open && (brandResults.length > 0 || categoryResults.length > 0) && (
         <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-gray-200 shadow-2xl z-50 overflow-hidden">
-          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4 pt-3 pb-1">
-            Matching Franchises
-          </p>
-          {results.map((f) => (
-            <button
-              key={f.id}
-              onMouseDown={() => goToListing(f.id)}
-              className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-left border-t border-gray-50 first:border-0"
-            >
-              {/* Logo */}
-              {f.logoUrl ? (
-                <img
-                  src={f.logoUrl}
-                  alt=""
-                  className="w-9 h-9 rounded-xl object-contain bg-gray-50 border border-gray-100 shrink-0 p-0.5"
-                />
-              ) : (
-                <div
-                  className="w-9 h-9 rounded-xl flex items-center justify-center text-[10px] font-black shrink-0"
-                  style={{ background: f.logoBg, color: f.logoColor }}
+
+          {/* Category shortcuts */}
+          {categoryResults.length > 0 && (
+            <>
+              <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4 pt-3 pb-1">
+                Browse Category
+              </p>
+              {categoryResults.map((cat) => (
+                <button
+                  key={cat.name}
+                  onMouseDown={() => goToCategory(cat.name)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 hover:bg-red-50 transition-colors text-left"
                 >
-                  {f.logoInitials}
-                </div>
-              )}
-              <div className="flex-1 min-w-0">
-                <div className="font-semibold text-gray-900 text-sm leading-tight truncate">{f.name}</div>
-                <div className="text-[11px] text-gray-400 mt-0.5">{f.category} · {f.city}</div>
-              </div>
-              <ArrowRight size={13} className="text-gray-300 shrink-0" />
-            </button>
-          ))}
+                  <span
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-sm shrink-0"
+                    style={{ background: cat.bg }}
+                  >
+                    {cat.icon}
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm">{cat.name}</div>
+                    <div className="text-[11px] text-gray-400">Browse all in Ontario</div>
+                  </div>
+                  <ArrowRight size={13} className="text-gray-300 shrink-0" />
+                </button>
+              ))}
+            </>
+          )}
+
+          {/* Brand results */}
+          {brandResults.length > 0 && (
+            <>
+              <p className={`text-[10px] font-bold text-gray-400 uppercase tracking-widest px-4 pb-1 ${categoryResults.length > 0 ? 'pt-2 border-t border-gray-100 mt-1' : 'pt-3'}`}>
+                Matching Brands
+              </p>
+              {brandResults.map((f) => (
+                <button
+                  key={f.id}
+                  onMouseDown={() => goToListing(f.id)}
+                  className="w-full flex items-center gap-3 px-4 py-3 hover:bg-red-50 transition-colors text-left border-t border-gray-50 first:border-0"
+                >
+                  {/* Logo */}
+                  {f.logoUrl ? (
+                    <img
+                      src={f.logoUrl}
+                      alt=""
+                      className="w-9 h-9 rounded-xl object-contain bg-gray-50 border border-gray-100 shrink-0 p-0.5"
+                      onError={(e) => { (e.currentTarget as HTMLImageElement).style.display = 'none' }}
+                    />
+                  ) : (
+                    <div
+                      className="w-9 h-9 rounded-xl flex items-center justify-center text-[10px] font-black shrink-0"
+                      style={{ background: f.logoBg, color: f.logoColor }}
+                    >
+                      {f.logoInitials}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-gray-900 text-sm leading-tight truncate">{f.name}</div>
+                    <div className="text-[11px] text-gray-400 mt-0.5">{f.category} · {f.city}</div>
+                  </div>
+                  <ArrowRight size={13} className="text-gray-300 shrink-0" />
+                </button>
+              ))}
+            </>
+          )}
+
           {/* View all */}
           <button
             onMouseDown={goSearch}
