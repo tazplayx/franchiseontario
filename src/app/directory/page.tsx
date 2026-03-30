@@ -32,6 +32,20 @@ export default function DirectoryPage() {
     setLiveListings(applyListingStore(franchises))
   }, [])
 
+  // Seed filters from URL params (?q=… and ?category=…)
+  // Runs once on mount — works with homepage search bar and popular tag links
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const q = params.get('q')
+    const cat = params.get('category')
+    const sortParam = params.get('sort') as SortKey | null
+    const tierParam = params.get('tier') as FranchiseTier | null
+    if (q) setQuery(q)
+    if (cat) setCategory(cat)
+    if (sortParam) setSort(sortParam)
+    if (tierParam) setTier(tierParam)
+  }, [])
+
   const filtered = useMemo(() => {
     let list = [...liveListings]
 

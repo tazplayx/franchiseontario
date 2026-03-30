@@ -6,6 +6,7 @@ import { franchises, categories, getFeaturedFranchises, getTopRanked } from '@/d
 import { tickerItems, newsArticles } from '@/data/news'
 import FranchiseCard from '@/components/FranchiseCard'
 import JsonLd from '@/components/JsonLd'
+import HeroSearch from '@/components/HeroSearch'
 
 const BASE = 'https://www.franchiseontario.com'
 
@@ -75,22 +76,7 @@ function Hero() {
 
             {/* Search bar */}
             <div className="mb-7">
-              <div className="flex items-center bg-white border-2 border-gray-200 rounded-2xl shadow-sm hover:border-red-200 transition-colors overflow-hidden focus-within:border-red-400 focus-within:shadow-md max-w-xl">
-                <div className="flex items-center pl-5 text-gray-400">
-                  <Search size={18} />
-                </div>
-                <input
-                  type="text"
-                  placeholder="Search franchises, categories, or brands..."
-                  className="flex-1 px-4 py-4 text-sm text-gray-700 outline-none bg-transparent"
-                />
-                <Link
-                  href="/directory"
-                  className="btn-red m-2 px-6 py-2.5 rounded-xl text-sm font-semibold whitespace-nowrap"
-                >
-                  Search
-                </Link>
-              </div>
+              <HeroSearch />
             </div>
 
             {/* Popular searches */}
