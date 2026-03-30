@@ -3,6 +3,8 @@ import Link from 'next/link'
 import JsonLd from '@/components/JsonLd'
 import { MapPin, Globe, Phone, Mail, Star, TrendingUp, Users, Calendar, Crown, ArrowLeft, ChevronRight, Building2, DollarSign, Percent, BadgeCheck, Video, ImageIcon } from 'lucide-react'
 import { franchises, getFranchiseById } from '@/data/franchises'
+import ClientLogoDisplay from '@/components/ClientLogoDisplay'
+import ClientMediaSection from '@/components/ClientMediaSection'
 
 const BASE = 'https://www.franchiseontario.com'
 
@@ -98,12 +100,13 @@ export default function FranchiseProfilePage({ params }: { params: { id: string 
 
           <div className="flex flex-col md:flex-row items-start gap-7">
             {/* Logo */}
-            <div
-              className="w-24 h-24 rounded-2xl flex items-center justify-center text-2xl font-bold shadow-md shrink-0 border border-gray-100"
-              style={{ background: f.logoBg, color: f.logoColor }}
-            >
-              {f.logoInitials}
-            </div>
+            <ClientLogoDisplay
+              id={f.id}
+              seedLogoUrl={f.logoUrl}
+              logoBg={f.logoBg}
+              logoColor={f.logoColor}
+              logoInitials={f.logoInitials}
+            />
 
             {/* Info */}
             <div className="flex-1">
@@ -173,36 +176,12 @@ export default function FranchiseProfilePage({ params }: { params: { id: string 
             </section>
 
             {/* Media Gallery */}
-            <section className="bg-white rounded-2xl border border-gray-200 p-7">
-              <h2 className="text-xl font-black text-gray-900 mb-4 flex items-center gap-2">
-                <span className="w-1 h-6 rounded-full bg-amber-500 inline-block" />
-                Photos & Videos
-              </h2>
-
-              {/* Video placeholder */}
-              <div className="bg-gray-900 rounded-xl aspect-video flex flex-col items-center justify-center mb-4 border-2 border-dashed border-gray-700 group cursor-pointer hover:border-red-500 transition-colors">
-                <Video size={36} className="text-gray-600 group-hover:text-red-500 mb-2 transition-colors" />
-                <p className="text-gray-500 text-sm font-medium">Brand Video</p>
-                <p className="text-gray-600 text-xs mt-1">Added by franchise owner</p>
-              </div>
-
-              {/* Image grid */}
-              <div className="grid grid-cols-3 gap-3">
-                {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div
-                    key={i}
-                    className="aspect-square rounded-xl bg-gray-100 flex flex-col items-center justify-center border-2 border-dashed border-gray-200 hover:border-gray-300 transition-colors cursor-pointer"
-                    style={{ background: `${f.logoBg}08` }}
-                  >
-                    <ImageIcon size={22} className="text-gray-300 mb-1" />
-                    <span className="text-[10px] text-gray-300">Photo {i}</span>
-                  </div>
-                ))}
-              </div>
-              <p className="text-xs text-gray-400 mt-3 text-center">
-                Photos and videos are uploaded and managed by the franchise owner
-              </p>
-            </section>
+            <ClientMediaSection
+              id={f.id}
+              seedImages={f.mediaImages}
+              seedVideoUrl={f.videoUrl}
+              logoBg={f.logoBg}
+            />
 
             {/* Key Highlights */}
             <section className="bg-white rounded-2xl border border-gray-200 p-7">

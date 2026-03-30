@@ -1,10 +1,11 @@
 'use client'
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { Search, SlidersHorizontal, TrendingUp, Star, Crown, Zap, DollarSign, MapPin, Filter, X } from 'lucide-react'
 import { franchises, categories } from '@/data/franchises'
+import type { Franchise, FranchiseTier } from '@/data/franchises'
 import FranchiseCard from '@/components/FranchiseCard'
-import type { FranchiseTier } from '@/data/franchises'
 import Link from 'next/link'
+import { applyListingStore } from '@/lib/store'
 
 type SortKey = 'rank' | 'rating' | 'newest' | 'alpha' | 'locations'
 type InvestmentBracket = 'all' | 'under150' | '150to350' | '350to600' | 'over600'
@@ -25,8 +26,14 @@ export default function DirectoryPage() {
   const [investment, setInvestment] = useState<InvestmentBracket>('all')
   const [compareList, setCompareList] = useState<string[]>([])
 
+  // Apply localStorage overrides (admin edits + removals) on the client
+  const [liveListings, setLiveListings] = useState<Franchise[]>(franchises)
+  useEffect(() => {
+    setLiveListings(applyListingStore(franchises))
+  }, [])
+
   const filtered = useMemo(() => {
-    let list = [...franchises]
+    let list = [...liveListings]
 
     if (query) {
       const q = query.toLowerCase()
