@@ -236,7 +236,7 @@ export default function NewsPage() {
             {/* Newsletter CTA */}
             <div className="bg-red-600 rounded-xl p-5 text-white">
               <div className="text-2xl mb-2">📬</div>
-              <h4 className="font-bold text-sm mb-1">Franchise News Weekly</h4>
+              <h4 className="font-bold text-sm mb-1 text-white">Franchise News Weekly</h4>
               <p className="text-red-100 text-xs mb-3">Get the latest Ontario franchise news every Monday morning.</p>
               <div className="space-y-2">
                 <input

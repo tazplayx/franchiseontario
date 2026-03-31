@@ -342,7 +342,7 @@ export default function FranchiseProfilePage({ params }: { params: { id: string 
 
             {/* Contact card */}
             <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-2xl p-5 text-white">
-              <h3 className="font-black text-base mb-1">Ready to Learn More?</h3>
+              <h3 className="font-black text-base mb-1 text-white">Ready to Learn More?</h3>
               <p className="text-red-100 text-xs mb-4 leading-relaxed">
                 Request the official franchise information package directly from {f.name}.
               </p>

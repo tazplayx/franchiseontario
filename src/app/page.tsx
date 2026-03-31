@@ -468,7 +468,7 @@ function PricingPromo() {
               key={plan.name}
               className={`relative bg-white rounded-2xl border-2 p-6 ${
                 plan.popular ? 'border-blue-500 shadow-xl shadow-blue-100' : 'border-gray-200'
-              } ${plan.color === 'gold' ? 'enterprise-card' : ''}`}
+              }`}
             >
               {plan.popular && (
                 <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -512,7 +512,7 @@ function PricingPromo() {
           <div>
             <div className="flex items-center gap-2 mb-1">
               <span className="text-xl">⭐</span>
-              <h3 className="font-black text-lg">Homepage Feature Spotlight</h3>
+              <h3 className="font-black text-lg text-white">Homepage Feature Spotlight</h3>
             </div>
             <p className="text-amber-100 text-sm">
               Get your franchise featured on the FranchiseOntario.com homepage — rotating weekly among all featured brands.

@@ -184,7 +184,7 @@ export default function FAQPage() {
         {/* Still need help */}
         <div className="mt-12 bg-red-600 rounded-2xl p-8 text-center text-white">
           <div className="text-3xl mb-3">💬</div>
-          <h2 className="text-xl font-black mb-2">Still have a question?</h2>
+          <h2 className="text-xl font-black mb-2 text-white">Still have a question?</h2>
           <p className="text-red-100 text-sm mb-5 max-w-md mx-auto">
             Our support team is here to help. Submit a ticket and we'll get back to you within one business day.
           </p>

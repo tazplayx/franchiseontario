@@ -181,7 +181,7 @@ export default function CategoriesPage() {
         {/* Add to category CTA */}
         <div className="mt-10 bg-red-600 rounded-2xl p-8 text-center text-white">
           <div className="text-3xl mb-3">🏢</div>
-          <h2 className="text-xl font-black mb-2">Don't See Your Category?</h2>
+          <h2 className="text-xl font-black mb-2 text-white">Don't See Your Category?</h2>
           <p className="text-red-100 text-sm mb-5 max-w-md mx-auto">
             We're always adding new categories. List your franchise and select your category — we'll make sure you're found.
           </p>

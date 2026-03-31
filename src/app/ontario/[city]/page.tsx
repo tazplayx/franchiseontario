@@ -451,7 +451,7 @@ export default function CityPage({ params }: { params: { city: string } }) {
             {/* Quiz CTA */}
             <div className="bg-gradient-to-br from-red-600 to-red-800 rounded-2xl p-5 text-white">
               <div className="text-2xl mb-2">🎯</div>
-              <h3 className="font-bold text-sm mb-1">Find Your Match in {city.name}</h3>
+              <h3 className="font-bold text-sm mb-1 text-white">Find Your Match in {city.name}</h3>
               <p className="text-red-100 text-xs mb-3 leading-relaxed">
                 Answer 5 quick questions and we'll match you to the best franchise for your budget and lifestyle.
               </p>

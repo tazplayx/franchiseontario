@@ -278,7 +278,7 @@ export default function PricingPage() {
         {/* CTA */}
         <div className="mt-16 text-center bg-red-600 rounded-2xl p-10 text-white">
           <div className="text-4xl mb-3">🚀</div>
-          <h2 className="text-2xl font-black mb-2">Start Growing Your Franchise Today</h2>
+          <h2 className="text-2xl font-black mb-2 text-white">Start Growing Your Franchise Today</h2>
           <p className="text-red-100 text-sm mb-6 max-w-md mx-auto">
             Join the fastest-growing franchise directory in Ontario. Start free, no credit card required.
           </p>
