@@ -1,8 +1,9 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { RefreshCw, ExternalLink, Tag } from 'lucide-react'
-import { newsArticles, newsCategories, tickerItems } from '@/data/news'
+import { RefreshCw, ExternalLink, Tag, CheckCircle, Loader2 } from 'lucide-react'
+import { newsArticles, newsCategories } from '@/data/news'
+import type { NewsArticle } from '@/data/news'
 
 function CategoryPill({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
@@ -17,22 +18,130 @@ function CategoryPill({ label, active, onClick }: { label: string; active: boole
   )
 }
 
+// ── Newsletter sidebar widget ──────────────────────────────────────────────────
+function NewsletterWidget() {
+  const [email, setEmail] = useState('')
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle')
+  const [errorMsg, setErrorMsg] = useState('')
+
+  async function handleSubscribe(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email) return
+    setStatus('loading')
+    setErrorMsg('')
+    try {
+      const res = await fetch('/api/newsletter/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        setErrorMsg(data.error || 'Something went wrong.')
+        setStatus('error')
+      } else {
+        setStatus('success')
+      }
+    } catch {
+      setErrorMsg('Network error. Please try again.')
+      setStatus('error')
+    }
+  }
+
+  if (status === 'success') {
+    return (
+      <div className="bg-red-600 rounded-xl p-5 text-white">
+        <div className="flex items-center gap-3 mb-2">
+          <CheckCircle size={22} className="text-white shrink-0" />
+          <h4 className="font-bold text-sm text-white">You&apos;re subscribed!</h4>
+        </div>
+        <p className="text-red-100 text-xs leading-relaxed">
+          Welcome to Franchise News Weekly. You&apos;ll receive your first edition next Monday morning.
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="bg-red-600 rounded-xl p-5 text-white">
+      <div className="text-2xl mb-2">📬</div>
+      <h4 className="font-bold text-sm mb-1 text-white">Franchise News Weekly</h4>
+      <p className="text-red-100 text-xs mb-3">
+        Get the latest Ontario franchise news every Monday morning.
+      </p>
+      <form onSubmit={handleSubscribe} className="space-y-2">
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => { setEmail(e.target.value); setStatus('idle'); setErrorMsg('') }}
+          placeholder="your@email.com"
+          required
+          disabled={status === 'loading'}
+          className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white placeholder-red-200 text-xs outline-none focus:bg-white/30 disabled:opacity-60"
+        />
+        {errorMsg && (
+          <p className="text-red-200 text-[11px]">{errorMsg}</p>
+        )}
+        <button
+          type="submit"
+          disabled={status === 'loading' || !email}
+          className="w-full bg-white text-red-600 font-bold text-xs py-2 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-60 flex items-center justify-center gap-1.5"
+        >
+          {status === 'loading' ? (
+            <>
+              <Loader2 size={12} className="animate-spin" />
+              Subscribing…
+            </>
+          ) : 'Subscribe Free'}
+        </button>
+      </form>
+    </div>
+  )
+}
+
+// ── Main page ──────────────────────────────────────────────────────────────────
 export default function NewsPage() {
   const [activeCategory, setActiveCategory] = useState('All')
+  const [articles, setArticles] = useState<NewsArticle[]>(newsArticles) // start with static fallback
+  const [isLive, setIsLive] = useState(false)
+  const [fetchedAt, setFetchedAt] = useState<string | null>(null)
+
+  // Fetch live articles on mount
+  useEffect(() => {
+    fetch('/api/news')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.articles && data.articles.length > 0) {
+          setArticles(data.articles)
+          setIsLive(true)
+          setFetchedAt(data.fetchedAt ?? null)
+        }
+        // If no live articles, static fallback remains in state
+      })
+      .catch(() => {
+        // Network error — keep showing static fallback
+      })
+  }, [])
 
   const filtered =
     activeCategory === 'All'
-      ? newsArticles
-      : newsArticles.filter((a) => a.category === activeCategory)
+      ? articles
+      : articles.filter((a) => a.category === activeCategory)
 
   const featured = filtered.find((a) => a.isFeatured) || filtered[0]
   const list = filtered.filter((a) => a.id !== featured?.id)
 
-  const lastUpdated = new Date().toLocaleString('en-CA', {
-    timeZone: 'America/Toronto',
-    dateStyle: 'medium',
-    timeStyle: 'short',
-  })
+  const lastUpdated = fetchedAt
+    ? new Date(fetchedAt).toLocaleString('en-CA', {
+        timeZone: 'America/Toronto',
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      })
+    : new Date().toLocaleString('en-CA', {
+        timeZone: 'America/Toronto',
+        dateStyle: 'medium',
+        timeStyle: 'short',
+      })
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -43,7 +152,9 @@ export default function NewsPage() {
             <div>
               <div className="flex items-center gap-2 mb-3">
                 <div className="live-dot" />
-                <span className="text-green-600 text-xs font-bold uppercase tracking-widest">Live Feed</span>
+                <span className="text-green-600 text-xs font-bold uppercase tracking-widest">
+                  {isLive ? 'Live Feed' : 'News Feed'}
+                </span>
               </div>
               <h1 className="text-3xl md:text-4xl font-black text-gray-900 mb-2">
                 Ontario Franchise News
@@ -53,10 +164,17 @@ export default function NewsPage() {
               </p>
             </div>
             <div className="text-right text-xs text-gray-400 shrink-0">
-              <div className="flex items-center gap-1 justify-end text-green-600 mb-0.5">
-                <RefreshCw size={10} className="animate-spin" style={{ animationDuration: '3s' }} />
-                <span className="font-medium">Auto-updating</span>
-              </div>
+              {isLive ? (
+                <div className="flex items-center gap-1 justify-end text-green-600 mb-0.5">
+                  <RefreshCw size={10} className="animate-spin" style={{ animationDuration: '3s' }} />
+                  <span className="font-medium">Live — auto-updating</span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1 justify-end text-gray-400 mb-0.5">
+                  <RefreshCw size={10} />
+                  <span className="font-medium">Curated articles</span>
+                </div>
+              )}
               <span>Last updated: {lastUpdated}</span>
             </div>
           </div>
@@ -200,10 +318,22 @@ export default function NewsPage() {
                 🔥 Trending Topics
               </h3>
               <div className="space-y-3">
-                {['Ontario Franchise Expansion', 'Chuck\'s Roadhouse', 'Coffee Culture', 'Crabby Joe\'s', 'Franchise Investment 2026', 'CFA Report', 'GTA Openings', 'Arthur Wishart Act'].map((topic, i) => (
+                {[
+                  'Ontario Franchise Expansion',
+                  'Tim Hortons Growth',
+                  'Coffee & Café Sector',
+                  'Franchise Investment 2026',
+                  'CFA Industry Report',
+                  'GTA New Openings',
+                  'Arthur Wishart Act',
+                  'BDC Franchise Financing',
+                ].map((topic, i) => (
                   <div key={topic} className="flex items-center gap-3">
                     <span className="text-xs font-black text-gray-300 w-4">#{i + 1}</span>
-                    <button className="text-sm text-gray-700 hover:text-red-600 transition-colors text-left font-medium">
+                    <button
+                      onClick={() => setActiveCategory('All')}
+                      className="text-sm text-gray-700 hover:text-red-600 transition-colors text-left font-medium"
+                    >
                       {topic}
                     </button>
                   </div>
@@ -226,29 +356,21 @@ export default function NewsPage() {
                   'Ontario Franchise Law',
                 ].map((source) => (
                   <div key={source} className="flex items-center gap-2 text-xs text-gray-600">
-                    <div className="w-1.5 h-1.5 rounded-full bg-green-400" />
+                    <div className={`w-1.5 h-1.5 rounded-full ${isLive ? 'bg-green-400' : 'bg-gray-300'}`} />
                     {source}
                   </div>
                 ))}
               </div>
+              {isLive && (
+                <p className="text-[10px] text-green-600 mt-3 font-medium flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-green-400 inline-block" />
+                  Live — articles refresh every hour
+                </p>
+              )}
             </div>
 
-            {/* Newsletter CTA */}
-            <div className="bg-red-600 rounded-xl p-5 text-white">
-              <div className="text-2xl mb-2">📬</div>
-              <h4 className="font-bold text-sm mb-1 text-white">Franchise News Weekly</h4>
-              <p className="text-red-100 text-xs mb-3">Get the latest Ontario franchise news every Monday morning.</p>
-              <div className="space-y-2">
-                <input
-                  type="email"
-                  placeholder="your@email.com"
-                  className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white placeholder-red-200 text-xs outline-none focus:bg-white/30"
-                />
-                <button className="w-full bg-white text-red-600 font-bold text-xs py-2 rounded-lg hover:bg-red-50 transition-colors">
-                  Subscribe Free
-                </button>
-              </div>
-            </div>
+            {/* Newsletter subscribe */}
+            <NewsletterWidget />
           </aside>
         </div>
       </div>

@@ -17,6 +17,7 @@ export type EmailType =
   | 'listing-edited-user'
   | 'membership-ending'
   | 'payment-failed'
+  | 'newsletter-confirm'
 
 export interface EmailData {
   franchiseName?: string
@@ -192,6 +193,24 @@ export function getEmailContent(
           ${p('To keep your premium listing features active, please update your payment method as soon as possible.')}
           ${btn('https://www.franchiseontario.com/dashboard', 'Update Payment Method →')}
           ${p('<span style="color:#64748b;font-size:13px">If payment is not updated, your listing may be moved to the Basic tier after 7 days.</span>')}
+        `),
+      }
+
+    case 'newsletter-confirm':
+      return {
+        subject: `You're subscribed — Franchise News Weekly`,
+        html: shell('Welcome to Franchise News Weekly! 📬', `
+          ${p(`Hi ${name},`)}
+          ${p(`You're now subscribed to <strong>Franchise News Weekly</strong> — Ontario's freshest franchise industry digest delivered every Monday morning.`)}
+          ${p('<strong>What to expect each week:</strong>')}
+          <ul style="padding-left:20px;line-height:2;font-size:14px;color:#0D1B2A;margin:0 0 14px">
+            <li>Top franchise expansion news across Ontario</li>
+            <li>Investment opportunities and new listings</li>
+            <li>Legal and regulatory updates affecting franchise buyers</li>
+            <li>Curated reports from the Canadian Franchise Association</li>
+          </ul>
+          ${btn('https://www.franchiseontario.com/news', 'Read the Latest News →')}
+          ${p(`<span style="color:#64748b;font-size:13px">You can unsubscribe at any time by replying to any newsletter with "unsubscribe" in the subject line.</span>`)}
         `),
       }
 
