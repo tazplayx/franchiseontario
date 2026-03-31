@@ -217,3 +217,33 @@ export function restoreUserFranchise(): void {
     localStorage.removeItem(USER_FRANCHISE_KEY)
   }
 }
+
+// ── Email notification log (admin inbox) ──────────────────────────────────────
+
+const NOTIFICATION_LOG_KEY = 'fo_notification_log_v1'
+const MAX_NOTIFICATIONS = 100
+
+export interface NotificationEntry {
+  id: string          // unique — timestamp + random suffix
+  type: string        // EmailType value
+  to: string          // recipient email address
+  franchiseName: string
+  subject: string     // subject line from the email template
+  sentAt: string      // ISO 8601 timestamp
+}
+
+/** Prepend a new notification entry to the log (capped at MAX_NOTIFICATIONS). */
+export function saveNotification(entry: NotificationEntry): void {
+  const existing = getNotifications()
+  write(NOTIFICATION_LOG_KEY, [entry, ...existing].slice(0, MAX_NOTIFICATIONS))
+}
+
+/** Return all stored notification log entries, newest first. */
+export function getNotifications(): NotificationEntry[] {
+  return read<NotificationEntry[]>(NOTIFICATION_LOG_KEY, [])
+}
+
+/** Clear the notification log (admin use). */
+export function clearNotifications(): void {
+  write(NOTIFICATION_LOG_KEY, [])
+}

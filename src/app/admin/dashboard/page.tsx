@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Users, Clock, Ticket, TrendingUp, LogOut, LayoutDashboard, ListChecks, MessageSquare, Building2 } from 'lucide-react'
+import { Users, Clock, Ticket, TrendingUp, LogOut, LayoutDashboard, ListChecks, MessageSquare, Building2, Mail, Trash2 } from 'lucide-react'
 import {
   applyListingStore,
   applyTicketStore,
@@ -11,6 +11,9 @@ import {
   saveApprovedListing,
   removeApprovedListing,
   getUserSubmittedTickets,
+  getNotifications,
+  clearNotifications,
+  type NotificationEntry,
 } from '@/lib/store'
 import type { Franchise, FranchiseCategory } from '@/data/franchises'
 import { franchises as seedFranchises } from '@/data/franchises'
@@ -119,6 +122,7 @@ export default function AdminDashboardPage() {
   const [pendingCount, setPendingCount] = useState(allPending.length)
   const [openTickets, setOpenTickets] = useState(seedTickets.filter(t => t.status === 'Open').length)
   const [pendingListings, setPendingListings] = useState(allPending.slice(0, 3))
+  const [notifications, setNotifications] = useState<NotificationEntry[]>([])
 
   useEffect(() => {
     const live = applyListingStore(seedFranchises)
@@ -131,7 +135,14 @@ export default function AdminDashboardPage() {
 
     const allTickets = applyTicketStore(seedTickets)
     setOpenTickets(allTickets.filter(t => t.status === 'Open').length)
+
+    setNotifications(getNotifications())
   }, [])
+
+  const handleClearNotifications = () => {
+    clearNotifications()
+    setNotifications([])
+  }
 
   const handleQuickApprove = (id: string) => {
     savePendingStatus(id, 'approved')
@@ -246,7 +257,6 @@ export default function AdminDashboardPage() {
           <div className="space-y-3">
             {[
               { name: "Chuck's Roadhouse Bar and Grill", plan: 'Enterprise', amount: '$199/mo', featured: true, status: 'Active' },
-              { name: "Crabby Joe's", plan: 'Enterprise', amount: '$199/mo', featured: false, status: 'Active' },
               { name: 'Coffee Culture Café & Eatery', plan: 'Enterprise', amount: '$199/mo', featured: true, status: 'Active' },
             ].map((listing) => (
               <div key={listing.name} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
@@ -268,8 +278,98 @@ export default function AdminDashboardPage() {
           </div>
           <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
             <span className="text-sm text-gray-500">Monthly Recurring Revenue</span>
-            <span className="text-lg font-black text-green-600">$597.00 CAD</span>
+            <span className="text-lg font-black text-green-600">$398.00 CAD</span>
           </div>
+        </div>
+
+        {/* Email Notification Log */}
+        <div className="mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div className="flex items-center gap-2">
+              <Mail size={15} className="text-gray-400" />
+              <h2 className="font-bold text-gray-900 text-sm">Email Notification Log</h2>
+              {notifications.length > 0 && (
+                <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                  {notifications.length}
+                </span>
+              )}
+            </div>
+            {notifications.length > 0 && (
+              <button
+                onClick={handleClearNotifications}
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-red-500 transition-colors font-medium"
+              >
+                <Trash2 size={12} /> Clear
+              </button>
+            )}
+          </div>
+
+          {notifications.length === 0 ? (
+            <div className="px-5 py-10 text-center">
+              <Mail size={24} className="text-gray-200 mx-auto mb-2" />
+              <p className="text-sm text-gray-400">No emails logged yet.</p>
+              <p className="text-xs text-gray-300 mt-1">
+                Emails triggered by admin actions, approvals, and Stripe events will appear here.
+              </p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-50">
+              {notifications.slice(0, 20).map((n) => {
+                const typeColors: Record<string, string> = {
+                  'listing-approved':    'bg-green-100 text-green-700',
+                  'listing-rejected':    'bg-red-100 text-red-600',
+                  'listing-removed':     'bg-red-100 text-red-600',
+                  'listing-removed-user':'bg-red-100 text-red-600',
+                  'listing-edited-admin':'bg-blue-100 text-blue-600',
+                  'listing-edited-user': 'bg-blue-100 text-blue-600',
+                  'welcome':             'bg-purple-100 text-purple-600',
+                  'verify-email':        'bg-amber-100 text-amber-600',
+                  'membership-ending':   'bg-orange-100 text-orange-600',
+                  'payment-failed':      'bg-red-100 text-red-600',
+                }
+                const typeLabel: Record<string, string> = {
+                  'listing-approved':    'Approved',
+                  'listing-rejected':    'Rejected',
+                  'listing-removed':     'Removed',
+                  'listing-removed-user':'User Removed',
+                  'listing-edited-admin':'Admin Edit',
+                  'listing-edited-user': 'User Edit',
+                  'welcome':             'Welcome',
+                  'verify-email':        'Verification',
+                  'membership-ending':   'Membership',
+                  'payment-failed':      'Payment Failed',
+                }
+                const colorClass = typeColors[n.type] ?? 'bg-gray-100 text-gray-500'
+                const label = typeLabel[n.type] ?? n.type
+                const date = new Date(n.sentAt)
+                const timeStr = date.toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })
+                  + ' ' + date.toLocaleTimeString('en-CA', { hour: '2-digit', minute: '2-digit' })
+
+                return (
+                  <div key={n.id} className="px-5 py-3 flex items-start gap-3">
+                    <span className={`shrink-0 mt-0.5 text-[10px] font-bold px-2 py-0.5 rounded-full ${colorClass}`}>
+                      {label}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-sm text-gray-800 font-medium truncate">{n.subject}</div>
+                      <div className="text-xs text-gray-400 mt-0.5 truncate">
+                        To: <span className="text-gray-500">{n.to}</span>
+                        {n.franchiseName && <> · {n.franchiseName}</>}
+                      </div>
+                    </div>
+                    <div className="shrink-0 text-[11px] text-gray-400 mt-0.5 whitespace-nowrap">
+                      {timeStr}
+                    </div>
+                  </div>
+                )
+              })}
+              {notifications.length > 20 && (
+                <div className="px-5 py-3 text-center text-xs text-gray-400">
+                  Showing 20 of {notifications.length} — clear log to reset
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </main>
     </div>

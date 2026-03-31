@@ -207,12 +207,34 @@ export function getEmailContent(
 /**
  * Call from client components / server actions to send a transactional email.
  * Silently catches errors so UI is never blocked by email failures.
+ *
+ * Every call is also written to the admin notification log in localStorage so
+ * admins can audit all outgoing emails even if Resend is not yet configured.
  */
 export async function sendEmail(
   to: string,
   type: EmailType,
   data: EmailData
 ): Promise<void> {
+  // Derive the subject line so we can show it in the admin log
+  const { subject } = getEmailContent(type, data)
+
+  // Write to the in-app notification log (localStorage — client side only)
+  if (typeof window !== 'undefined') {
+    // Lazy-import to avoid a circular module issue at build time
+    import('@/lib/store').then(({ saveNotification }) => {
+      saveNotification({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        type,
+        to,
+        franchiseName: data.franchiseName ?? '',
+        subject,
+        sentAt: new Date().toISOString(),
+      })
+    }).catch(() => { /* non-critical */ })
+  }
+
+  // Fire the email via the centralized API route
   try {
     await fetch('/api/email/send', {
       method: 'POST',
