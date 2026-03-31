@@ -72,7 +72,7 @@ function Hero() {
             </h1>
 
             <p className="text-[#4A5568] text-lg max-w-lg mb-10 leading-relaxed font-normal">
-              Browse 500+ franchise opportunities across Ontario. Compare investment ranges, royalties, and connect directly with top Canadian brands.
+              Browse franchise opportunities across Ontario. Compare investment ranges, royalties, and connect directly with top Canadian brands.
             </p>
 
             {/* Search bar */}
@@ -98,9 +98,9 @@ function Hero() {
             <div className="grid grid-cols-4 gap-6 max-w-lg">
               {[
                 { value: '500+', label: 'Listings' },
-                { value: '14', label: 'Categories' },
-                { value: '10K+', label: 'Monthly Visitors' },
-                { value: '$2B+', label: 'Tracked' },
+                { value: '28', label: 'Categories' },
+                { value: '2,500+', label: 'Monthly Visitors' },
+                { value: '$2B+', label: 'In Opportunities' },
               ].map((stat) => (
                 <div key={stat.label} className="border-l-2 border-red-100 pl-3">
                   <div className="text-2xl font-bold text-[#0D1B2A] leading-none" style={{ fontFamily: 'Manrope, sans-serif' }}>{stat.value}</div>
