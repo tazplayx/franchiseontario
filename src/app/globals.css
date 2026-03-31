@@ -103,24 +103,6 @@ h1, h2, h3, h4, h5, h6 {
   box-shadow: var(--shadow-lg);
 }
 
-/* ── Enterprise card glow ───────────────────────── */
-.enterprise-card {
-  position: relative;
-}
-.enterprise-card::before {
-  content: '';
-  position: absolute;
-  inset: -2px;
-  border-radius: calc(0.75rem + 2px);
-  background: linear-gradient(135deg, #B8860B, #E8B84B, #B8860B);
-  background-size: 200% auto;
-  animation: shimmerBadge 3s linear infinite;
-  z-index: 0;
-}
-.enterprise-card > * {
-  position: relative;
-  z-index: 1;
-}
 
 /* ── Premium card border ────────────────────────── */
 .premium-card { border: 2px solid #3B82F6; }

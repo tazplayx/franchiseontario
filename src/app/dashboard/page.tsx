@@ -10,9 +10,11 @@ import {
   getUserFranchiseOverrides,
   saveUserFranchise,
   removeUserFranchise,
+  removeListing,
   isUserFranchiseRemoved,
   addUserTicket,
 } from '@/lib/store'
+import { sendEmail } from '@/lib/email'
 
 // Simulated logged-in franchisee data
 const MOCK_USER = {
@@ -200,10 +202,23 @@ function ListingTab() {
     setIsEditing(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
+    // Notify user of their own edit via email
+    sendEmail(MOCK_USER.email, 'listing-edited-user', {
+      franchiseName: form.name || franchise.name,
+      contactName: MOCK_USER.name,
+    })
   }
 
   const handleRemove = () => {
+    // Remove from user dashboard flag
     removeUserFranchise()
+    // Also add to global removed set so directory + homepage stop showing it
+    removeListing(franchise.id)
+    // Notify user of confirmed removal
+    sendEmail(MOCK_USER.email, 'listing-removed-user', {
+      franchiseName: franchise.name,
+      contactName: MOCK_USER.name,
+    })
     setRemoveConfirm(false)
     setRemoved(true)
   }

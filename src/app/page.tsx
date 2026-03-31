@@ -2,11 +2,12 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Search, TrendingUp, Award, Zap, Star, ArrowRight, Crown, ChevronRight, Newspaper, BarChart3, MapPin, Users, Sparkles, CheckCircle } from 'lucide-react'
-import { franchises, categories, getFeaturedFranchises, getTopRanked } from '@/data/franchises'
+import { franchises, categories, getTopRanked } from '@/data/franchises'
 import { tickerItems, newsArticles } from '@/data/news'
 import FranchiseCard from '@/components/FranchiseCard'
 import JsonLd from '@/components/JsonLd'
 import HeroSearch from '@/components/HeroSearch'
+import { ClientFeaturedSpotlight, ClientTopRanked } from '@/components/ClientHomepageSections'
 
 const BASE = 'https://www.franchiseontario.com'
 
@@ -157,56 +158,9 @@ function Hero() {
   )
 }
 
-/* ── Featured Spotlight (paid $14.99/week rotating) ── */
-function FeaturedSpotlight() {
-  const featured = getFeaturedFranchises()
-
-  return (
-    <section className="py-16 bg-white border-b border-gray-100">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-1 h-6 rounded-full bg-red-600" />
-              <span className="text-xs font-bold text-red-600 uppercase tracking-widest">Featured This Week</span>
-            </div>
-            <h2 className="text-2xl md:text-3xl font-black text-gray-900">
-              Spotlight Franchises
-            </h2>
-            <p className="text-sm text-gray-500 mt-1">Rotating weekly features — <Link href="/pricing#featured" className="text-red-600 hover:underline font-medium">add your listing for $14.99/week →</Link></p>
-          </div>
-          <Link href="/directory" className="hidden sm:flex items-center gap-1 text-sm font-medium text-red-600 hover:text-red-700">
-            View All <ArrowRight size={14} />
-          </Link>
-        </div>
-
-        {/* Featured cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {featured.map((franchise) => (
-            <div key={franchise.id} className="featured-glow rounded-xl">
-              <FranchiseCard franchise={franchise} showRank />
-            </div>
-          ))}
-        </div>
-
-        {/* Add your listing CTA strip */}
-        <div className="mt-6 bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-xl p-4 flex flex-col sm:flex-row items-center justify-between gap-3">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-amber-400 rounded-xl flex items-center justify-center text-white font-black text-lg">⭐</div>
-            <div>
-              <p className="font-semibold text-gray-800 text-sm">Get your franchise featured on the homepage</p>
-              <p className="text-xs text-gray-500">Rotating weekly feature spots — only <strong>$14.99/week</strong></p>
-            </div>
-          </div>
-          <Link href="/pricing#featured" className="btn-gold shrink-0 px-5 py-2 rounded-lg text-sm font-bold">
-            Get Featured →
-          </Link>
-        </div>
-      </div>
-    </section>
-  )
-}
+/* ── Featured Spotlight — delegated to client component ── */
+// Moved to ClientHomepageSections.tsx so it can read localStorage (applyListingStore)
+// and reflect admin removals / approved pending listings without a page reload.
 
 /* ── Category Grid ───────────────────────────────── */
 function CategoryGrid() {
@@ -339,36 +293,9 @@ function OntarioCities() {
   )
 }
 
-/* ── Top Ranked ──────────────────────────────────── */
-function TopRanked() {
-  const top = getTopRanked(6)
-
-  return (
-    <section className="py-16 bg-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between mb-8">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <div className="w-1 h-6 rounded-full bg-amber-500" />
-              <span className="text-xs font-bold text-amber-600 uppercase tracking-widest">Rankings</span>
-            </div>
-            <h2 className="text-2xl md:text-3xl font-black text-gray-900">Ontario's Top Ranked Franchises</h2>
-            <p className="text-sm text-gray-500 mt-1">Ranked by popularity, reviews, locations & category performance</p>
-          </div>
-          <Link href="/directory?sort=rank" className="hidden sm:flex items-center gap-1 text-sm font-medium text-red-600 hover:text-red-700">
-            Full Rankings <ArrowRight size={14} />
-          </Link>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {top.map((franchise) => (
-            <FranchiseCard key={franchise.id} franchise={franchise} showRank />
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
+/* ── Top Ranked — delegated to client component ── */
+// Moved to ClientHomepageSections.tsx so it can read localStorage (applyListingStore)
+// and reflect admin removals / approved pending listings without a page reload.
 
 /* ── Latest News ─────────────────────────────────── */
 function LatestNews() {
@@ -748,11 +675,11 @@ export default function HomePage() {
       <NewsTicker />
       <Hero />
 
-      <FeaturedSpotlight />
+      <ClientFeaturedSpotlight />
       <QuizCTA />
       <OntarioCities />
       <CategoryGrid />
-      <TopRanked />
+      <ClientTopRanked />
       <EditorialFeature />
       <LatestNews />
       <PricingPromo />

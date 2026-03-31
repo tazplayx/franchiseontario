@@ -9,6 +9,7 @@ import {
 } from 'lucide-react'
 import { franchises, type Franchise, type FranchiseTier } from '@/data/franchises'
 import { applyListingStore, saveListing, removeListing } from '@/lib/store'
+import { sendEmail } from '@/lib/email'
 
 function AdminNav({ active }: { active: string }) {
   const router = useRouter()
@@ -229,6 +230,17 @@ export default function AdminListingsPage() {
     setListings((prev) =>
       prev.map((l) => l.id === editing.id ? { ...l, ...updatedFields } : l)
     )
+    // Notify listing owner of admin edit
+    if (editing.email) {
+      // Detect which fields changed
+      const changedFields = (Object.keys(updatedFields) as Array<keyof typeof updatedFields>)
+        .filter((k) => updatedFields[k] !== editing[k as keyof Franchise])
+        .map((k) => k.replace(/([A-Z])/g, ' $1').replace(/^./, (s) => s.toUpperCase()).trim())
+      sendEmail(editing.email, 'listing-edited-admin', {
+        franchiseName: editing.name,
+        editedFields: changedFields,
+      })
+    }
     setEditing(null)
     setEditForm(null)
     setSaved(true)
@@ -237,6 +249,12 @@ export default function AdminListingsPage() {
 
   const confirmDelete = () => {
     if (!deleteTarget) return
+    // Notify listing owner before removing
+    if (deleteTarget.email) {
+      sendEmail(deleteTarget.email, 'listing-removed', {
+        franchiseName: deleteTarget.name,
+      })
+    }
     // Persist removal to localStorage
     removeListing(deleteTarget.id)
     // Update React state

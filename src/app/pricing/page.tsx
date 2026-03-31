@@ -1,6 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
-import { Check, Crown, Zap, Star, ArrowRight } from 'lucide-react'
+import { Check, ArrowRight } from 'lucide-react'
 
 export const metadata: Metadata = {
   title: 'Franchise Listing Plans & Pricing — Free, Premium & Enterprise',
@@ -24,8 +24,7 @@ const plans = [
     period: 'forever',
     tagline: 'Get discovered at no cost',
     icon: '🏷️',
-    color: 'gray',
-    borderClass: 'border-gray-200',
+    cardClass: 'border-gray-200',
     badgeClass: 'bg-gray-100 text-gray-600',
     ctaClass: 'bg-gray-800 hover:bg-gray-700 text-white',
     features: [
@@ -52,8 +51,7 @@ const plans = [
     period: '/month',
     tagline: 'Stand out from the crowd',
     icon: '⚡',
-    color: 'blue',
-    borderClass: 'border-blue-500',
+    cardClass: 'border-blue-500 shadow-xl shadow-blue-100',
     badgeClass: 'bg-blue-600 text-white',
     ctaClass: 'bg-blue-600 hover:bg-blue-700 text-white',
     popular: true,
@@ -81,9 +79,8 @@ const plans = [
     period: '/month',
     tagline: 'Maximum visibility & impact',
     icon: '👑',
-    color: 'gold',
-    borderClass: 'border-amber-400',
-    badgeClass: '',
+    cardClass: 'border-2 border-amber-400',
+    badgeClass: 'bg-amber-500 text-white',
     ctaClass: 'btn-gold',
     features: [
       { text: 'Everything in Premium', included: true },
@@ -93,7 +90,7 @@ const plans = [
       { text: 'News & press release distribution', included: true },
       { text: 'Dedicated account manager', included: true },
       { text: 'Full analytics dashboard', included: true },
-      { text: 'Gold shimmer card border', included: true },
+      { text: 'Gold border on franchise card', included: true },
       { text: 'Custom franchise profile layout', included: true },
       { text: 'Multi-location management', included: true },
       { text: 'Priority support (24hr response)', included: true },
@@ -116,30 +113,28 @@ export default function PricingPage() {
             List Your Franchise in Ontario
           </h1>
           <p className="text-gray-500 text-base md:text-lg max-w-2xl mx-auto">
-            Start free, upgrade as you grow. Join Ontario's most active franchise discovery platform and connect with serious investors.
+            Start free, upgrade as you grow. Join Ontario&apos;s most active franchise discovery platform and connect with serious investors.
           </p>
         </div>
       </div>
 
       {/* Plans */}
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-14">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-16">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-16">
           {plans.map((plan) => (
             <div
               key={plan.id}
               id={plan.id}
-              className={`relative bg-white rounded-2xl border-2 ${plan.borderClass} overflow-hidden shadow-sm ${
-                plan.popular ? 'shadow-blue-100 shadow-xl' : ''
-              } ${plan.color === 'gold' ? 'enterprise-card' : ''}`}
+              className={`relative bg-white rounded-2xl border-2 ${plan.cardClass} overflow-hidden`}
             >
               {plan.popular && (
                 <div className="absolute top-0 inset-x-0 h-1 bg-blue-600" />
               )}
-              {plan.color === 'gold' && (
-                <div className="absolute top-0 inset-x-0 h-1 bg-gradient-to-r from-amber-400 to-amber-600" />
+              {plan.id === 'enterprise' && (
+                <div className="absolute top-0 inset-x-0 h-1 bg-amber-400" />
               )}
 
-              {/* Popular / Best badge */}
+              {/* Plan badge */}
               {plan.popular && (
                 <div className="absolute top-4 right-4">
                   <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
@@ -147,41 +142,35 @@ export default function PricingPage() {
                   </span>
                 </div>
               )}
-              {plan.color === 'gold' && (
+              {plan.id === 'enterprise' && (
                 <div className="absolute top-4 right-4">
-                  <span className="vip-badge text-[10px] font-black px-2 py-0.5 rounded-full">
+                  <span className="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
                     BEST VALUE
                   </span>
                 </div>
               )}
 
-              <div className={`${plan.color === 'gold' ? 'bg-white rounded-[14px] m-0.5 p-6' : 'p-6'}`}>
+              <div className="p-8">
                 {/* Plan header */}
                 <div className="text-3xl mb-3">{plan.icon}</div>
-                {plan.badgeClass ? (
-                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full mb-2 ${plan.badgeClass}`}>
-                    {plan.name.toUpperCase()}
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full mb-2 vip-badge">
-                    ENTERPRISE
-                  </span>
-                )}
+                <span className={`inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full mb-3 ${plan.badgeClass}`}>
+                  {plan.name.toUpperCase()}
+                </span>
 
                 <div className="flex items-baseline gap-1 mt-2 mb-1">
-                  <span className="text-4xl font-black text-gray-900">{plan.price}</span>
+                  <span className="text-5xl font-black text-gray-900">{plan.price}</span>
                   <span className="text-sm text-gray-400">{plan.period}</span>
                 </div>
-                <p className="text-sm text-gray-500 mb-6">{plan.tagline}</p>
+                <p className="text-sm text-gray-500 mb-8">{plan.tagline}</p>
 
                 {/* Feature list */}
-                <ul className="space-y-2.5 mb-8">
+                <ul className="space-y-3 mb-10">
                   {plan.features.map((f) => (
-                    <li key={f.text} className="flex items-start gap-2">
-                      <span className={`mt-0.5 shrink-0 text-sm ${f.included ? 'text-green-500' : 'text-gray-200'}`}>
+                    <li key={f.text} className="flex items-start gap-2.5">
+                      <span className={`mt-0.5 shrink-0 text-sm font-bold ${f.included ? 'text-green-500' : 'text-gray-200'}`}>
                         {f.included ? '✓' : '✕'}
                       </span>
-                      <span className={`text-sm ${f.included ? 'text-gray-700' : 'text-gray-300 line-through'}`}>
+                      <span className={`text-[15px] ${f.included ? 'text-gray-700' : 'text-gray-300 line-through'}`}>
                         {f.text}
                       </span>
                     </li>
@@ -190,7 +179,7 @@ export default function PricingPage() {
 
                 <Link
                   href="/register"
-                  className={`block text-center py-3 rounded-xl font-bold text-sm transition-all ${plan.ctaClass}`}
+                  className={`block text-center py-3.5 rounded-xl font-bold text-sm transition-all ${plan.ctaClass}`}
                 >
                   {plan.priceNum === 0 ? 'Start for Free' : `Get ${plan.name}`} →
                 </Link>
@@ -199,48 +188,46 @@ export default function PricingPage() {
           ))}
         </div>
 
-        {/* Homepage Feature Add-On */}
-        <div id="featured" className="bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 rounded-2xl p-1 mb-16">
-          <div className="bg-white rounded-[14px] p-8">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-3xl">⭐</span>
-                  <h2 className="text-2xl font-black text-gray-900">Homepage Feature Spotlight</h2>
-                  <span className="vip-badge text-[10px] px-2 py-0.5 rounded-full font-black">ADD-ON</span>
-                </div>
-                <p className="text-gray-600 text-sm leading-relaxed mb-4 max-w-2xl">
-                  Get maximum visibility with a rotating <strong>featured spot on the FranchiseOntario.com homepage</strong>. Your franchise appears in the "Featured This Week" spotlight section, which is the highest-traffic area of our site — visible to every visitor before they even search.
-                </p>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-                  {[
-                    { icon: '👁️', label: 'Top placement', sub: 'Above all directory listings' },
-                    { icon: '🔄', label: 'Rotating weekly', sub: 'Fair exposure for all featured brands' },
-                    { icon: '📊', label: '10,000+ monthly views', sub: 'High-traffic homepage position' },
-                  ].map((b) => (
-                    <div key={b.label} className="bg-amber-50 rounded-xl p-3 border border-amber-100">
-                      <div className="text-xl mb-1">{b.icon}</div>
-                      <div className="text-sm font-bold text-gray-800">{b.label}</div>
-                      <div className="text-xs text-gray-500">{b.sub}</div>
-                    </div>
-                  ))}
-                </div>
-                <div className="flex items-center gap-2 text-xs text-gray-500">
-                  <span className="text-green-500">✓</span> Available as add-on to any plan
-                  <span className="mx-2 text-gray-200">|</span>
-                  <span className="text-green-500">✓</span> Weekly billing — cancel anytime
-                  <span className="mx-2 text-gray-200">|</span>
-                  <span className="text-green-500">✓</span> Limited spots available each week
-                </div>
+        {/* Homepage Feature Add-On — dark background, white title */}
+        <div id="featured" className="bg-gray-900 rounded-2xl p-8 mb-16">
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-8">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-3">
+                <span className="text-3xl">⭐</span>
+                <h2 className="text-2xl font-black text-white">Homepage Feature Spotlight</h2>
+                <span className="bg-amber-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                  ADD-ON
+                </span>
               </div>
-              <div className="shrink-0 text-center">
-                <div className="text-5xl font-black text-gray-900">$14.99</div>
-                <div className="text-sm text-gray-400 mb-4">/week</div>
-                <Link href="/register" className="btn-gold block text-center px-8 py-3 rounded-xl font-bold text-sm">
-                  Reserve Your Spot →
-                </Link>
-                <p className="text-xs text-gray-400 mt-2">Limited weekly spots</p>
+              <p className="text-gray-300 text-sm leading-relaxed mb-6 max-w-2xl">
+                Get maximum visibility with a rotating <strong className="text-white">featured spot on the FranchiseOntario.com homepage</strong>. Your franchise appears in the &ldquo;Featured This Week&rdquo; spotlight section — the highest-traffic area of our site, visible to every visitor before they even search.
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                {[
+                  { icon: '👁️', label: 'Top placement', sub: 'Above all directory listings' },
+                  { icon: '🔄', label: 'Rotating weekly', sub: 'Fair exposure for all featured brands' },
+                  { icon: '📊', label: '10,000+ monthly views', sub: 'High-traffic homepage position' },
+                ].map((b) => (
+                  <div key={b.label} className="bg-white/10 rounded-xl p-4 border border-white/10">
+                    <div className="text-xl mb-1.5">{b.icon}</div>
+                    <div className="text-sm font-bold text-white">{b.label}</div>
+                    <div className="text-xs text-gray-400">{b.sub}</div>
+                  </div>
+                ))}
               </div>
+              <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-gray-400">
+                <span><span className="text-amber-400 font-bold">✓</span> Available as add-on to any plan</span>
+                <span><span className="text-amber-400 font-bold">✓</span> Weekly billing — cancel anytime</span>
+                <span><span className="text-amber-400 font-bold">✓</span> Limited spots available each week</span>
+              </div>
+            </div>
+            <div className="shrink-0 text-center md:text-right">
+              <div className="text-5xl font-black text-white">$14.99</div>
+              <div className="text-sm text-gray-400 mb-5">/week</div>
+              <Link href="/register" className="btn-gold block text-center px-8 py-3 rounded-xl font-bold text-sm">
+                Reserve Your Spot →
+              </Link>
+              <p className="text-xs text-gray-500 mt-2">Limited weekly spots</p>
             </div>
           </div>
         </div>
@@ -268,7 +255,7 @@ export default function PricingPage() {
               },
               {
                 q: 'What makes Enterprise different from Premium?',
-                a: 'Enterprise includes a gold VIP badge, top placement across the entire directory and within your category, press release distribution, a dedicated account manager, and unlimited media. It\'s the full white-glove experience for established franchise brands.',
+                a: "Enterprise includes a gold VIP badge, top placement across the entire directory and within your category, press release distribution, a dedicated account manager, and unlimited media. It's the full white-glove experience for established franchise brands.",
               },
               {
                 q: 'Is there a contract or commitment?',

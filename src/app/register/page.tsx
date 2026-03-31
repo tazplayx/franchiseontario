@@ -1,9 +1,10 @@
 'use client'
 import Link from 'next/link'
-import { useState, useRef } from 'react'
-import { Check, ArrowRight, Loader2, Upload, X, ImagePlus, Video, Image as ImageIcon } from 'lucide-react'
+import { useState, useRef, useEffect } from 'react'
+import { Check, ArrowRight, Loader2, Upload, X, ImagePlus, Video, Image as ImageIcon, Mail, RefreshCw } from 'lucide-react'
+import { sendEmail } from '@/lib/email'
 
-type Step = 'plan' | 'details' | 'confirm'
+type Step = 'plan' | 'details' | 'verify' | 'confirm'
 
 interface FormData {
   franchiseName: string
@@ -49,11 +50,92 @@ const planOptions = [
 
 const MAX_GALLERY = 6
 
+// ── Email Verification Step ────────────────────────────────────────────────────
+function VerifyStep({
+  email,
+  isVerified,
+  verifySent,
+  verifyLoading,
+  onResend,
+  onVerified,
+  onBack,
+}: {
+  email: string
+  isVerified: boolean
+  verifySent: boolean
+  verifyLoading: boolean
+  onResend: () => void
+  onVerified: () => void
+  onBack: () => void
+}) {
+  // Poll localStorage every 2s — auto-advance once user clicks link in another tab
+  useEffect(() => {
+    if (isVerified) { onVerified(); return }
+    const interval = setInterval(() => {
+      const verified = typeof window !== 'undefined'
+        ? localStorage.getItem(`fo_email_verified_${email}`) === 'true'
+        : false
+      if (verified) { clearInterval(interval); onVerified() }
+    }, 2000)
+    return () => clearInterval(interval)
+  }, [email, isVerified, onVerified])
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center">
+      <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-5">
+        <Mail size={28} className="text-blue-600" />
+      </div>
+      <h2 className="text-xl font-black text-gray-900 mb-2">Check Your Inbox</h2>
+      <p className="text-sm text-gray-500 mb-1">
+        We&apos;ve sent a verification link to
+      </p>
+      <p className="text-sm font-bold text-gray-800 mb-6">{email}</p>
+      <p className="text-xs text-gray-400 mb-8 max-w-xs mx-auto">
+        Click the link in the email to verify your address, then this page will automatically advance to checkout.
+      </p>
+
+      {/* Spinner while waiting */}
+      <div className="flex items-center justify-center gap-2 text-xs text-gray-400 mb-8">
+        <Loader2 size={14} className="animate-spin" />
+        Waiting for verification…
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-3 justify-center">
+        <button
+          onClick={onBack}
+          className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold text-sm transition-all"
+        >
+          ← Back
+        </button>
+        <button
+          disabled={verifyLoading}
+          onClick={onResend}
+          className="flex-1 flex items-center justify-center gap-2 border border-gray-200 text-gray-700 hover:bg-gray-50 py-3 rounded-xl font-semibold text-sm transition-all disabled:opacity-60"
+        >
+          {verifyLoading ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <RefreshCw size={14} />
+          )}
+          {verifySent ? 'Resend Email' : 'Send Again'}
+        </button>
+      </div>
+
+      <p className="text-xs text-gray-400 mt-5">
+        Can&apos;t find it? Check your spam folder. Link expires in 24 hours.
+      </p>
+    </div>
+  )
+}
+
 export default function RegisterPage() {
   const [step, setStep] = useState<Step>('plan')
   const [selectedPlan, setSelectedPlan] = useState('basic')
   const [addFeature, setAddFeature] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [verifyLoading, setVerifyLoading] = useState(false)
+  const [verifySent, setVerifySent] = useState(false)
+  const [isEmailVerified, setIsEmailVerified] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     franchiseName: '', contactName: '', email: '', phone: '',
     website: '', category: '', established: '', locations: '',
@@ -63,6 +145,29 @@ export default function RegisterPage() {
 
   const logoInputRef = useRef<HTMLInputElement>(null)
   const galleryInputRef = useRef<HTMLInputElement>(null)
+
+  // Check if email is already verified in localStorage whenever email changes
+  useEffect(() => {
+    if (!formData.email) { setIsEmailVerified(false); return }
+    const verified = typeof window !== 'undefined'
+      ? localStorage.getItem(`fo_email_verified_${formData.email}`) === 'true'
+      : false
+    setIsEmailVerified(verified)
+  }, [formData.email])
+
+  const sendVerificationEmail = async () => {
+    if (!formData.email) return
+    setVerifyLoading(true)
+    try {
+      await sendEmail(formData.email, 'verify-email', {
+        contactName: formData.contactName,
+        franchiseName: formData.franchiseName,
+      })
+      setVerifySent(true)
+    } finally {
+      setVerifyLoading(false)
+    }
+  }
 
   // ── File handlers ──────────────────────────────────────────────────────────
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -122,27 +227,34 @@ export default function RegisterPage() {
 
       <div className="max-w-3xl mx-auto px-4 sm:px-6 py-10">
         {/* Step indicator */}
-        <div className="flex items-center justify-center gap-2 mb-10">
-          {(['plan', 'details', 'confirm'] as Step[]).map((s, i) => (
-            <div key={s} className="flex items-center gap-2">
-              <div
-                className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
-                  step === s
-                    ? 'bg-red-600 text-white'
-                    : i < ['plan', 'details', 'confirm'].indexOf(step)
-                    ? 'bg-green-500 text-white'
-                    : 'bg-gray-200 text-gray-400'
-                }`}
-              >
-                {i < ['plan', 'details', 'confirm'].indexOf(step) ? '✓' : i + 1}
-              </div>
-              <span className={`text-xs font-medium hidden sm:block ${step === s ? 'text-gray-900' : 'text-gray-400'}`}>
-                {s.charAt(0).toUpperCase() + s.slice(1)}
-              </span>
-              {i < 2 && <div className="w-8 h-px bg-gray-200 hidden sm:block" />}
+        {(() => {
+          const steps: Step[] = ['plan', 'details', 'verify', 'confirm']
+          const stepLabels: Record<Step, string> = { plan: 'Plan', details: 'Details', verify: 'Verify', confirm: 'Confirm' }
+          const currentIdx = steps.indexOf(step)
+          return (
+            <div className="flex items-center justify-center gap-2 mb-10">
+              {steps.map((s, i) => (
+                <div key={s} className="flex items-center gap-2">
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
+                      step === s
+                        ? 'bg-red-600 text-white'
+                        : i < currentIdx
+                        ? 'bg-green-500 text-white'
+                        : 'bg-gray-200 text-gray-400'
+                    }`}
+                  >
+                    {i < currentIdx ? '✓' : i + 1}
+                  </div>
+                  <span className={`text-xs font-medium hidden sm:block ${step === s ? 'text-gray-900' : 'text-gray-400'}`}>
+                    {stepLabels[s]}
+                  </span>
+                  {i < steps.length - 1 && <div className="w-8 h-px bg-gray-200 hidden sm:block" />}
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
+          )
+        })()}
 
         {/* ── Step 1: Plan ─────────────────────────────────────────────────── */}
         {step === 'plan' && (
@@ -397,7 +509,12 @@ export default function RegisterPage() {
                     alert('Please fill in Franchise Name, Contact Name, and Business Email.')
                     return
                   }
-                  setStep('confirm')
+                  if (isEmailVerified) {
+                    setStep('confirm')
+                  } else {
+                    sendVerificationEmail()
+                    setStep('verify')
+                  }
                 }}
                 className="flex-[2] btn-red py-3 rounded-xl font-bold text-sm"
               >
@@ -405,6 +522,19 @@ export default function RegisterPage() {
               </button>
             </div>
           </div>
+        )}
+
+        {/* ── Step 3: Verify Email ───────────────────────────────────────────── */}
+        {step === 'verify' && (
+          <VerifyStep
+            email={formData.email}
+            isVerified={isEmailVerified}
+            verifySent={verifySent}
+            verifyLoading={verifyLoading}
+            onResend={sendVerificationEmail}
+            onVerified={() => setStep('confirm')}
+            onBack={() => setStep('details')}
+          />
         )}
 
         {/* ── Step 3: Confirm & Pay ─────────────────────────────────────────── */}

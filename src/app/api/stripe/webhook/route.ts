@@ -2,6 +2,20 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
 import Stripe from 'stripe'
 
+// ── Internal helper — fire-and-forget email from webhook ──────────────────────
+async function fireEmail(to: string, type: string, data: Record<string, unknown>) {
+  try {
+    const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.franchiseontario.com'
+    await fetch(`${base}/api/email/send`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ to, type, data }),
+    })
+  } catch {
+    // Never let email failure break the webhook response
+  }
+}
+
 export const dynamic = 'force-dynamic'
 
 export async function POST(req: NextRequest) {
@@ -71,12 +85,17 @@ export async function POST(req: NextRequest) {
       // ── Subscription cancelled ───────────────────────────────────────
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
-        const { franchiseName } = subscription.metadata ?? {}
+        const { franchiseName, plan, contactEmail } = subscription.metadata ?? {}
 
         console.log(`[Webhook] Subscription cancelled — ${franchiseName}`)
 
         // TODO: Downgrade listing to Basic (free) tier
         // await db.listing.update({ subscriptionId: subscription.id, plan: 'basic' })
+
+        // Notify customer that their subscription has ended
+        if (contactEmail) {
+          await fireEmail(contactEmail, 'membership-ending', { franchiseName, plan })
+        }
 
         break
       }
@@ -85,11 +104,23 @@ export async function POST(req: NextRequest) {
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice
         const customerId = invoice.customer as string
+        const customerEmail = invoice.customer_email ?? ''
 
         console.log(`[Webhook] Payment failed — Customer: ${customerId}`)
 
-        // TODO: Send payment failure email, flag listing for review
-        // await sendPaymentFailedEmail({ customerId })
+        // TODO: Flag listing for review
+        // await db.listing.update({ customerId, paymentFailed: true })
+
+        // Notify customer to update their payment method
+        if (customerEmail) {
+          // invoice.subscription may not exist on all Stripe SDK versions — use optional cast
+          const subscriptionId = (invoice as unknown as { subscription?: string }).subscription
+          const sub = subscriptionId
+            ? await getStripe().subscriptions.retrieve(subscriptionId)
+            : null
+          const { franchiseName, plan } = sub?.metadata ?? {}
+          await fireEmail(customerEmail, 'payment-failed', { franchiseName, plan })
+        }
 
         break
       }

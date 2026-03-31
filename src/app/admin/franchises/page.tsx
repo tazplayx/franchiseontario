@@ -5,6 +5,7 @@ import Link from 'next/link'
 import { CheckCircle, XCircle, Eye, LayoutDashboard, ListChecks, MessageSquare, LogOut, Building2 } from 'lucide-react'
 import { getPendingStatuses, savePendingStatus, saveApprovedListing, removeApprovedListing, type PendingStatus } from '@/lib/store'
 import type { Franchise, FranchiseCategory } from '@/data/franchises'
+import { sendEmail } from '@/lib/email'
 
 const initialPending = [
   { id: 'p1', name: 'Sunset Poutine Co.', category: 'Fast Food', plan: 'Premium', email: 'owner@sunsetpoutine.ca', submittedAt: '2026-03-25', city: 'Mississauga, ON', description: 'A Quebec-inspired poutine franchise bringing authentic curds and gravy to Ontario markets. 3 existing locations in Quebec.', status: 'pending' },
@@ -139,9 +140,18 @@ export default function AdminFranchisesPage() {
     if (listing) {
       if (status === 'approved') {
         saveApprovedListing(pendingToFranchise(listing))
+        // Notify listing owner of approval
+        sendEmail(listing.email, 'listing-approved', {
+          franchiseName: listing.name,
+          plan: listing.plan,
+        })
       } else {
         // Remove from approved store in case it was previously approved then rejected
         removeApprovedListing(id)
+        // Notify listing owner of rejection
+        sendEmail(listing.email, 'listing-rejected', {
+          franchiseName: listing.name,
+        })
       }
     }
     setListings((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)))
