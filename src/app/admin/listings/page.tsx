@@ -335,7 +335,20 @@ export default function AdminListingsPage() {
                         </div>
                       )}
                       <div>
-                        <div className="font-semibold text-gray-900 leading-tight">{listing.name}</div>
+                        <div className="flex items-center gap-2 leading-tight">
+                          <span className="font-semibold text-gray-900">{listing.name}</span>
+                          {listing.sourced && (
+                            <a
+                              href={listing.sourceListingUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              title={`Sourced from ${listing.sourceSite}`}
+                              className="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full hover:bg-blue-200 transition-colors whitespace-nowrap"
+                            >
+                              Sourced · {listing.sourceSite}
+                            </a>
+                          )}
+                        </div>
                         <div className="text-xs text-gray-400">{listing.category}</div>
                       </div>
                     </div>

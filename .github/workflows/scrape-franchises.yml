@@ -1,0 +1,45 @@
+name: Scrape Franchise Listings
+
+on:
+  schedule:
+    - cron: '0 3 * * 0'   # Every Sunday at 3:00 AM UTC
+  workflow_dispatch:        # Manual trigger from the GitHub Actions tab
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write       # Required to commit updated sourced-listings.ts back to the repo
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run franchise scraper
+        run: npx tsx scripts/scrape-franchises.ts
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+
+      - name: Commit updated sourced listings (if changed)
+        run: |
+          git config user.name "FranchiseOntario Bot"
+          git config user.email "bot@franchiseontario.com"
+          git add src/data/sourced-listings.ts
+          if git diff --staged --quiet; then
+            echo "No changes to sourced-listings.ts — nothing to commit."
+          else
+            git commit -m "bot: sync sourced franchise listings [skip ci]"
+            git push
+            echo "✓ Changes committed and pushed — Vercel will auto-redeploy."
+          fi

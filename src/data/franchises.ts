@@ -82,9 +82,13 @@ export interface Franchise {
   mediaImages: string[];
   videoUrl?: string;
   faqs: { q: string; a: string }[];
+  // Sourced listing fields — set by the scraper bot, never edited manually
+  sourced?: boolean;
+  sourceSite?: string;
+  sourceListingUrl?: string;
 }
 
-export const franchises: Franchise[] = [
+const seedFranchises: Franchise[] = [
   {
     id: 'chucks-roadhouse',
     name: "Chuck's Roadhouse Bar and Grill",
@@ -266,6 +270,11 @@ export const franchises: Franchise[] = [
     ],
   },
 ];
+
+// Auto-generated sourced listings — updated weekly by the scraper bot
+import { sourcedListings } from './sourced-listings'
+
+export const franchises: Franchise[] = [...seedFranchises, ...sourcedListings]
 
 export const getFeaturedFranchises = () => franchises.filter((f) => f.isFeatured);
 export const getVIPFranchises = () => franchises.filter((f) => f.isVIP);
