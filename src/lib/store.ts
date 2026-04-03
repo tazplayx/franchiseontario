@@ -247,3 +247,45 @@ export function getNotifications(): NotificationEntry[] {
 export function clearNotifications(): void {
   write(NOTIFICATION_LOG_KEY, [])
 }
+
+// ── Listing claims ─────────────────────────────────────────────────────────────
+
+const LISTING_CLAIMS_KEY = 'fo_listing_claims_v1'
+
+export interface ListingClaim {
+  id: string
+  franchiseId: string
+  franchiseName: string
+  claimantName: string
+  claimantEmail: string
+  claimantTitle: string
+  message: string
+  submittedAt: string
+  status: 'pending' | 'approved' | 'rejected'
+  domainMatch?: boolean
+  sourceListingUrl?: string
+  sourceSite?: string
+}
+
+export function getClaims(): ListingClaim[] {
+  return read<ListingClaim[]>(LISTING_CLAIMS_KEY, [])
+}
+
+export function saveClaim(claim: ListingClaim): void {
+  const existing = getClaims()
+  // Replace if same franchiseId + email already exists, otherwise append
+  const idx = existing.findIndex(
+    (c) => c.franchiseId === claim.franchiseId && c.claimantEmail === claim.claimantEmail
+  )
+  if (idx >= 0) {
+    existing[idx] = claim
+    write(LISTING_CLAIMS_KEY, existing)
+  } else {
+    write(LISTING_CLAIMS_KEY, [...existing, claim])
+  }
+}
+
+export function updateClaimStatus(id: string, status: 'approved' | 'rejected'): void {
+  const existing = getClaims()
+  write(LISTING_CLAIMS_KEY, existing.map((c) => (c.id === id ? { ...c, status } : c)))
+}

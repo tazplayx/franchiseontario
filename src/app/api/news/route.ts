@@ -23,12 +23,18 @@ const FEEDS = [
 function stripTags(str: string): string {
   return str
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-    .replace(/<[^>]+>/g, '')
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&#\d+;/g, ' ')
+    .replace(/&[a-z]+;/gi, ' ')
+    .replace(/\s+/g, ' ')
     .trim()
 }
 
@@ -90,9 +96,8 @@ function parseRSS(xml: string, feedIndex: number): NewsArticle[] {
     const link =
       stripTags(block.match(/<link>([\s\S]*?)<\/link>/)?.[1] ?? '') ||
       stripTags(block.match(/<guid[^>]*>([\s\S]*?)<\/guid>/)?.[1] ?? '')
-    const desc = stripTags(
-      (block.match(/<description>([\s\S]*?)<\/description>/)?.[1] ?? '').slice(0, 300)
-    )
+    // Strip HTML first, then slice — avoids cutting mid-tag and leaving fragments
+    const desc = stripTags(block.match(/<description>([\s\S]*?)<\/description>/)?.[1] ?? '').slice(0, 220)
     const pubDate = block.match(/<pubDate>([\s\S]*?)<\/pubDate>/)?.[1]?.trim() ?? ''
     const source = stripTags(block.match(/<source[^>]*>([\s\S]*?)<\/source>/)?.[1] ?? 'Franchise News')
 

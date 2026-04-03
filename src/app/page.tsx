@@ -49,6 +49,8 @@ function NewsTicker() {
 
 /* ── Hero Section ────────────────────────────────── */
 function Hero() {
+  const listingCount = franchises.length
+  const categoryCount = new Set(franchises.map((f) => f.category)).size
   return (
     <section className="relative overflow-hidden bg-white border-b border-gray-100">
       <div className="h-1 bg-[#C8102E] w-full" />
@@ -97,8 +99,8 @@ function Hero() {
             {/* Stats row */}
             <div className="grid grid-cols-4 gap-6 max-w-lg">
               {[
-                { value: '500+', label: 'Listings' },
-                { value: '28', label: 'Categories' },
+                { value: `${listingCount}+`, label: 'Listings' },
+                { value: String(categoryCount), label: 'Categories' },
                 { value: '2,500+', label: 'Monthly Visitors' },
                 { value: '$2B+', label: 'In Opportunities' },
               ].map((stat) => (

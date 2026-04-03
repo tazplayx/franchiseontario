@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, ListChecks, MessageSquare, LogOut, Mail, Building2 } from 'lucide-react'
+import { LayoutDashboard, ListChecks, MessageSquare, Shield, LogOut, Mail, Building2 } from 'lucide-react'
 import { applyTicketStore, saveTicketStatus, type StoredTicket } from '@/lib/store'
 
 const seedTickets: StoredTicket[] = [
@@ -19,6 +19,7 @@ function AdminNav({ active }: { active: string }) {
     { label: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard size={16} /> },
     { label: 'Active Listings', href: '/admin/listings', icon: <Building2 size={16} /> },
     { label: 'Pending Listings', href: '/admin/franchises', icon: <ListChecks size={16} /> },
+    { label: 'Claim Requests', href: '/admin/claims', icon: <Shield size={16} /> },
     { label: 'Support Tickets', href: '/admin/tickets', icon: <MessageSquare size={16} /> },
   ]
   const logout = () => { sessionStorage.removeItem('fo_admin'); router.push('/admin') }

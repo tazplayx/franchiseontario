@@ -116,6 +116,17 @@ export default function FranchiseProfilePage({ params }: { params: { id: string 
                     <Crown size={10} /> VIP Enterprise
                   </span>
                 )}
+                {f.sourced && (
+                  <a
+                    href={f.sourceListingUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[10px] bg-blue-100 text-blue-700 font-bold px-2 py-0.5 rounded-full hover:bg-blue-200 transition-colors"
+                    title={`Sourced from ${f.sourceSite}`}
+                  >
+                    Sourced · {f.sourceSite}
+                  </a>
+                )}
                 <span className="bg-gray-100 text-gray-600 text-xs font-medium px-2.5 py-1 rounded-full">
                   {f.category}
                 </span>
@@ -152,6 +163,15 @@ export default function FranchiseProfilePage({ params }: { params: { id: string 
               <a href={f.website} target="_blank" rel="noopener noreferrer" className="bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-2.5 rounded-xl font-semibold text-sm text-center transition-all">
                 Visit Website
               </a>
+              {f.sourced && (
+                <Link
+                  href={`/claim/${f.id}`}
+                  className="bg-blue-50 border border-blue-200 hover:border-blue-400 text-blue-700 px-6 py-2.5 rounded-xl font-semibold text-sm text-center transition-all flex items-center justify-center gap-1.5"
+                >
+                  <BadgeCheck size={14} />
+                  Claim this Listing
+                </Link>
+              )}
             </div>
           </div>
         </div>

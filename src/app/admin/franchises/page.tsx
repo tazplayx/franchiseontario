@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { CheckCircle, XCircle, Eye, LayoutDashboard, ListChecks, MessageSquare, LogOut, Building2 } from 'lucide-react'
+import { CheckCircle, XCircle, Eye, LayoutDashboard, ListChecks, MessageSquare, Shield, LogOut, Building2 } from 'lucide-react'
 import { getPendingStatuses, savePendingStatus, saveApprovedListing, removeApprovedListing, type PendingStatus } from '@/lib/store'
 import type { Franchise, FranchiseCategory } from '@/data/franchises'
 import { sendEmail } from '@/lib/email'
@@ -83,6 +83,7 @@ function AdminNav({ active }: { active: string }) {
     { label: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard size={16} /> },
     { label: 'Active Listings', href: '/admin/listings', icon: <Building2 size={16} /> },
     { label: 'Pending Listings', href: '/admin/franchises', icon: <ListChecks size={16} /> },
+    { label: 'Claim Requests', href: '/admin/claims', icon: <Shield size={16} /> },
     { label: 'Support Tickets', href: '/admin/tickets', icon: <MessageSquare size={16} /> },
   ]
   const logout = () => { sessionStorage.removeItem('fo_admin'); router.push('/admin') }
