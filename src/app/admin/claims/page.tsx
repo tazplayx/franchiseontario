@@ -8,7 +8,7 @@ import { getClaims, updateClaimStatus, type ListingClaim } from '@/lib/store'
 function useAdminAuth() {
   const router = useRouter()
   useEffect(() => {
-    if (typeof window !== 'undefined' && sessionStorage.getItem('fo_admin') !== 'authenticated') {
+    if (typeof window !== 'undefined' && localStorage.getItem('fo_admin') !== 'authenticated') {
       router.replace('/admin')
     }
   }, [router])
@@ -53,7 +53,7 @@ function AdminNav({ active }: { active: string }) {
       <div className="p-4 border-t border-gray-800">
         <div className="text-xs text-gray-500 mb-2 px-3">cdeneire@proton.me</div>
         <button
-          onClick={() => { sessionStorage.removeItem('fo_admin'); router.push('/admin') }}
+          onClick={() => { localStorage.removeItem('fo_admin'); router.push('/admin') }}
           className="flex items-center gap-2 px-3 py-2 text-sm text-gray-400 hover:text-red-400 transition-colors w-full"
         >
           <LogOut size={15} /> Sign Out

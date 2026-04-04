@@ -143,7 +143,7 @@ export default function ClientListingBody({ seed }: { seed: Franchise }) {
     }
     // Check ownership
     const session = getSession()
-    const adminAuth = typeof window !== 'undefined' && sessionStorage.getItem('fo_admin') === 'authenticated'
+    const adminAuth = typeof window !== 'undefined' && localStorage.getItem('fo_admin') === 'authenticated'
     if (adminAuth || (session && session.franchiseId === seed.id)) {
       setIsOwner(true)
     }

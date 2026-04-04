@@ -125,6 +125,47 @@ function parseRSS(xml: string, feedIndex: number): NewsArticle[] {
   return items
 }
 
+// ── OG image fetcher ───────────────────────────────────────────────────────────
+async function fetchOgImage(url: string): Promise<string | null> {
+  try {
+    const controller = new AbortController()
+    const timeout = setTimeout(() => controller.abort(), 4000)
+    const res = await fetch(url, {
+      signal: controller.signal,
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (compatible; FranchiseOntario-NewsBot/1.0)',
+        'Accept': 'text/html',
+      },
+      redirect: 'follow',
+    })
+    clearTimeout(timeout)
+    if (!res.ok) return null
+    // Only read enough HTML to find meta tags (first 20KB avoids streaming entire page)
+    const reader = res.body?.getReader()
+    if (!reader) return null
+    let html = ''
+    while (html.length < 20000) {
+      const { done, value } = await reader.read()
+      if (done) break
+      html += new TextDecoder().decode(value)
+      // Stop early if we've passed the <head> section
+      if (html.includes('</head>') || html.includes('<body')) break
+    }
+    reader.cancel().catch(() => {})
+
+    // Match og:image (both attribute orderings)
+    const ogImage =
+      html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)?.[1] ||
+      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i)?.[1] ||
+      html.match(/<meta[^>]+name=["']twitter:image["'][^>]+content=["']([^"']+)["']/i)?.[1] ||
+      html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+name=["']twitter:image["']/i)?.[1]
+
+    return ogImage || null
+  } catch {
+    return null
+  }
+}
+
 // ── Route handler ──────────────────────────────────────────────────────────────
 export async function GET() {
   const all: NewsArticle[] = []
@@ -155,6 +196,18 @@ export async function GET() {
   // Re-mark the first surviving article as featured
   if (unique.length > 0) {
     unique.forEach((a, idx) => { a.isFeatured = idx === 0 })
+  }
+
+  // Fetch OG images concurrently (best-effort, 4s timeout each)
+  if (unique.length > 0) {
+    const imageResults = await Promise.allSettled(
+      unique.map((a) => fetchOgImage(a.sourceUrl))
+    )
+    imageResults.forEach((result, i) => {
+      if (result.status === 'fulfilled' && result.value) {
+        unique[i].thumbnailUrl = result.value
+      }
+    })
   }
 
   return NextResponse.json({

@@ -53,7 +53,7 @@ function pendingToFranchise(p: typeof allPending[0]): Franchise {
 function useAdminAuth() {
   const router = useRouter()
   useEffect(() => {
-    if (typeof window !== 'undefined' && sessionStorage.getItem('fo_admin') !== 'authenticated') {
+    if (typeof window !== 'undefined' && localStorage.getItem('fo_admin') !== 'authenticated') {
       router.replace('/admin')
     }
   }, [router])
@@ -74,7 +74,7 @@ function AdminNav({ active }: { active: string }) {
   ]
 
   const logout = () => {
-    sessionStorage.removeItem('fo_admin')
+    localStorage.removeItem('fo_admin')
     router.push('/admin')
   }
 

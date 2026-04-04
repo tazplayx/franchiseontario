@@ -142,20 +142,20 @@ export function deleteAccount(id: string): void {
 
 export function setSession(session: FranchisorSession): void {
   if (typeof window === 'undefined') return
-  sessionStorage.setItem(SESSION_KEY, JSON.stringify(session))
+  localStorage.setItem(SESSION_KEY, JSON.stringify(session))
 }
 
 export function getSession(): FranchisorSession | null {
   if (typeof window === 'undefined') return null
   try {
-    const raw = sessionStorage.getItem(SESSION_KEY)
+    const raw = localStorage.getItem(SESSION_KEY)
     return raw ? JSON.parse(raw) : null
   } catch { return null }
 }
 
 export function clearSession(): void {
   if (typeof window === 'undefined') return
-  sessionStorage.removeItem(SESSION_KEY)
+  localStorage.removeItem(SESSION_KEY)
 }
 
 export const FREE_LEAD_LIMIT = 5

@@ -24,7 +24,7 @@ function AdminNav({ active }: { active: string }) {
     { label: 'User Accounts', href: '/admin/users', icon: <Users size={16} /> },
     { label: 'SEO Dashboard', href: '/admin/seo', icon: <BarChart3 size={16} /> },
   ]
-  const logout = () => { sessionStorage.removeItem('fo_admin'); router.push('/admin') }
+  const logout = () => { localStorage.removeItem('fo_admin'); router.push('/admin') }
   return (
     <aside className="bg-gray-900 text-white w-60 shrink-0 min-h-screen flex-col hidden md:flex">
       <div className="p-5 border-b border-gray-800">
@@ -51,7 +51,7 @@ function AdminNav({ active }: { active: string }) {
 export default function AdminTicketsPage() {
   const router = useRouter()
   useEffect(() => {
-    if (typeof window !== 'undefined' && sessionStorage.getItem('fo_admin') !== 'authenticated') {
+    if (typeof window !== 'undefined' && localStorage.getItem('fo_admin') !== 'authenticated') {
       router.replace('/admin')
     }
   }, [router])

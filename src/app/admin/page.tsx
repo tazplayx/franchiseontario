@@ -22,7 +22,7 @@ export default function AdminLoginPage() {
 
     setTimeout(() => {
       if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        sessionStorage.setItem('fo_admin', 'authenticated')
+        localStorage.setItem('fo_admin', 'authenticated')
         router.push('/admin/dashboard')
       } else {
         setError('Invalid email or password.')

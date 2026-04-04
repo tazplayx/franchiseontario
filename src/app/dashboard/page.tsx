@@ -131,7 +131,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
     // Demo: any credentials work — in production this would hit your auth API
     if (!email || !password) { setError('Please enter your email and password.'); return }
     if (typeof window !== 'undefined') {
-      sessionStorage.setItem('fo_user', 'authenticated')
+      localStorage.setItem('fo_user', 'authenticated')
     }
     onLogin()
   }
@@ -939,7 +939,7 @@ export default function DashboardPage() {
       return
     }
     // Fall back to demo session
-    if (typeof window !== 'undefined' && sessionStorage.getItem('fo_user') === 'authenticated') {
+    if (typeof window !== 'undefined' && localStorage.getItem('fo_user') === 'authenticated') {
       setLoggedIn(true)
       setActiveTab('listing')
     }
@@ -947,7 +947,7 @@ export default function DashboardPage() {
 
   const handleLogout = () => {
     clearSession()
-    if (typeof window !== 'undefined') sessionStorage.removeItem('fo_user')
+    if (typeof window !== 'undefined') localStorage.removeItem('fo_user')
     setLoggedIn(false)
     setRealSession(null)
   }
