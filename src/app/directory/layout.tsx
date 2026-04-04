@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'Browse Ontario Franchise Listings — Franchise Directory',
+  title: 'Browse Ontario & Canada Franchise Listings — Franchise Directory',
   description:
-    'Search 500+ franchise opportunities in Ontario by category, investment level, and listing tier. Compare franchise brands side-by-side. From food & beverage to fitness, home services, and more.',
+    'Search 500+ franchise opportunities in Ontario and across Canada by category, investment level, and listing tier. Compare franchise brands side-by-side. From food & beverage to fitness, home services, and more.',
   keywords: [
     'franchise directory Ontario',
     'franchise listings Ontario',

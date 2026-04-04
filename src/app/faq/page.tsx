@@ -29,7 +29,7 @@ const faqs = [
       },
       {
         q: 'What information do I need to submit a listing?',
-        a: 'You\'ll need your franchise name, category, a business description, contact information, website, year established, and Ontario location count. Premium and Enterprise listings also include investment details, photo gallery, highlights, and franchise financials.',
+        a: 'You\'ll need your franchise name, category, a business description, contact information, website, year established, and Canadian location count (with Ontario presence noted). Premium and Enterprise listings also include investment details, photo gallery, highlights, and franchise financials.',
       },
       {
         q: 'Can I update my listing after it goes live?',
@@ -75,7 +75,7 @@ const faqs = [
       },
       {
         q: 'How do I contact a franchise listed in the directory?',
-        a: 'Each franchise listing includes a contact section with a direct inquiry form, phone number, and website link. Enterprise and Premium listings include a dedicated franchise inquiry email. Clicking "Request Franchise Info" will open a pre-populated email inquiry to the franchise\'s franchising team.',
+        a: 'Each franchise listing includes a "Contact Franchise" button that opens a popup inquiry form. Fill in your name, email, phone, city, investment budget, and a message — your information is sent directly to the franchise team. Basic-tier franchisors see the first 5 leads in their dashboard; Premium and Enterprise accounts receive unlimited lead access.',
       },
       {
         q: 'Can I leave a review for a franchise?',
@@ -132,7 +132,7 @@ export default function FAQPage() {
             Frequently Asked Questions
           </h1>
           <p className="text-gray-500 text-sm">
-            Everything you need to know about listing your franchise and using FranchiseOntario.com.
+            Everything you need to know about listing your franchise in Ontario and across Canada, and using FranchiseOntario.com.
             Can't find your answer?{' '}
             <Link href="/support" className="text-red-600 hover:text-red-700 underline">
               Submit a support ticket

@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { LayoutDashboard, Building2, ListChecks, MessageSquare, Shield, LogOut, CheckCircle, XCircle, ExternalLink, Clock, AlertCircle } from 'lucide-react'
+import { LayoutDashboard, Building2, ListChecks, MessageSquare, Shield, LogOut, CheckCircle, XCircle, ExternalLink, Clock, AlertCircle, BarChart3, Users } from 'lucide-react'
 import { getClaims, updateClaimStatus, type ListingClaim } from '@/lib/store'
 
 function useAdminAuth() {
@@ -22,6 +22,8 @@ function AdminNav({ active }: { active: string }) {
     { label: 'Pending Listings', href: '/admin/franchises', icon: <ListChecks size={16} /> },
     { label: 'Claim Requests', href: '/admin/claims', icon: <Shield size={16} /> },
     { label: 'Support Tickets', href: '/admin/tickets', icon: <MessageSquare size={16} /> },
+    { label: 'User Accounts', href: '/admin/users', icon: <Users size={16} /> },
+    { label: 'SEO Dashboard', href: '/admin/seo', icon: <BarChart3 size={16} /> },
   ]
   return (
     <aside className="bg-gray-900 text-white w-60 shrink-0 min-h-screen flex flex-col hidden md:flex">

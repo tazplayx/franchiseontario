@@ -1,9 +1,9 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'List Your Franchise in Ontario — Free to Start',
+  title: 'List Your Franchise in Ontario & Across Canada — Free to Start',
   description:
-    'Add your franchise to Ontario\'s #1 franchise directory. Free basic listing, Premium at $79/month, Enterprise at $199/month. Get discovered by thousands of active Ontario franchise investors.',
+    "Add your franchise to Ontario's #1 directory — reaching investors across Ontario and Canada-wide. Free basic listing, Premium at $79/month, Enterprise at $199/month.",
   keywords: [
     'list franchise Ontario',
     'advertise franchise Canada',

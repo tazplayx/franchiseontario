@@ -177,10 +177,10 @@ export default function DirectoryPage() {
       <div className="bg-white border-b border-gray-200 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-1">
-            Ontario Franchise Directory
+            Ontario Franchise Directory — Canada-Wide Brands
           </h1>
           <p className="text-gray-500 text-sm mb-5">
-            Browse {liveListings.length} franchise listings across {categories.length} categories in Ontario
+            Browse {liveListings.length} franchise listings across {categories.length} categories — Ontario-based brands and Canada's top national concepts
           </p>
 
           {/* Search with live dropdown */}

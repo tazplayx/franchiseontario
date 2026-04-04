@@ -12,13 +12,13 @@ import { ClientFeaturedSpotlight, ClientTopRanked } from '@/components/ClientHom
 const BASE = 'https://www.franchiseontario.com'
 
 export const metadata: Metadata = {
-  title: "Ontario's #1 Franchise Directory — Find Your Franchise",
+  title: "Ontario's #1 Franchise Directory — Canadian Franchise Opportunities",
   description:
-    'FranchiseOntario.com — browse 500+ franchise opportunities across Ontario, Canada. Compare investment ranges, royalties, and brand details. Free to list. Trusted by top Canadian franchise brands.',
+    'FranchiseOntario.com — Ontario\'s leading franchise discovery platform. Browse 300+ Canadian franchise opportunities. Compare investment ranges, royalties, and brand details. Free to list. Trusted by top Canadian and Ontario franchise brands.',
   alternates: { canonical: BASE },
   openGraph: {
-    title: "FranchiseOntario.com — Ontario's #1 Franchise Directory",
-    description: 'Browse 500+ franchise opportunities in Ontario, Canada. Compare brands, investment ranges, and connect directly with franchisors.',
+    title: "FranchiseOntario.com — Ontario & Canada's Franchise Directory",
+    description: 'Browse 300+ franchise opportunities across Ontario and Canada. Compare brands, investment ranges, and connect directly with franchisors.',
     url: BASE,
   },
 }
@@ -63,7 +63,7 @@ function Hero() {
             {/* Eyebrow */}
             <div className="inline-flex items-center gap-2 bg-red-50 border border-red-100 rounded-full px-4 py-1.5 mb-8">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              <span className="text-[11px] font-bold text-red-600 uppercase tracking-widest">Ontario's #1 Franchise Directory</span>
+              <span className="text-[11px] font-bold text-red-600 uppercase tracking-widest">Ontario's #1 Franchise Directory · Canada-Wide Brands</span>
             </div>
 
             {/* Headline — Cormorant Garamond via h1 */}
@@ -74,7 +74,7 @@ function Hero() {
             </h1>
 
             <p className="text-[#4A5568] text-lg max-w-lg mb-10 leading-relaxed font-normal">
-              Browse franchise opportunities across Ontario. Compare investment ranges, royalties, and connect directly with top Canadian brands.
+              Ontario's most comprehensive franchise directory — featuring local Ontario brands and Canada's top national franchise concepts. Compare investment ranges, royalties, and connect directly with franchisors.
             </p>
 
             {/* Search bar */}
@@ -315,7 +315,7 @@ function LatestNews() {
                 <div className="live-dot" /> Live News Feed
               </span>
             </div>
-            <h2 className="text-2xl md:text-3xl font-black text-gray-900">Franchise News in Ontario</h2>
+            <h2 className="text-2xl md:text-3xl font-black text-gray-900">Franchise News — Ontario & Canada</h2>
           </div>
           <Link href="/news" className="hidden sm:flex items-center gap-1 text-sm font-medium text-red-600 hover:text-red-700">
             All News <ArrowRight size={14} />
@@ -460,7 +460,7 @@ function PricingPromo() {
           </div>
           <h2 className="text-2xl md:text-3xl font-black text-gray-900">List Your Franchise Today</h2>
           <p className="text-gray-500 text-sm mt-1 max-w-lg mx-auto">
-            Start free and upgrade as you grow. All plans include access to Ontario's most active franchise-buyer audience.
+            Start free and upgrade as you grow. All plans include access to Ontario's most active franchise-buyer audience — plus Canada-wide brand visibility.
           </p>
         </div>
 
@@ -570,18 +570,18 @@ function EditorialFeature() {
           <div>
             <p className="section-label mb-4">Why FranchiseOntario</p>
             <h2 className="text-4xl md:text-5xl font-bold text-[#0D1B2A] mb-6 leading-tight">
-              Ontario's Most<br />
-              <em className="text-[#C8102E]">Complete</em> Franchise<br />
-              Discovery Platform
+              Ontario-Focused.<br />
+              <em className="text-[#C8102E]">Canada-Wide</em><br />
+              Coverage.
             </h2>
             <p className="text-[#4A5568] text-base leading-relaxed mb-8">
-              We built FranchiseOntario.com for serious buyers — people ready to invest in a franchise that fits their budget, lifestyle, and market. No noise, no pay-to-rank manipulation. Just transparent data and direct connections.
+              We built FranchiseOntario.com for serious buyers — people ready to invest in a franchise that fits their budget, lifestyle, and Ontario market. Whether you're looking for a local Ontario brand or a national Canadian concept, we have it all in one place. No noise, no pay-to-rank manipulation. Just transparent data and direct connections.
             </p>
             <div className="space-y-4 mb-10">
               {[
-                { title: 'Transparent Rankings', desc: 'Listings ranked by real performance metrics — not by who paid most.' },
+                { title: 'Ontario & Canada-Wide Brands', desc: 'Local Ontario franchises plus the best national Canadian franchise concepts, all in one directory.' },
                 { title: 'Ontario Buyer Protection', desc: 'Every listing is subject to the Arthur Wishart Act. Your FDD rights explained.' },
-                { title: 'Free Franchise Fit Quiz', desc: 'Our algorithm matches you to the right opportunity in 5 questions.' },
+                { title: 'Free Franchise Fit Quiz', desc: 'Our algorithm matches you to the right Ontario opportunity in 5 questions.' },
                 { title: 'Direct Connections', desc: 'Contact franchisors directly — no middlemen, no referral fees.' },
               ].map((item) => (
                 <div key={item.title} className="flex items-start gap-3">
@@ -629,7 +629,7 @@ function CTABanner() {
           Next <em className="text-red-400">Franchise?</em>
         </h2>
         <p className="text-gray-400 text-base mb-10 max-w-xl mx-auto leading-relaxed">
-          Join thousands of Ontario entrepreneurs who use FranchiseOntario.com to discover, compare, and connect with the province's top franchise brands.
+          Join thousands of Ontario and Canadian entrepreneurs who use FranchiseOntario.com to discover, compare, and connect with top franchise brands — from local Ontario concepts to Canada's most iconic national brands.
         </p>
         <div className="flex flex-col sm:flex-row gap-3 justify-center">
           <Link href="/directory" className="btn-red px-8 py-3.5 rounded-xl text-sm font-semibold inline-flex items-center justify-center gap-2">

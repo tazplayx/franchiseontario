@@ -37,7 +37,7 @@ export default function Footer() {
               </span>
             </div>
             <p className="text-sm text-gray-400 leading-relaxed mb-4">
-              Ontario's most comprehensive franchise directory. Connecting investors, operators, and entrepreneurs with top franchise opportunities. The only Ontario directory with a Franchise Fit Quiz, city-level market pages, and Arthur Wishart Act buyer guides.
+              Ontario-focused. Canada-wide. FranchiseOntario.com is the province's most comprehensive franchise directory — featuring Ontario-based brands alongside Canada's top national franchise concepts. Includes a Franchise Fit Quiz, Ontario city-level market pages, and Arthur Wishart Act buyer guides.
             </p>
             <div className="flex items-center gap-2 text-sm text-gray-400">
               <MapPin size={14} className="text-red-400 shrink-0" />
@@ -151,7 +151,7 @@ export default function Footer() {
       {/* Bottom bar */}
       <div className="border-t border-gray-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500">
-          <p>© 2026 FranchiseOntario.com — All rights reserved. Ontario, Canada.</p>
+          <p>© 2026 FranchiseOntario.com — Ontario-Focused. Canada-Wide. All rights reserved.</p>
           <div className="flex gap-4">
             <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>
             <Link href="/terms" className="hover:text-gray-300 transition-colors">Terms of Service</Link>

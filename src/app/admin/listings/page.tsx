@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   LayoutDashboard, ListChecks, MessageSquare, Shield, LogOut, Building2,
   Pencil, Trash2, X, Save, AlertTriangle, Star, Crown,
-  Plus, ImagePlus, Video, Image as ImageIcon, Eye,
+  Plus, ImagePlus, Video, Image as ImageIcon, Eye, BarChart3, Users,
 } from 'lucide-react'
 import { franchises, type Franchise, type FranchiseTier } from '@/data/franchises'
 import { applyListingStore, saveListing, removeListing } from '@/lib/store'
@@ -19,6 +19,8 @@ function AdminNav({ active }: { active: string }) {
     { label: 'Pending Listings', href: '/admin/franchises', icon: <ListChecks size={16} /> },
     { label: 'Claim Requests', href: '/admin/claims', icon: <Shield size={16} /> },
     { label: 'Support Tickets', href: '/admin/tickets', icon: <MessageSquare size={16} /> },
+    { label: 'User Accounts', href: '/admin/users', icon: <Users size={16} /> },
+    { label: 'SEO Dashboard', href: '/admin/seo', icon: <BarChart3 size={16} /> },
   ]
   const logout = () => { sessionStorage.removeItem('fo_admin'); router.push('/admin') }
   return (
@@ -48,16 +50,34 @@ type EditableFields = {
   name: string
   tagline: string
   description: string
+  longDescription: string
+  category: string
   tier: FranchiseTier
   isVIP: boolean
   isFeatured: boolean
   city: string
+  locations: number
+  established: number
+  franchiseeCount: number
+  territory: string
   email: string
   phone: string
   website: string
   logoUrl: string
   videoUrl: string
   mediaImages: string[]
+  highlights: string[]
+  idealCandidate: string[]
+  supportOffered: string[]
+  // Financials
+  franchiseFee: string
+  royaltyRate: string
+  marketingFee: string
+  investmentMin: number
+  investmentMax: number
+  averageUnitVolume: string
+  netWorthRequired: string
+  liquidCapitalRequired: string
 }
 
 // ── Image Gallery Editor ────────────────────────────────────────────────────────
@@ -183,16 +203,33 @@ export default function AdminListingsPage() {
       name: franchise.name,
       tagline: franchise.tagline,
       description: franchise.description,
+      longDescription: franchise.longDescription || '',
+      category: franchise.category,
       tier: franchise.tier,
       isVIP: franchise.isVIP,
       isFeatured: franchise.isFeatured,
       city: franchise.city,
+      locations: franchise.locations,
+      established: franchise.established,
+      franchiseeCount: franchise.franchiseeCount || 0,
+      territory: franchise.territory || '',
       email: franchise.email,
       phone: franchise.phone,
       website: franchise.website,
       logoUrl: franchise.logoUrl || '',
       videoUrl: franchise.videoUrl || '',
       mediaImages: franchise.mediaImages || [],
+      highlights: franchise.highlights || [],
+      idealCandidate: franchise.idealCandidate || [],
+      supportOffered: franchise.supportOffered || [],
+      franchiseFee: franchise.financials.franchiseFee,
+      royaltyRate: franchise.financials.royaltyRate,
+      marketingFee: franchise.financials.marketingFee,
+      investmentMin: franchise.financials.investmentMin,
+      investmentMax: franchise.financials.investmentMax,
+      averageUnitVolume: franchise.financials.averageUnitVolume,
+      netWorthRequired: franchise.financials.netWorthRequired,
+      liquidCapitalRequired: franchise.financials.liquidCapitalRequired,
     })
   }
 
@@ -214,16 +251,36 @@ export default function AdminListingsPage() {
       name: editForm.name,
       tagline: editForm.tagline,
       description: editForm.description,
+      longDescription: editForm.longDescription,
+      category: editForm.category as Franchise['category'],
       tier: editForm.tier,
       isVIP: editForm.isVIP,
       isFeatured: editForm.isFeatured,
       city: editForm.city,
+      locations: editForm.locations,
+      established: editForm.established,
+      franchiseeCount: editForm.franchiseeCount,
+      territory: editForm.territory,
       email: editForm.email,
       phone: editForm.phone,
       website: editForm.website,
       logoUrl: editForm.logoUrl || undefined,
       videoUrl: editForm.videoUrl || undefined,
       mediaImages: editForm.mediaImages,
+      highlights: editForm.highlights,
+      idealCandidate: editForm.idealCandidate,
+      supportOffered: editForm.supportOffered,
+      financials: {
+        ...editing.financials,
+        franchiseFee: editForm.franchiseFee,
+        royaltyRate: editForm.royaltyRate,
+        marketingFee: editForm.marketingFee,
+        investmentMin: editForm.investmentMin,
+        investmentMax: editForm.investmentMax,
+        averageUnitVolume: editForm.averageUnitVolume,
+        netWorthRequired: editForm.netWorthRequired,
+        liquidCapitalRequired: editForm.liquidCapitalRequired,
+      },
     }
     // Persist to localStorage
     saveListing(editing.id, updatedFields)
@@ -435,15 +492,25 @@ export default function AdminListingsPage() {
                         className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200" />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-gray-500 mb-1">Description</label>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Short Description</label>
                       <textarea rows={3} value={editForm.description} onChange={(e) => setEditForm({ ...editForm, description: e.target.value })}
+                        className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 resize-none" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Long Description (shown on listing page)</label>
+                      <textarea rows={5} value={editForm.longDescription} onChange={(e) => setEditForm({ ...editForm, longDescription: e.target.value })}
+                        placeholder="Full franchise story and details. Use double line breaks for paragraphs."
                         className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 resize-none" />
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-semibold text-gray-500 mb-1">City / Region</label>
-                        <input value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
-                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200" />
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">Category</label>
+                        <select value={editForm.category} onChange={(e) => setEditForm({ ...editForm, category: e.target.value })}
+                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 bg-white">
+                          {['Bar & Grill','Seafood','Coffee & Café','Fast Food','Pizza','Specialty Food','Bakery & Desserts','Healthy Eating','Fitness & Wellness','Health & Medical','Senior Care','Sports & Recreation','Home Services','Cleaning Services','Real Estate','Education',"Children's Services",'Financial Services','Business Services','Technology & IT','Printing & Signs','Retail','Automotive','Beauty & Salon','Pet Services','Travel & Hospitality'].map((c) => (
+                            <option key={c} value={c}>{c}</option>
+                          ))}
+                        </select>
                       </div>
                       <div>
                         <label className="block text-xs font-semibold text-gray-500 mb-1">Listing Tier</label>
@@ -453,6 +520,36 @@ export default function AdminListingsPage() {
                           <option value="premium">Premium ($79/mo)</option>
                           <option value="enterprise">Enterprise ($199/mo)</option>
                         </select>
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">City / Region</label>
+                        <input value={editForm.city} onChange={(e) => setEditForm({ ...editForm, city: e.target.value })}
+                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">Territory</label>
+                        <input value={editForm.territory} onChange={(e) => setEditForm({ ...editForm, territory: e.target.value })}
+                          placeholder="e.g. Protected radius 5km"
+                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200" />
+                      </div>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3">
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">Ontario Locations</label>
+                        <input type="number" value={editForm.locations} onChange={(e) => setEditForm({ ...editForm, locations: Number(e.target.value) })}
+                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">Established</label>
+                        <input type="number" value={editForm.established} onChange={(e) => setEditForm({ ...editForm, established: Number(e.target.value) })}
+                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200" />
+                      </div>
+                      <div>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">Franchisee Count</label>
+                        <input type="number" value={editForm.franchiseeCount} onChange={(e) => setEditForm({ ...editForm, franchiseeCount: Number(e.target.value) })}
+                          className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200" />
                       </div>
                     </div>
                   </div>
@@ -558,6 +655,77 @@ export default function AdminListingsPage() {
                       </p>
                     )}
                   </div>
+                </div>
+
+                {/* ── Section: Financials ── */}
+                <div className="border-t border-gray-100 pt-5">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Financials</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {[
+                      { label: 'Franchise Fee', key: 'franchiseFee' as const, placeholder: 'e.g. $40,000' },
+                      { label: 'Royalty Rate', key: 'royaltyRate' as const, placeholder: 'e.g. 5% of gross sales' },
+                      { label: 'Marketing Fee', key: 'marketingFee' as const, placeholder: 'e.g. 2%' },
+                      { label: 'Avg. Unit Volume', key: 'averageUnitVolume' as const, placeholder: 'e.g. $1.2M–$1.8M' },
+                      { label: 'Net Worth Required', key: 'netWorthRequired' as const, placeholder: 'e.g. $500,000' },
+                      { label: 'Liquid Capital Required', key: 'liquidCapitalRequired' as const, placeholder: 'e.g. $150,000' },
+                    ].map(({ label, key, placeholder }) => (
+                      <div key={key}>
+                        <label className="block text-xs font-semibold text-gray-500 mb-1">{label}</label>
+                        <input value={editForm[key] as string} onChange={(e) => setEditForm({ ...editForm, [key]: e.target.value })}
+                          placeholder={placeholder}
+                          className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200" />
+                      </div>
+                    ))}
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Investment Min ($)</label>
+                      <input type="number" value={editForm.investmentMin} onChange={(e) => setEditForm({ ...editForm, investmentMin: Number(e.target.value) })}
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-semibold text-gray-500 mb-1">Investment Max ($)</label>
+                      <input type="number" value={editForm.investmentMax} onChange={(e) => setEditForm({ ...editForm, investmentMax: Number(e.target.value) })}
+                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-red-200" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* ── Section: Highlights ── */}
+                <div className="border-t border-gray-100 pt-5">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Franchise Highlights</p>
+                  <p className="text-xs text-gray-400 mb-3">One highlight per line. Shown as bullet points on the listing.</p>
+                  <textarea
+                    rows={4}
+                    value={editForm.highlights.join('\n')}
+                    onChange={(e) => setEditForm({ ...editForm, highlights: e.target.value.split('\n').filter(Boolean) })}
+                    placeholder="Proven operating system&#10;Award-winning brand&#10;Exclusive territory protection"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 resize-none"
+                  />
+                </div>
+
+                {/* ── Section: Ideal Candidate ── */}
+                <div className="border-t border-gray-100 pt-5">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Ideal Franchisee Profile</p>
+                  <p className="text-xs text-gray-400 mb-3">One trait per line.</p>
+                  <textarea
+                    rows={4}
+                    value={editForm.idealCandidate.join('\n')}
+                    onChange={(e) => setEditForm({ ...editForm, idealCandidate: e.target.value.split('\n').filter(Boolean) })}
+                    placeholder="Passionate about food & hospitality&#10;Strong community ties&#10;Minimum $150K liquid capital"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 resize-none"
+                  />
+                </div>
+
+                {/* ── Section: Support Offered ── */}
+                <div className="border-t border-gray-100 pt-5">
+                  <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1">Training & Support</p>
+                  <p className="text-xs text-gray-400 mb-3">One item per line.</p>
+                  <textarea
+                    rows={4}
+                    value={editForm.supportOffered.join('\n')}
+                    onChange={(e) => setEditForm({ ...editForm, supportOffered: e.target.value.split('\n').filter(Boolean) })}
+                    placeholder="8-week classroom and in-store training&#10;Grand opening support&#10;Ongoing field operations visits"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 resize-none"
+                  />
                 </div>
 
                 {/* ── Section: Flags ── */}

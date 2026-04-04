@@ -103,6 +103,35 @@ export default function TermsPage() {
         </section>
 
         <section>
+          <h2 className="text-lg font-bold text-gray-900 mb-3">7a. Third-Party and Scraped Listings</h2>
+          <p className="text-sm text-gray-600 leading-relaxed mb-3">
+            Some listings on FranchiseOntario.com are aggregated from publicly available third-party sources ("Sourced Listings"). These listings are clearly marked on the site. With respect to Sourced Listings:
+          </p>
+          <ul className="space-y-2 text-sm text-gray-600 mb-3">
+            <li className="flex gap-2"><span className="text-red-500 shrink-0 mt-0.5">•</span><span>FranchiseOntario.com does not warrant the accuracy, completeness, or currency of sourced information</span></li>
+            <li className="flex gap-2"><span className="text-red-500 shrink-0 mt-0.5">•</span><span>Sourced listings have not been reviewed, approved, or verified by the respective franchisor</span></li>
+            <li className="flex gap-2"><span className="text-red-500 shrink-0 mt-0.5">•</span><span>Franchisors whose brands appear in a Sourced Listing may claim and take ownership of their listing at no cost by visiting <strong>/claim/[listing-id]</strong></span></li>
+            <li className="flex gap-2"><span className="text-red-500 shrink-0 mt-0.5">•</span><span>To request removal of a sourced listing, contact us at <a href="mailto:cdeneire@proton.me" className="text-red-600 hover:underline">cdeneire@proton.me</a>. We will process removal requests within 5 business days</span></li>
+          </ul>
+          <p className="text-sm text-gray-600 leading-relaxed">
+            FranchiseOntario.com assumes no liability for decisions made based on the content of Sourced Listings.
+          </p>
+        </section>
+
+        <section>
+          <h2 className="text-lg font-bold text-gray-900 mb-3">7b. Franchisor Content Liability</h2>
+          <p className="text-sm text-gray-600 leading-relaxed mb-3">
+            When a franchisor or their authorized representative directly submits, claims, or edits a listing, <strong>that individual or organization is solely responsible</strong> for the accuracy, truthfulness, and legal compliance of all submitted content. By submitting or managing a listing, you acknowledge and agree that:
+          </p>
+          <ul className="space-y-2 text-sm text-gray-600">
+            <li className="flex gap-2"><span className="text-red-500 shrink-0 mt-0.5">•</span><span>You are making representations to the public about your franchise offering</span></li>
+            <li className="flex gap-2"><span className="text-red-500 shrink-0 mt-0.5">•</span><span>False or misleading statements about your franchise may constitute a violation of the <em>Competition Act</em> (Canada), the <em>Arthur Wishart Act</em> (Ontario), and applicable consumer protection legislation</span></li>
+            <li className="flex gap-2"><span className="text-red-500 shrink-0 mt-0.5">•</span><span>FranchiseOntario.com does not independently verify franchisor-submitted content and disclaims all liability for inaccuracies in user-submitted listings</span></li>
+            <li className="flex gap-2"><span className="text-red-500 shrink-0 mt-0.5">•</span><span>You will indemnify and hold harmless FranchiseOntario.com from any claims arising from your content</span></li>
+          </ul>
+        </section>
+
+        <section>
           <h2 className="text-lg font-bold text-gray-900 mb-3">8. Disclaimer of Warranties</h2>
           <p className="text-sm text-gray-600 leading-relaxed">
             The Site and all content are provided on an "as is" and "as available" basis without warranties of any kind, express or implied. We do not warrant that the Site will be uninterrupted, error-free, or free of viruses. We do not verify or endorse any franchise listed on the Site and make no representations about the accuracy of franchise information, financial projections, or investment outcomes.

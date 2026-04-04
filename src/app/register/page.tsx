@@ -1,16 +1,20 @@
 'use client'
 import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
-import { Check, ArrowRight, Loader2, Upload, X, ImagePlus, Video, Image as ImageIcon, Mail, RefreshCw } from 'lucide-react'
+import { Check, ArrowRight, Loader2, Upload, X, ImagePlus, Video, Image as ImageIcon, Mail, RefreshCw, Eye, EyeOff } from 'lucide-react'
 import { sendEmail } from '@/lib/email'
+import { registerAccount } from '@/lib/leads'
 
 type Step = 'plan' | 'details' | 'verify' | 'confirm'
 
 interface FormData {
   franchiseName: string
   contactName: string
+  title: string
   email: string
   phone: string
+  password: string
+  confirmPassword: string
   website: string
   category: string
   established: string
@@ -136,8 +140,11 @@ export default function RegisterPage() {
   const [verifyLoading, setVerifyLoading] = useState(false)
   const [verifySent, setVerifySent] = useState(false)
   const [isEmailVerified, setIsEmailVerified] = useState(false)
+  const [showPassword, setShowPassword] = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
   const [formData, setFormData] = useState<FormData>({
-    franchiseName: '', contactName: '', email: '', phone: '',
+    franchiseName: '', contactName: '', title: '', email: '', phone: '',
+    password: '', confirmPassword: '',
     website: '', category: '', established: '', locations: '',
     description: '', videoUrl: '', logoPreview: '', logoFile: null,
     galleryPreviews: [], galleryFiles: [],
@@ -220,7 +227,7 @@ export default function RegisterPage() {
             List Your Franchise on FranchiseOntario.com
           </h1>
           <p className="text-gray-500 text-sm">
-            Get discovered by thousands of active franchise investors in Ontario
+            Get discovered by thousands of active franchise investors across Ontario and Canada
           </p>
         </div>
       </div>
@@ -358,12 +365,37 @@ export default function RegisterPage() {
                 <input type="text" required value={formData.contactName} onChange={(e) => setFormData({ ...formData, contactName: e.target.value })} placeholder="Your full name" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-red-400" />
               </div>
               <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Your Title / Role</label>
+                <input type="text" value={formData.title} onChange={(e) => setFormData({ ...formData, title: e.target.value })} placeholder="e.g. Franchise Owner, VP Franchise Development" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-red-400" />
+              </div>
+              <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Business Email *</label>
                 <input type="email" required value={formData.email} onChange={(e) => setFormData({ ...formData, email: e.target.value })} placeholder="you@franchise.com" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-red-400" />
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Phone Number</label>
                 <input type="tel" value={formData.phone} onChange={(e) => setFormData({ ...formData, phone: e.target.value })} placeholder="+1 (555) 000-0000" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-red-400" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Password *</label>
+                <div className="relative">
+                  <input type={showPassword ? 'text' : 'password'} required value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} placeholder="Create a password" className="w-full border border-gray-200 rounded-xl px-3 py-2.5 pr-10 text-sm outline-none focus:border-red-400" />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-600 mb-1.5">Confirm Password *</label>
+                <div className="relative">
+                  <input type={showConfirm ? 'text' : 'password'} required value={formData.confirmPassword} onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })} placeholder="Repeat your password" className={`w-full border rounded-xl px-3 py-2.5 pr-10 text-sm outline-none focus:border-red-400 ${formData.confirmPassword && formData.password !== formData.confirmPassword ? 'border-red-300 bg-red-50' : 'border-gray-200'}`} />
+                  <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    {showConfirm ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+                {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                  <p className="text-xs text-red-500 mt-1">Passwords do not match</p>
+                )}
               </div>
               <div>
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Website</label>
@@ -509,6 +541,14 @@ export default function RegisterPage() {
                     alert('Please fill in Franchise Name, Contact Name, and Business Email.')
                     return
                   }
+                  if (!formData.password) {
+                    alert('Please create a password for your account.')
+                    return
+                  }
+                  if (formData.password !== formData.confirmPassword) {
+                    alert('Passwords do not match.')
+                    return
+                  }
                   if (isEmailVerified) {
                     setStep('confirm')
                   } else {
@@ -634,7 +674,20 @@ export default function RegisterPage() {
               {selectedPlan === 'basic' && !addFeature ? (
                 <button
                   onClick={() => {
-                    const body = `New Basic Listing\n\nFranchise: ${formData.franchiseName}\nContact: ${formData.contactName}\nEmail: ${formData.email}\nCategory: ${formData.category}\n\nApprove at: https://franchiseontario.com/admin`
+                    // Create franchisor account linked to this new listing
+                    const franchiseId = formData.franchiseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+                    try {
+                      registerAccount({
+                        franchiseId,
+                        franchiseName: formData.franchiseName,
+                        name: formData.contactName,
+                        email: formData.email,
+                        title: formData.title || 'Franchise Owner',
+                        tier: 'basic',
+                        password: formData.password,
+                      })
+                    } catch { /* account may already exist */ }
+                    const body = `New Basic Listing\n\nFranchise: ${formData.franchiseName}\nContact: ${formData.contactName} (${formData.title || 'Owner'})\nEmail: ${formData.email}\nCategory: ${formData.category}\n\nApprove at: https://franchiseontario.com/admin`
                     window.open(`mailto:cdeneire@proton.me?subject=[FranchiseOntario] New Basic Listing — ${formData.franchiseName}&body=${encodeURIComponent(body)}`)
                     window.location.href = '/register/success'
                   }}

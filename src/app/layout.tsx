@@ -1,19 +1,22 @@
 import type { Metadata } from 'next'
+import Script from 'next/script'
 import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import JsonLd from '@/components/JsonLd'
+
+const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
 const BASE = 'https://www.franchiseontario.com'
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE),
   title: {
-    default: "FranchiseOntario.com — Ontario's #1 Franchise Directory",
+    default: "FranchiseOntario.com — Ontario-Focused. Canada-Wide Franchise Directory.",
     template: '%s | FranchiseOntario.com',
   },
   description:
-    "Discover top franchise opportunities in Ontario, Canada. Browse 500+ franchise listings, compare investment levels, read franchise news, and connect with Canada's best brands. Free to list.",
+    "Ontario's #1 franchise directory — featuring Ontario-based brands and Canada-wide franchise opportunities. Browse 300+ listings, compare investment ranges, and connect directly with top Canadian franchisors. Free to list.",
   keywords: [
     'franchise Ontario',
     'buy a franchise Ontario',
@@ -29,6 +32,9 @@ export const metadata: Metadata = {
     'restaurant franchise Canada',
     'franchise investment Ontario',
     'franchise opportunities GTA',
+    'Ontario franchise opportunities',
+    'Canada franchise directory',
+    'national franchise Canada Ontario',
   ],
   authors: [{ name: 'FranchiseOntario.com' }],
   creator: 'FranchiseOntario.com',
@@ -52,9 +58,9 @@ export const metadata: Metadata = {
     locale: 'en_CA',
     url: BASE,
     siteName: 'FranchiseOntario.com',
-    title: "FranchiseOntario.com — Ontario's #1 Franchise Directory",
+    title: "FranchiseOntario.com — Ontario-Focused. Canada-Wide Franchise Directory.",
     description:
-      "Discover top franchise opportunities in Ontario, Canada. Browse 500+ franchise listings, compare investment levels, and connect with Canada's best brands.",
+      "Ontario's #1 franchise directory. Browse Ontario-based and Canada-wide franchise opportunities — 300+ listings, investment comparisons, and direct franchisor connections.",
     images: [
       {
         url: `${BASE}/og-image.png`,
@@ -79,8 +85,10 @@ export const metadata: Metadata = {
     'ICBM': '44.0, -79.0',
   },
   verification: {
-    // Add your Google Search Console verification token here once you have it
-    // google: 'your-google-verification-token',
+    // Set NEXT_PUBLIC_GSC_VERIFICATION in .env.local to activate
+    ...(process.env.NEXT_PUBLIC_GSC_VERIFICATION
+      ? { google: process.env.NEXT_PUBLIC_GSC_VERIFICATION }
+      : {}),
   },
 }
 
@@ -136,6 +144,26 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en-CA">
       <body className="bg-gray-50 text-gray-900 min-h-screen flex flex-col">
+        {/* Google Analytics 4 — loads after page is interactive */}
+        {GA_ID && (
+          <>
+            <Script
+              src={`https://www.googletagmanager.com/gtag/js?id=${GA_ID}`}
+              strategy="afterInteractive"
+            />
+            <Script id="ga4-init" strategy="afterInteractive">
+              {`
+                window.dataLayer = window.dataLayer || [];
+                function gtag(){dataLayer.push(arguments);}
+                gtag('js', new Date());
+                gtag('config', '${GA_ID}', {
+                  page_path: window.location.pathname,
+                  cookie_flags: 'SameSite=None;Secure',
+                });
+              `}
+            </Script>
+          </>
+        )}
         <JsonLd data={organizationSchema} />
         <JsonLd data={websiteSchema} />
         <Header />

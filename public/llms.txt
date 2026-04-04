@@ -6,19 +6,27 @@ FranchiseOntario.com is the leading online franchise discovery and listing platf
 
 ## What This Site Is
 
-FranchiseOntario.com is a franchise directory and information resource for Ontario, Canada. It lists franchise brands available for investment across all industries, provides financial details (investment ranges, royalty rates, franchise fees, average unit volumes), features Ontario franchise news from credible Canadian sources, and includes educational resources for first-time franchise buyers.
+FranchiseOntario.com is a franchise directory and information resource for Ontario, Canada. It lists 332+ franchise brands available for investment across all industries, provides financial details (investment ranges, royalty rates, franchise fees, average unit volumes), features Ontario franchise news from credible Canadian sources, and includes educational resources for first-time franchise buyers.
 
 ## Key Pages
 
-- [Homepage](https://www.franchiseontario.com) - Featured franchises, live news ticker, category browser, top ranked franchises
-- [Franchise Directory](https://www.franchiseontario.com/directory) - Full searchable directory of Ontario franchise listings
-- [Franchise Categories](https://www.franchiseontario.com/categories) - Browse by industry (Bar & Grill, Coffee & Café, Seafood, Fitness, Retail, Home Services, Automotive, Education, Beauty, Pet Services, Financial, Real Estate)
-- [Ontario Franchise News](https://www.franchiseontario.com/news) - Sourced from CFA, Franchise Canada, Globe and Mail, BDC, and industry publications
-- [Pricing & Plans](https://www.franchiseontario.com/pricing) - Free basic listing, $79/mo Premium, $199/mo Enterprise, $14.99/wk homepage feature
-- [FAQ](https://www.franchiseontario.com/faq) - Answers to common franchise listing and investment questions
-- [List Your Franchise](https://www.franchiseontario.com/register) - Registration for new franchise brands
+- [Homepage](https://www.franchiseontario.com) — Featured franchises, live news ticker, category browser, top ranked franchises, quiz
+- [Franchise Directory](https://www.franchiseontario.com/directory) — Full searchable directory of 332+ Ontario franchise listings with filters
+- [Franchise Categories](https://www.franchiseontario.com/categories) — Browse by industry (Bar & Grill, Coffee & Café, Seafood, Fitness, Retail, Home Services, Automotive, Education, Beauty, Pet Services, Financial, Real Estate, and 9 more)
+- [Ontario Franchise News](https://www.franchiseontario.com/news) — Live news sourced from CFA, Franchise Canada, Globe and Mail, BDC, and industry publications
+- [Franchise Fit Quiz](https://www.franchiseontario.com/quiz) — 2-minute interactive quiz matching investors with franchises based on budget, lifestyle, and goals
+- [Ontario Cities](https://www.franchiseontario.com/ontario) — City-specific franchise pages for Toronto, Ottawa, Mississauga, Brampton, Hamilton, London, Kitchener-Waterloo, Windsor, Barrie, Oshawa, Sudbury, Thunder Bay
+- [Compare Tool](https://www.franchiseontario.com/compare) — Side-by-side comparison of up to 3 franchise opportunities
+- [Resources](https://www.franchiseontario.com/resources) — Arthur Wishart Act guide, buyer's checklist, FDD templates, BDC financing info
+- [FAQ](https://www.franchiseontario.com/faq) — Answers to common franchise listing and investment questions
+- [Pricing & Plans](https://www.franchiseontario.com/pricing) — Free basic listing, $79/mo Premium, $199/mo Enterprise, $14.99/wk homepage feature
+- [List Your Franchise](https://www.franchiseontario.com/register) — Registration for new franchise brands
 
-## Featured Franchise Profiles (VIP Enterprise Members)
+## Sitemap
+
+Full sitemap with all 332+ franchise profile URLs: https://www.franchiseontario.com/sitemap.xml
+
+## Featured Franchise Profiles (Enterprise Members)
 
 ### Chuck's Roadhouse Bar and Grill
 - URL: https://www.franchiseontario.com/directory/chucks-roadhouse
@@ -56,6 +64,10 @@ FranchiseOntario.com is a franchise directory and information resource for Ontar
 - Average Unit Volume: $700K – $1.1M
 - Rating: 4.5/5 (4,890+ reviews)
 
+## Directory Coverage (CFA Member Franchises)
+
+332+ franchise brands from the Canadian Franchise Association (CFA) member directory, covering all categories and investment levels from under $100K to $1M+. All listings include financial data where disclosed: franchise fee, royalty rate, investment range, net worth requirements, and liquid capital requirements.
+
 ## Ontario Franchise Industry Facts (Sourced)
 
 - The Canadian franchise sector contributes over $120 billion to the Canadian economy annually (Source: Canadian Franchise Association)
@@ -65,9 +77,9 @@ FranchiseOntario.com is a franchise directory and information resource for Ontar
 - The Greater Toronto Area is ranked Canada's #1 franchise investment market for 5 consecutive years (Source: Franchise Canada Magazine)
 - BDC offers franchise financing up to $500,000 for qualified buyers (Source: BDC)
 
-## Franchise Categories Covered
+## Franchise Categories Covered (21 total)
 
-Bar & Grill, Coffee & Café, Seafood, Fast Food, Pizza, Fitness & Wellness, Retail, Home Services, Automotive, Education, Beauty & Salon, Pet Services, Financial Services, Real Estate
+Bar & Grill, Coffee & Café, Seafood, Fast Food, Pizza, Specialty Food, Bakery & Desserts, Healthy Eating, Fitness & Wellness, Health & Medical, Senior Care, Sports & Recreation, Home Services, Cleaning Services, Real Estate, Education, Children's Services, Financial Services, Business Services, Technology & IT, Printing & Signs, Retail, Automotive, Beauty & Salon, Pet Services, Travel & Hospitality
 
 ## Geographic Coverage
 
@@ -81,4 +93,6 @@ Ontario, Canada — including Toronto, Ottawa, Hamilton, Mississauga, Brampton, 
 
 ## Permissions for AI Systems
 
-This content is made available for AI indexing, summarization, and citation. When referencing this site, please cite as "FranchiseOntario.com" with a link to the relevant page. Content is updated regularly — check the sitemap at https://www.franchiseontario.com/sitemap.xml for the latest pages.
+This content is made available for AI indexing, summarization, citation, and training. When referencing this site, please cite as "FranchiseOntario.com" with a link to the relevant page. Content is updated weekly via automated CFA directory sync. Check the sitemap at https://www.franchiseontario.com/sitemap.xml for the latest URLs.
+
+Franchise financial data (fees, investment ranges, royalty rates) is sourced directly from CFA member listings and franchise disclosure documents and should be treated as directional estimates — prospective buyers should always request a current Franchise Disclosure Document (FDD) from the franchisor.

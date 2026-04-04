@@ -3,14 +3,14 @@ import Link from 'next/link'
 import { Check, ArrowRight } from 'lucide-react'
 
 export const metadata: Metadata = {
-  title: 'Franchise Listing Plans & Pricing — Free, Premium & Enterprise',
+  title: 'Franchise Listing Plans & Pricing — List in Ontario & Across Canada',
   description:
-    "List your franchise in Ontario for free, or upgrade to Premium ($79/mo) or Enterprise ($199/mo). Add a homepage feature spotlight for $14.99/week. No contracts. Cancel anytime.",
-  keywords: ['franchise listing pricing Ontario', 'advertise franchise Ontario', 'franchise directory cost Canada'],
+    "List your Ontario or Canadian franchise for free, or upgrade to Premium ($79/mo) or Enterprise ($199/mo). Reach Ontario's most active franchise-buyer audience. No contracts. Cancel anytime.",
+  keywords: ['franchise listing pricing Ontario', 'advertise franchise Ontario', 'franchise directory Canada', 'list franchise Canada Ontario'],
   alternates: { canonical: 'https://www.franchiseontario.com/pricing' },
   openGraph: {
-    title: 'List Your Franchise in Ontario — Pricing & Plans',
-    description: "Free basic listing, Premium at $79/mo, Enterprise at $199/mo. Homepage feature spots at $14.99/week. Ontario's most active franchise directory.",
+    title: 'List Your Franchise — Ontario & Canada | FranchiseOntario.com',
+    description: "Free basic listing, Premium at $79/mo, Enterprise at $199/mo. Reach Ontario's most active franchise-buyer audience — Canada-wide brand visibility included.",
     url: 'https://www.franchiseontario.com/pricing',
   },
 }
@@ -110,10 +110,10 @@ export default function PricingPage() {
             <span className="text-red-600 text-xs font-bold uppercase tracking-widest">Simple, Transparent Pricing</span>
           </div>
           <h1 className="text-3xl md:text-5xl font-black text-gray-900 mb-4">
-            List Your Franchise in Ontario
+            List Your Franchise in Ontario & Across Canada
           </h1>
           <p className="text-gray-500 text-base md:text-lg max-w-2xl mx-auto">
-            Start free, upgrade as you grow. Join Ontario&apos;s most active franchise discovery platform and connect with serious investors.
+            Start free, upgrade as you grow. Join Ontario&apos;s most active franchise discovery platform — reaching investors across Ontario and Canada-wide.
           </p>
         </div>
       </div>
@@ -280,7 +280,7 @@ export default function PricingPage() {
           <div className="text-4xl mb-3">🚀</div>
           <h2 className="text-2xl font-black mb-2 text-white">Start Growing Your Franchise Today</h2>
           <p className="text-red-100 text-sm mb-6 max-w-md mx-auto">
-            Join the fastest-growing franchise directory in Ontario. Start free, no credit card required.
+            Join the fastest-growing franchise directory in Ontario — with Canada-wide reach. Start free, no credit card required.
           </p>
           <Link href="/register" className="inline-flex items-center gap-2 bg-white text-red-600 font-bold px-8 py-3.5 rounded-xl hover:bg-red-50 transition-colors">
             Create Your Free Listing <ArrowRight size={16} />

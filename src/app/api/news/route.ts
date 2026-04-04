@@ -22,18 +22,21 @@ const FEEDS = [
 // ── Helpers ────────────────────────────────────────────────────────────────────
 function stripTags(str: string): string {
   return str
+    // 1. Unwrap CDATA
     .replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1')
-    .replace(/<script[\s\S]*?<\/script>/gi, '')
-    .replace(/<style[\s\S]*?<\/style>/gi, '')
-    .replace(/<[^>]+>/g, ' ')
-    .replace(/&nbsp;/g, ' ')
-    .replace(/&amp;/g, '&')
+    // 2. Decode HTML entities FIRST so entity-encoded tags become real tags
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&nbsp;/g, ' ')
     .replace(/&#\d+;/g, ' ')
     .replace(/&[a-z]+;/gi, ' ')
+    // 3. Now strip all HTML tags (including ones that were entity-encoded above)
+    .replace(/<script[\s\S]*?<\/script>/gi, '')
+    .replace(/<style[\s\S]*?<\/style>/gi, '')
+    .replace(/<[^>]+>/g, ' ')
     .replace(/\s+/g, ' ')
     .trim()
 }
