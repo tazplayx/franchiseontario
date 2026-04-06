@@ -11,6 +11,8 @@ import { applyListingStore } from '@/lib/store'
 type SortKey = 'rank' | 'rating' | 'newest' | 'alpha' | 'locations'
 type InvestmentBracket = 'all' | 'under150' | '150to350' | '350to600' | 'over600'
 
+const PAGE_SIZE = 10
+
 const investmentBrackets: { key: InvestmentBracket; label: string; sub: string }[] = [
   { key: 'all', label: 'Any Budget', sub: '' },
   { key: 'under150', label: 'Under $150K', sub: 'Lower-cost concepts' },
@@ -27,6 +29,8 @@ export default function DirectoryPage() {
   const [sort, setSort] = useState<SortKey>('rank')
   const [investment, setInvestment] = useState<InvestmentBracket>('all')
   const [compareList, setCompareList] = useState<string[]>([])
+  const [page, setPage] = useState(1)
+  const resultsRef = useRef<HTMLDivElement>(null)
 
   // Live search dropdown state
   const [dropdownOpen, setDropdownOpen] = useState(false)
@@ -142,6 +146,18 @@ export default function DirectoryPage() {
 
     return list
   }, [query, tier, category, sort, investment, liveListings])
+
+  // Reset to page 1 whenever filters change
+  useEffect(() => { setPage(1) }, [query, tier, category, sort, investment, liveListings])
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE)
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
+
+  function goToPage(p: number) {
+    setPage(p)
+    // Scroll results area back to top smoothly
+    resultsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   const tierCounts = {
     all: liveListings.length,
@@ -530,8 +546,20 @@ export default function DirectoryPage() {
             <div className="bg-white rounded-xl border border-gray-200 p-3 mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
               <div className="flex items-center gap-3">
                 <p className="text-sm text-gray-500">
-                  Showing <span className="font-semibold text-gray-900">{filtered.length}</span> franchise{filtered.length !== 1 ? 's' : ''}
-                  {query && <span> for "<span className="text-red-600">{query}</span>"</span>}
+                  {filtered.length === 0 ? (
+                    <>No results</>
+                  ) : (
+                    <>
+                      Showing{' '}
+                      <span className="font-semibold text-gray-900">
+                        {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)}
+                      </span>
+                      {' '}of{' '}
+                      <span className="font-semibold text-gray-900">{filtered.length}</span>{' '}
+                      franchise{filtered.length !== 1 ? 's' : ''}
+                      {query && <span> for &ldquo;<span className="text-red-600">{query}</span>&rdquo;</span>}
+                    </>
+                  )}
                 </p>
                 {compareList.length < 3 && filtered.length > 0 && (
                   <span className="text-xs text-gray-400 hidden sm:inline">Select up to 3 to compare →</span>
@@ -602,6 +630,7 @@ export default function DirectoryPage() {
               </div>
             )}
 
+          <div ref={resultsRef} className="scroll-mt-4" />
             {filtered.length === 0 ? (
               <div className="bg-white rounded-xl border border-gray-200 p-16 text-center">
                 <div className="text-4xl mb-3">🔍</div>
@@ -616,7 +645,7 @@ export default function DirectoryPage() {
               </div>
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                {filtered.map((franchise) => (
+                {paginated.map((franchise) => (
                   <div key={franchise.id} className="relative">
                     <FranchiseCard
                       franchise={franchise}
@@ -643,8 +672,66 @@ export default function DirectoryPage() {
               </div>
             )}
 
-            {/* Pagination placeholder */}
-            <div className="mt-8 text-center">
+            {/* Pagination */}
+            {totalPages > 1 && (
+              <div className="mt-8 flex flex-col items-center gap-4">
+                <div className="flex items-center gap-1.5">
+                  {/* Prev */}
+                  <button
+                    onClick={() => goToPage(page - 1)}
+                    disabled={page === 1}
+                    className="flex items-center gap-1 px-3 py-2 text-sm font-semibold rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-red-300 hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  >
+                    ← Prev
+                  </button>
+
+                  {/* Page numbers */}
+                  {(() => {
+                    const pages: (number | '…')[] = []
+                    if (totalPages <= 7) {
+                      for (let i = 1; i <= totalPages; i++) pages.push(i)
+                    } else {
+                      pages.push(1)
+                      if (page > 3) pages.push('…')
+                      for (let i = Math.max(2, page - 1); i <= Math.min(totalPages - 1, page + 1); i++) pages.push(i)
+                      if (page < totalPages - 2) pages.push('…')
+                      pages.push(totalPages)
+                    }
+                    return pages.map((p, i) =>
+                      p === '…' ? (
+                        <span key={`ellipsis-${i}`} className="px-2 text-gray-400 text-sm select-none">…</span>
+                      ) : (
+                        <button
+                          key={p}
+                          onClick={() => goToPage(p as number)}
+                          className={`w-9 h-9 rounded-lg text-sm font-semibold border transition-all ${
+                            page === p
+                              ? 'bg-red-600 text-white border-red-600 shadow-sm'
+                              : 'bg-white text-gray-600 border-gray-200 hover:border-red-300 hover:text-red-600'
+                          }`}
+                        >
+                          {p}
+                        </button>
+                      )
+                    )
+                  })()}
+
+                  {/* Next */}
+                  <button
+                    onClick={() => goToPage(page + 1)}
+                    disabled={page === totalPages}
+                    className="flex items-center gap-1 px-3 py-2 text-sm font-semibold rounded-lg border border-gray-200 bg-white text-gray-600 hover:border-red-300 hover:text-red-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+                  >
+                    Next →
+                  </button>
+                </div>
+                <p className="text-xs text-gray-400">
+                  Page {page} of {totalPages} · {filtered.length} total listings
+                </p>
+              </div>
+            )}
+
+            <div className="mt-6 text-center">
               <p className="text-xs text-gray-400 mb-3">More franchise brands being added regularly.</p>
               <Link href="/register" className="text-sm text-red-600 font-medium hover:underline">
                 Add your franchise listing →
