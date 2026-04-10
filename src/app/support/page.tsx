@@ -1,7 +1,7 @@
 'use client'
 import { useState } from 'react'
 import Link from 'next/link'
-import { CheckCircle } from 'lucide-react'
+import { CheckCircle, Loader2 } from 'lucide-react'
 
 const categories = [
   'Listing Issue',
@@ -16,6 +16,8 @@ const categories = [
 
 export default function SupportPage() {
   const [submitted, setSubmitted] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -24,13 +26,32 @@ export default function SupportPage() {
     message: '',
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Build mailto to admin — email not exposed in UI
-    const body = `Support Ticket\n\nName: ${form.name}\nEmail: ${form.email}\nCategory: ${form.category}\nSubject: ${form.subject}\n\nMessage:\n${form.message}`
-    const mailto = `mailto:cdeneire@proton.me?subject=[FranchiseOntario Support] ${encodeURIComponent(form.category + ': ' + form.subject)}&body=${encodeURIComponent(body)}`
-    window.location.href = mailto
-    setSubmitted(true)
+    setLoading(true)
+    setError('')
+    try {
+      const res = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          subject: `[${form.category}] ${form.subject}`,
+          message: `Category: ${form.category}\n\n${form.message}`,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        setError(data.error || 'Something went wrong. Please try again.')
+      } else {
+        setSubmitted(true)
+      }
+    } catch {
+      setError('Network error. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   if (submitted) {
@@ -142,8 +163,14 @@ export default function SupportPage() {
             </p>
           </div>
 
-          <button type="submit" className="btn-red w-full py-3.5 rounded-xl font-bold text-sm">
-            Submit Ticket →
+          {error && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-3 text-xs text-red-700">
+              {error}
+            </div>
+          )}
+
+          <button type="submit" disabled={loading} className="btn-red w-full py-3.5 rounded-xl font-bold text-sm disabled:opacity-60 flex items-center justify-center gap-2">
+            {loading ? <><Loader2 size={14} className="animate-spin" /> Submitting…</> : 'Submit Ticket →'}
           </button>
         </form>
 

@@ -22,7 +22,7 @@ export async function POST(req: NextRequest) {
       },
       body: JSON.stringify({
         from: 'FranchiseOntario <noreply@franchiseontario.com>',
-        to: 'cdeneire@proton.me',
+        to: 'info@franchiseontario.com',
         reply_to: email,
         subject: `[FranchiseOntario Contact] ${subject || 'General Inquiry'} — from ${name}`,
         html: `

@@ -60,6 +60,7 @@ function VerifyStep({
   isVerified,
   verifySent,
   verifyLoading,
+  devVerifyUrl,
   onResend,
   onVerified,
   onBack,
@@ -68,6 +69,7 @@ function VerifyStep({
   isVerified: boolean
   verifySent: boolean
   verifyLoading: boolean
+  devVerifyUrl?: string | null
   onResend: () => void
   onVerified: () => void
   onBack: () => void
@@ -128,6 +130,20 @@ function VerifyStep({
       <p className="text-xs text-gray-400 mt-5">
         Can&apos;t find it? Check your spam folder. Link expires in 24 hours.
       </p>
+
+      {/* Dev/fallback: when email service isn't configured, show direct verify link */}
+      {devVerifyUrl && (
+        <div className="mt-5 p-4 bg-amber-50 border border-amber-200 rounded-xl text-left">
+          <p className="text-xs font-bold text-amber-800 mb-1">Email delivery not configured</p>
+          <p className="text-xs text-amber-700 mb-2">Click the link below to verify your email address manually:</p>
+          <a
+            href={devVerifyUrl}
+            className="text-xs text-red-600 underline break-all font-medium"
+          >
+            Verify my email →
+          </a>
+        </div>
+      )}
     </div>
   )
 }
@@ -162,14 +178,26 @@ export default function RegisterPage() {
     setIsEmailVerified(verified)
   }, [formData.email])
 
+  const [devVerifyUrl, setDevVerifyUrl] = useState<string | null>(null)
+
   const sendVerificationEmail = async () => {
     if (!formData.email) return
     setVerifyLoading(true)
     try {
-      await sendEmail(formData.email, 'verify-email', {
-        contactName: formData.contactName,
-        franchiseName: formData.franchiseName,
+      const res = await fetch('/api/email/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          to: formData.email,
+          type: 'verify-email',
+          data: { contactName: formData.contactName, franchiseName: formData.franchiseName },
+        }),
       })
+      const json = await res.json()
+      // Dev mode: Resend not configured — show a direct verify link in the UI
+      if (json.devMode && json.verifyUrl) {
+        setDevVerifyUrl(json.verifyUrl)
+      }
       setVerifySent(true)
     } finally {
       setVerifyLoading(false)
@@ -571,6 +599,7 @@ export default function RegisterPage() {
             isVerified={isEmailVerified}
             verifySent={verifySent}
             verifyLoading={verifyLoading}
+            devVerifyUrl={devVerifyUrl}
             onResend={sendVerificationEmail}
             onVerified={() => setStep('confirm')}
             onBack={() => setStep('details')}

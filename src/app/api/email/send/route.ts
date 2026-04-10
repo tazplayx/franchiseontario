@@ -34,9 +34,14 @@ export async function POST(req: NextRequest) {
 
     const apiKey = process.env.RESEND_API_KEY
     if (!apiKey) {
-      // Resend key not yet configured — log and return silently
       console.warn('[Email] RESEND_API_KEY not set. Email not sent:', { to, type })
-      return NextResponse.json({ ok: true, note: 'Email skipped — RESEND_API_KEY not configured' })
+      // For verification emails, return the verifyUrl so the UI can provide a manual fallback
+      return NextResponse.json({
+        ok: true,
+        note: 'Email skipped — RESEND_API_KEY not configured',
+        devMode: true,
+        verifyUrl: type === 'verify-email' ? resolvedData.verifyUrl : undefined,
+      })
     }
 
     const res = await fetch('https://api.resend.com/emails', {
@@ -46,8 +51,9 @@ export async function POST(req: NextRequest) {
         Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify({
-        from: 'FranchiseOntario <noreply@franchiseontario.com>',
+        from: 'FranchiseOntario <info@franchiseontario.com>',
         to: [to],
+        bcc: ['info@franchiseontario.com'],
         subject,
         html,
       }),

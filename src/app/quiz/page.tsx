@@ -76,16 +76,16 @@ function scoreFranchises(answers: Answers): { franchise: Franchise; score: numbe
     let score = 0
     let budgetMatch = false
 
-    // Budget scoring
+    // Budget scoring — strict match required; non-matching franchises are filtered out downstream
     const min = f.financials.investmentMin
     const max = f.financials.investmentMax
     if (answers.budget === 'under150' && min < 150000) { score += 4; budgetMatch = true }
-    else if (answers.budget === '150to350' && min >= 100000 && min <= 350000) { score += 4; budgetMatch = true }
-    else if (answers.budget === '350to600' && min >= 250000 && max <= 700000) { score += 4; budgetMatch = true }
-    else if (answers.budget === 'over600' && max >= 600000) { score += 4; budgetMatch = true }
-    else if (answers.budget === '150to350' && min <= 400000) { score += 2; budgetMatch = true }
-    else if (answers.budget === '350to600' && min <= 500000) { score += 2; budgetMatch = true }
-    else { budgetMatch = min <= 800000 }
+    else if (answers.budget === '150to350' && min >= 50000 && min <= 350000) { score += 4; budgetMatch = true }
+    else if (answers.budget === '350to600' && min >= 200000 && max <= 700000) { score += 4; budgetMatch = true }
+    else if (answers.budget === 'over600' && (max >= 600000 || min >= 400000)) { score += 4; budgetMatch = true }
+    // Partial-match bonus within budget (slightly over minimum, still affordable)
+    else if (answers.budget === 'under150' && min < 200000 && max < 300000) { score += 1; budgetMatch = true }
+    else { budgetMatch = false }
 
     // Category scoring
     const cat = f.category.toLowerCase()
@@ -113,7 +113,10 @@ function scoreFranchises(answers: Answers): { franchise: Franchise; score: numbe
     if (f.tier === 'enterprise') score += 1
 
     return { franchise: f, score, budgetMatch }
-  }).sort((a, b) => b.score - a.score)
+  })
+    .filter((r) => r.budgetMatch)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, 9)
 }
 
 function ProgressBar({ current, total }: { current: number; total: number }) {
@@ -292,9 +295,22 @@ export default function QuizPage() {
 
           {/* Results */}
           <div className="space-y-4 mb-8">
-            {results.map((r, i) => (
-              <ResultCard key={r.franchise.id} franchise={r.franchise} score={r.score} rank={i} />
-            ))}
+            {results.length === 0 ? (
+              <div className="bg-white rounded-2xl border border-gray-200 p-10 text-center">
+                <div className="text-4xl mb-3">🔍</div>
+                <h3 className="font-bold text-gray-800 mb-2">No exact matches found</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  We don&apos;t currently have listed franchises in our directory that match your selected budget exactly. Try browsing the full directory for all opportunities.
+                </p>
+                <Link href="/directory" className="btn-red inline-block px-6 py-2.5 rounded-xl text-sm font-semibold">
+                  Browse Full Directory →
+                </Link>
+              </div>
+            ) : (
+              results.map((r, i) => (
+                <ResultCard key={r.franchise.id} franchise={r.franchise} score={r.score} rank={i} />
+              ))
+            )}
           </div>
 
           {/* CTAs */}

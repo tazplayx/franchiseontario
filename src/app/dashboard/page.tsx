@@ -806,18 +806,27 @@ function BillingTab() {
 }
 
 // ── Support tab ────────────────────────────────────────────────────────────────
-function SupportTab() {
+function SupportTab({ session }: { session: FranchisorSession | null }) {
   const [form, setForm] = useState({ category: 'Listing Issue', subject: '', message: '' })
   const [submitted, setSubmitted] = useState(false)
+  const [showRemoval, setShowRemoval] = useState(false)
+  const [removalForm, setRemovalForm] = useState({ reason: '' })
+  const [removalLoading, setRemovalLoading] = useState(false)
+  const [removalSubmitted, setRemovalSubmitted] = useState(false)
+  const [removalError, setRemovalError] = useState('')
+
+  const displayName = session?.name ?? MOCK_USER.name
+  const displayEmail = session?.email ?? MOCK_USER.email
+  const franchiseName = session?.franchiseName ?? MOCK_USER.franchise.name
+  const franchiseId = session?.franchiseId ?? MOCK_USER.franchise.id
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.subject || !form.message) return
-    // Route the ticket to the admin panel via localStorage
     addUserTicket({
       id: `user_${Date.now()}`,
-      name: MOCK_USER.name,
-      email: MOCK_USER.email,
+      name: displayName,
+      email: displayEmail,
       category: form.category,
       subject: form.subject,
       message: form.message,
@@ -825,6 +834,37 @@ function SupportTab() {
       submittedAt: new Date().toISOString().split('T')[0],
     })
     setSubmitted(true)
+  }
+
+  const handleRemovalSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!removalForm.reason.trim()) return
+    setRemovalLoading(true)
+    setRemovalError('')
+    try {
+      const res = await fetch('/api/removal-request', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          franchiseName,
+          franchiseId,
+          contactName: displayName,
+          email: displayEmail,
+          reason: removalForm.reason,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || data.error) {
+        setRemovalError(data.error || 'Something went wrong. Please try again.')
+      } else {
+        setRemovalSubmitted(true)
+        setShowRemoval(false)
+      }
+    } catch {
+      setRemovalError('Network error. Please try again.')
+    } finally {
+      setRemovalLoading(false)
+    }
   }
 
   if (submitted) {
@@ -844,10 +884,74 @@ function SupportTab() {
 
   return (
     <div>
+      {/* Removal request modal */}
+      {showRemoval && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 px-4">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div className="flex items-start justify-between mb-4">
+              <div>
+                <h3 className="text-base font-black text-gray-900">Request Listing Removal</h3>
+                <p className="text-xs text-gray-500 mt-0.5">For: <span className="font-semibold">{franchiseName}</span></p>
+              </div>
+              <button onClick={() => { setShowRemoval(false); setRemovalError('') }} className="text-gray-400 hover:text-gray-600">
+                <X size={18} />
+              </button>
+            </div>
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4">
+              <div className="flex gap-2">
+                <AlertTriangle size={14} className="text-amber-600 mt-0.5 shrink-0" />
+                <p className="text-xs text-amber-800 leading-relaxed">
+                  This will send a removal request to our team. We will review it and contact you at <strong>{displayEmail}</strong> within 1–2 business days.
+                </p>
+              </div>
+            </div>
+            <form onSubmit={handleRemovalSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-500 mb-1">Reason for Removal *</label>
+                <textarea
+                  required
+                  rows={4}
+                  value={removalForm.reason}
+                  onChange={(e) => setRemovalForm({ reason: e.target.value })}
+                  placeholder="Please explain why you'd like your listing removed (e.g. no longer franchising, incorrect listing, duplicate entry)…"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-red-200 resize-none"
+                />
+              </div>
+              {removalError && (
+                <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2">{removalError}</p>
+              )}
+              <div className="flex gap-3">
+                <button
+                  type="button"
+                  onClick={() => { setShowRemoval(false); setRemovalError('') }}
+                  className="flex-1 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-600 hover:bg-gray-50 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={removalLoading}
+                  className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white text-sm font-bold transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                >
+                  {removalLoading ? <><Loader2 size={13} className="animate-spin" /> Sending…</> : 'Send Request'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="mb-6">
         <h2 className="text-xl font-black text-gray-900">Support</h2>
         <p className="text-sm text-gray-400 mt-0.5">Need help? Submit a ticket and our team will respond within 1–2 business days.</p>
       </div>
+
+      {removalSubmitted && (
+        <div className="mb-5 bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-3">
+          <CheckCircle size={16} className="text-green-600 shrink-0" />
+          <p className="text-sm text-green-800">Your listing removal request has been submitted. We'll follow up at <strong>{displayEmail}</strong> within 1–2 business days.</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div className="lg:col-span-2">
@@ -916,6 +1020,18 @@ function SupportTab() {
             <p className="text-xs text-white/60 mb-3">Enterprise plan subscribers have access to a dedicated account manager.</p>
             <Link href="/pricing" className="text-xs font-semibold text-red-400 hover:text-red-300">Upgrade to Enterprise →</Link>
           </div>
+          <div className="bg-white rounded-2xl border border-red-100 shadow-sm p-5">
+            <h3 className="font-bold text-gray-900 text-sm mb-1 flex items-center gap-2">
+              <Trash2 size={14} className="text-red-500" /> Request Listing Removal
+            </h3>
+            <p className="text-xs text-gray-500 mb-3 leading-relaxed">Need your listing taken down? Submit a removal request and our team will process it within 1–2 business days.</p>
+            <button
+              onClick={() => setShowRemoval(true)}
+              className="text-xs font-semibold text-red-600 hover:text-red-700 underline"
+            >
+              Submit removal request →
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -968,7 +1084,7 @@ export default function DashboardPage() {
         {activeTab === 'leads' && <LeadsTab session={realSession} />}
         {activeTab === 'listing' && <ListingTab />}
         {activeTab === 'billing' && <BillingTab />}
-        {activeTab === 'support' && <SupportTab />}
+        {activeTab === 'support' && <SupportTab session={realSession} />}
       </main>
     </div>
   )

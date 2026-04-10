@@ -19,6 +19,35 @@ import { getSession } from '@/lib/leads'
 import ClientLeadSection, { LeadCountBadge } from '@/components/ClientLeadSection'
 import type { Franchise } from '@/data/franchises'
 
+const CATEGORY_BG: Record<string, string> = {
+  'Bar & Grill':          'https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=1200&h=400&fit=crop&auto=format',
+  'Seafood':              'https://images.unsplash.com/photo-1615141982883-c7ad0e69fd62?w=1200&h=400&fit=crop&auto=format',
+  'Coffee & Café':        'https://images.unsplash.com/photo-1554118811-1e0d58224f24?w=1200&h=400&fit=crop&auto=format',
+  'Fast Food':            'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=1200&h=400&fit=crop&auto=format',
+  'Pizza':                'https://images.unsplash.com/photo-1513104890138-7c749659a591?w=1200&h=400&fit=crop&auto=format',
+  'Specialty Food':       'https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=1200&h=400&fit=crop&auto=format',
+  'Bakery & Desserts':    'https://images.unsplash.com/photo-1558961363-fa8fdf82db35?w=1200&h=400&fit=crop&auto=format',
+  'Healthy Eating':       'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=1200&h=400&fit=crop&auto=format',
+  'Fitness & Wellness':   'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=1200&h=400&fit=crop&auto=format',
+  'Health & Medical':     'https://images.unsplash.com/photo-1576091160550-2173dba999ef?w=1200&h=400&fit=crop&auto=format',
+  'Senior Care':          'https://images.unsplash.com/photo-1576765608866-5b51046452be?w=1200&h=400&fit=crop&auto=format',
+  'Sports & Recreation':  'https://images.unsplash.com/photo-1461896836934-ffe607ba8211?w=1200&h=400&fit=crop&auto=format',
+  'Home Services':        'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=1200&h=400&fit=crop&auto=format',
+  'Cleaning Services':    'https://images.unsplash.com/photo-1527515545081-5db817172677?w=1200&h=400&fit=crop&auto=format',
+  'Real Estate':          'https://images.unsplash.com/photo-1560518883-ce09059eeffa?w=1200&h=400&fit=crop&auto=format',
+  'Education':            'https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=1200&h=400&fit=crop&auto=format',
+  "Children's Services":  'https://images.unsplash.com/photo-1503454537195-1dcabb73ffb9?w=1200&h=400&fit=crop&auto=format',
+  'Financial Services':   'https://images.unsplash.com/photo-1554224155-6726b3ff858f?w=1200&h=400&fit=crop&auto=format',
+  'Business Services':    'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=1200&h=400&fit=crop&auto=format',
+  'Technology & IT':      'https://images.unsplash.com/photo-1518770660439-4636190af475?w=1200&h=400&fit=crop&auto=format',
+  'Printing & Signs':     'https://images.unsplash.com/photo-1524234107056-1c1f48f64ab8?w=1200&h=400&fit=crop&auto=format',
+  'Retail':               'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&h=400&fit=crop&auto=format',
+  'Automotive':           'https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=1200&h=400&fit=crop&auto=format',
+  'Beauty & Salon':       'https://images.unsplash.com/photo-1560066984-138dadb4c035?w=1200&h=400&fit=crop&auto=format',
+  'Pet Services':         'https://images.unsplash.com/photo-1587300003388-59208cc962cb?w=1200&h=400&fit=crop&auto=format',
+  'Travel & Hospitality': 'https://images.unsplash.com/photo-1488085061387-422e29b40080?w=1200&h=400&fit=crop&auto=format',
+}
+
 const CATEGORIES = [
   'Fast Food','Bar & Grill','Coffee & Café','Specialty Food','Beauty & Salon',
   'Fitness & Wellness','Pet Services','Printing & Signs','Real Estate','Education',
@@ -249,6 +278,22 @@ export default function ClientListingBody({ seed }: { seed: Franchise }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
+
+      {/* ── Hero image strip ─────────────────────────────────────────────────── */}
+      {(() => {
+        const heroSrc = f.mediaImages?.[0] || CATEGORY_BG[f.category]
+        if (!heroSrc) return null
+        return (
+          <div className="w-full h-48 md:h-64 overflow-hidden relative">
+            <img
+              src={heroSrc}
+              alt={`${f.name} hero`}
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-black/50" />
+          </div>
+        )
+      })()}
 
       {/* ── Hero banner ──────────────────────────────────────────────────────── */}
       <div className="bg-white border-b border-gray-200 py-10">
