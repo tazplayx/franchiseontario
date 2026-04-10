@@ -4,21 +4,19 @@ import ContactForm from './ContactForm'
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-gray-300">
-      {/* Top section divider */}
-      <div className="section-divider" />
+    <footer style={{ background: 'var(--rust-deep)', color: 'rgba(255,241,200,0.70)' }}>
 
       {/* Quiz strip */}
-      <div className="bg-gradient-to-r from-red-700 to-red-900 py-5">
+      <div style={{ background: 'var(--rust)' }} className="py-5">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="flex items-center gap-3">
-            <Sparkles size={20} className="text-amber-400 shrink-0" />
+            <Sparkles size={20} style={{ color: 'var(--gold)', flexShrink: 0 }} />
             <div>
               <p className="font-bold text-white text-sm">Not sure which franchise is right for you?</p>
-              <p className="text-red-200 text-xs">Take the 2-minute Franchise Fit Quiz — free, no email required</p>
+              <p className="text-sm" style={{ color: 'rgba(255,241,200,0.75)' }}>Take the 2-minute Franchise Fit Quiz — free, no email required</p>
             </div>
           </div>
-          <Link href="/quiz" className="shrink-0 bg-white text-red-700 font-bold px-5 py-2 rounded-xl text-sm hover:bg-red-50 transition-colors">
+          <Link href="/quiz" className="shrink-0 font-bold px-5 py-2 text-sm transition-colors" style={{ background: 'var(--cream)', color: 'var(--rust-dark)', borderRadius: '9999px' }}>
             Take the Quiz →
           </Link>
         </div>
@@ -29,18 +27,18 @@ export default function Footer() {
           {/* Brand */}
           <div className="lg:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <div className="w-9 h-9 rounded-lg bg-gradient-to-br from-red-600 to-red-800 flex items-center justify-center">
+              <div className="w-9 h-9 flex items-center justify-center" style={{ borderRadius: '0.75rem', background: 'var(--rust)' }}>
                 <span className="text-white font-bold text-sm">🍁</span>
               </div>
-              <span className="font-bold text-white text-lg" style={{ fontFamily: 'Space Grotesk, sans-serif' }}>
-                Franchise<span className="text-red-400">Ontario</span>
+              <span className="font-bold text-white text-lg" style={{ fontFamily: 'DM Sans, sans-serif' }}>
+                Franchise<span style={{ color: 'var(--gold)' }}>Ontario</span>
               </span>
             </div>
-            <p className="text-sm text-gray-400 leading-relaxed mb-4">
+            <p className="text-sm leading-relaxed mb-4" style={{ color: 'rgba(255,241,200,0.60)' }}>
               Ontario-focused. Canada-wide. FranchiseOntario.com is the province's most comprehensive franchise directory — featuring Ontario-based brands alongside Canada's top national franchise concepts. Includes a Franchise Fit Quiz, Ontario city-level market pages, and Arthur Wishart Act buyer guides.
             </p>
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <MapPin size={14} className="text-red-400 shrink-0" />
+            <div className="flex items-center gap-2 text-sm" style={{ color: 'rgba(255,241,200,0.60)' }}>
+              <MapPin size={14} style={{ color: 'var(--gold)', flexShrink: 0 }} />
               <span>Ontario, Canada</span>
             </div>
           </div>
@@ -58,7 +56,7 @@ export default function Footer() {
                 ['Ontario Cities', '/ontario'],
               ].map(([label, href]) => (
                 <li key={label}>
-                  <Link href={href} className="text-gray-400 hover:text-red-400 transition-colors">
+                  <Link href={href} className="transition-colors hover:text-white" style={{ color: 'rgba(255,241,200,0.60)' }}>
                     {label}
                   </Link>
                 </li>
@@ -72,7 +70,7 @@ export default function Footer() {
             <ul className="space-y-2 text-sm">
               {[
                 ['Franchise Fit Quiz ✨', '/quiz'],
-                ['Buyer\'s Guide', '/resources#guide'],
+                ["Buyer's Guide", '/resources#guide'],
                 ['Due Diligence Checklist', '/resources#checklist'],
                 ['Arthur Wishart Act', '/resources#arthur-wishart'],
                 ['Financing Sources', '/resources#financing'],
@@ -80,7 +78,7 @@ export default function Footer() {
                 ['Franchise News', '/news'],
               ].map(([label, href]) => (
                 <li key={label}>
-                  <Link href={href} className="text-gray-400 hover:text-red-400 transition-colors">
+                  <Link href={href} className="transition-colors hover:text-white" style={{ color: 'rgba(255,241,200,0.60)' }}>
                     {label}
                   </Link>
                 </li>
@@ -101,7 +99,7 @@ export default function Footer() {
                 ['Support', '/support'],
               ].map(([label, href]) => (
                 <li key={label}>
-                  <Link href={href} className="text-gray-400 hover:text-red-400 transition-colors">
+                  <Link href={href} className="transition-colors hover:text-white" style={{ color: 'rgba(255,241,200,0.60)' }}>
                     {label}
                   </Link>
                 </li>
@@ -115,8 +113,8 @@ export default function Footer() {
         </div>
 
         {/* Ontario Cities */}
-        <div className="mt-10 pt-8 border-t border-gray-800">
-          <p className="text-xs text-gray-500 font-semibold uppercase tracking-widest mb-3">Franchise Opportunities by Ontario City</p>
+        <div className="mt-10 pt-8" style={{ borderTop: '1px solid rgba(255,241,200,0.12)' }}>
+          <p className="text-xs font-semibold uppercase tracking-widest mb-3" style={{ color: 'rgba(255,241,200,0.35)' }}>Franchise Opportunities by Ontario City</p>
           <div className="flex flex-wrap gap-2">
             {[
               ['Toronto', 'toronto'],
@@ -135,13 +133,14 @@ export default function Footer() {
               <Link
                 key={slug}
                 href={`/ontario/${slug}`}
-                className="text-xs text-gray-500 hover:text-red-400 transition-colors"
+                className="text-xs transition-colors hover:text-white"
+                style={{ color: 'rgba(255,241,200,0.40)' }}
               >
                 {name}
               </Link>
             ))}
-            <span className="text-gray-700 text-xs select-none">|</span>
-            <Link href="/ontario" className="text-xs text-red-500 hover:text-red-400 transition-colors font-medium">
+            <span className="text-xs select-none" style={{ color: 'rgba(255,241,200,0.20)' }}>|</span>
+            <Link href="/ontario" className="text-xs font-medium transition-colors hover:text-white" style={{ color: 'var(--gold)' }}>
               All Ontario Cities →
             </Link>
           </div>
@@ -149,14 +148,20 @@ export default function Footer() {
       </div>
 
       {/* Bottom bar */}
-      <div className="border-t border-gray-800">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-gray-500">
+      <div style={{ borderTop: '1px solid rgba(255,241,200,0.10)' }}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs" style={{ color: 'rgba(255,241,200,0.35)' }}>
           <p>© 2026 FranchiseOntario.com — Ontario-Focused. Canada-Wide. All rights reserved.</p>
           <div className="flex gap-4">
-            <Link href="/privacy" className="hover:text-gray-300 transition-colors">Privacy Policy</Link>
-            <Link href="/terms" className="hover:text-gray-300 transition-colors">Terms of Service</Link>
-            <Link href="/resources" className="hover:text-gray-300 transition-colors">Buyer Resources</Link>
-            <Link href="/sitemap.xml" className="hover:text-gray-300 transition-colors">Sitemap</Link>
+            {[
+              ['Privacy Policy', '/privacy'],
+              ['Terms of Service', '/terms'],
+              ['Buyer Resources', '/resources'],
+              ['Sitemap', '/sitemap.xml'],
+            ].map(([label, href]) => (
+              <Link key={label} href={href} className="transition-colors hover:text-white">
+                {label}
+              </Link>
+            ))}
           </div>
         </div>
       </div>

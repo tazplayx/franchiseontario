@@ -12,6 +12,17 @@ const config: Config = {
         '7xl': '90rem', // 1440px — wider than default 80rem (1280px)
       },
       colors: {
+        brand: {
+          rust:       '#c7522a',
+          'rust-dark':'#642915',
+          'rust-deep':'#32150b',
+          cream:      '#fbf2c4',
+          gold:       '#e5c185',
+          sage:       '#74a892',
+          teal:       '#008585',
+          black:      '#000000',
+        },
+        // Keep old ontario tokens for any components not yet migrated
         ontario: {
           red: '#CC0000',
           darkred: '#990000',
@@ -62,8 +73,8 @@ const config: Config = {
           '100%': { opacity: '1', transform: 'scale(1)' },
         },
         glowPulse: {
-          '0%, 100%': { boxShadow: '0 0 10px rgba(204,0,0,0.4)' },
-          '50%': { boxShadow: '0 0 25px rgba(204,0,0,0.8), 0 0 50px rgba(204,0,0,0.3)' },
+          '0%, 100%': { boxShadow: '0 0 10px rgba(199,82,42,0.4)' },
+          '50%': { boxShadow: '0 0 25px rgba(199,82,42,0.8), 0 0 50px rgba(199,82,42,0.3)' },
         },
       },
       backgroundSize: {
