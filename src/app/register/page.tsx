@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
 import { Check, ArrowRight, Loader2, Upload, X, ImagePlus, Video, Image as ImageIcon, Mail, RefreshCw, Eye, EyeOff } from 'lucide-react'
 import { sendEmail } from '@/lib/email'
-import { registerAccount } from '@/lib/leads'
+import { registerAccount, getAccountByEmail } from '@/lib/leads'
 
 type Step = 'plan' | 'details' | 'verify' | 'confirm'
 
@@ -158,6 +158,7 @@ export default function RegisterPage() {
   const [isEmailVerified, setIsEmailVerified] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [duplicateEmailError, setDuplicateEmailError] = useState(false)
   const [formData, setFormData] = useState<FormData>({
     franchiseName: '', contactName: '', title: '', email: '', phone: '',
     password: '', confirmPassword: '',
@@ -176,6 +177,7 @@ export default function RegisterPage() {
       ? localStorage.getItem(`fo_email_verified_${formData.email}`) === 'true'
       : false
     setIsEmailVerified(verified)
+    setDuplicateEmailError(false)
   }, [formData.email])
 
   const [devVerifyUrl, setDevVerifyUrl] = useState<string | null>(null)
@@ -558,6 +560,19 @@ export default function RegisterPage() {
               </p>
             </div>
 
+            {/* Duplicate email error */}
+            {duplicateEmailError && (
+              <div className="bg-amber-50 border border-amber-200 rounded-xl p-4">
+                <p className="text-sm font-semibold text-amber-900 mb-1">An account already exists with this email</p>
+                <p className="text-xs text-amber-700 mb-2">
+                  Try a different email address, or{' '}
+                  <Link href="/dashboard" className="underline font-semibold text-red-600 hover:text-red-700">
+                    sign in to your existing account →
+                  </Link>
+                </p>
+              </div>
+            )}
+
             {/* Navigation */}
             <div className="flex gap-3 pt-2">
               <button onClick={() => setStep('plan')} className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl font-semibold text-sm transition-all">
@@ -577,9 +592,27 @@ export default function RegisterPage() {
                     alert('Passwords do not match.')
                     return
                   }
+                  // Check for duplicate email
+                  const existing = getAccountByEmail(formData.email)
+                  if (existing) {
+                    setDuplicateEmailError(true)
+                    return
+                  }
+                  setDuplicateEmailError(false)
                   if (isEmailVerified) {
                     setStep('confirm')
                   } else {
+                    // Save draft so verify-email page can create the account after verification
+                    const franchiseId = formData.franchiseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+                    localStorage.setItem('fo_reg_draft', JSON.stringify({
+                      franchiseId,
+                      franchiseName: formData.franchiseName,
+                      name: formData.contactName,
+                      email: formData.email,
+                      title: formData.title || 'Franchise Owner',
+                      tier: selectedPlan as 'basic' | 'premium' | 'enterprise',
+                      password: formData.password,
+                    }))
                     sendVerificationEmail()
                     setStep('verify')
                   }

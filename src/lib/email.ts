@@ -9,6 +9,7 @@
 export type EmailType =
   | 'welcome'
   | 'verify-email'
+  | 'reset-password'
   | 'listing-approved'
   | 'listing-rejected'
   | 'listing-removed'
@@ -24,6 +25,7 @@ export interface EmailData {
   contactName?: string
   plan?: string
   verifyUrl?: string
+  resetUrl?: string
   editedFields?: string[]
 }
 
@@ -96,6 +98,18 @@ export function getEmailContent(
           ${btn(data.verifyUrl ?? 'https://www.franchiseontario.com/register', 'Verify My Email →')}
           ${p(`<span style="color:#64748b;font-size:13px">If you didn't start a registration on FranchiseOntario, you can safely ignore this email.</span>`)}
           <p style="margin:12px 0 0;font-size:11px;color:#94a3b8;word-break:break-all">Or copy this link into your browser:<br />${data.verifyUrl}</p>
+        `),
+      }
+
+    case 'reset-password':
+      return {
+        subject: 'Reset your FranchiseOntario password',
+        html: shell('Password Reset Request', `
+          ${p(`Hi ${name},`)}
+          ${p('We received a request to reset your FranchiseOntario password. Click the button below to choose a new one. This link expires in <strong>1 hour</strong>.')}
+          ${btn(data.resetUrl ?? 'https://www.franchiseontario.com/forgot-password', 'Reset My Password →')}
+          ${p(`<span style="color:#64748b;font-size:13px">If you didn't request a password reset, you can safely ignore this email — your password will not change.</span>`)}
+          <p style="margin:12px 0 0;font-size:11px;color:#94a3b8;word-break:break-all">Or copy this link into your browser:<br />${data.resetUrl}</p>
         `),
       }
 

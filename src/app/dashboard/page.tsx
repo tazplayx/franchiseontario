@@ -18,7 +18,8 @@ import {
 } from '@/lib/store'
 import { sendEmail } from '@/lib/email'
 import {
-  getSession, clearSession, getLeads, markLeadRead,
+  getSession, clearSession, setSession, getLeads, markLeadRead,
+  getAccountByEmail, verifyPassword,
   FREE_LEAD_LIMIT, type FranchisorSession, type FranchiseLead,
 } from '@/lib/leads'
 
@@ -125,14 +126,30 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault()
-    // Demo: any credentials work — in production this would hit your auth API
     if (!email || !password) { setError('Please enter your email and password.'); return }
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('fo_user', 'authenticated')
+    setLoading(true)
+    setError('')
+
+    // Real credential check against localStorage accounts
+    const account = getAccountByEmail(email)
+    if (!account || !verifyPassword(account, password)) {
+      setError('Incorrect email or password. Please try again.')
+      setLoading(false)
+      return
     }
+
+    // Set the session and log in
+    setSession({
+      franchiseId: account.franchiseId,
+      franchiseName: account.franchiseName,
+      email: account.email,
+      name: account.name,
+      tier: account.tier,
+    })
     onLogin()
   }
 
@@ -164,7 +181,10 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
             />
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-500 mb-1">Password</label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-gray-500">Password</label>
+              <Link href="/forgot-password" className="text-xs text-red-600 hover:underline">Forgot password?</Link>
+            </div>
             <input
               type="password"
               value={password}
@@ -175,13 +195,14 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
           </div>
           <button
             type="submit"
-            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl text-sm transition-colors"
+            disabled={loading}
+            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
           >
-            Sign In
+            {loading ? <><Loader2 size={14} className="animate-spin" /> Signing in…</> : 'Sign In'}
           </button>
         </form>
 
-        <div className="mt-6 pt-5 border-t border-gray-100 text-center">
+        <div className="mt-6 pt-5 border-t border-gray-100 text-center space-y-2">
           <p className="text-xs text-gray-400">Don&apos;t have a listing yet?</p>
           <Link href="/register" className="text-sm font-semibold text-red-600 hover:underline">Register your franchise →</Link>
         </div>

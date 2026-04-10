@@ -22,12 +22,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields: to, type' }, { status: 400 })
     }
 
-    // Auto-generate verifyUrl for verify-email type if not supplied
+    // Auto-generate token URLs if not supplied
     let resolvedData: EmailData = { ...data }
+    const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.franchiseontario.com'
     if (type === 'verify-email' && !resolvedData.verifyUrl) {
       const token = generateVerificationToken(to)
-      const base = process.env.NEXT_PUBLIC_BASE_URL || 'https://www.franchiseontario.com'
       resolvedData = { ...resolvedData, verifyUrl: `${base}/verify-email?token=${token}` }
+    }
+    if (type === 'reset-password' && !resolvedData.resetUrl) {
+      const token = generateVerificationToken(to)
+      resolvedData = { ...resolvedData, resetUrl: `${base}/reset-password?token=${token}` }
     }
 
     const { subject, html } = getEmailContent(type, resolvedData)
@@ -41,6 +45,7 @@ export async function POST(req: NextRequest) {
         note: 'Email skipped — RESEND_API_KEY not configured',
         devMode: true,
         verifyUrl: type === 'verify-email' ? resolvedData.verifyUrl : undefined,
+        resetUrl: type === 'reset-password' ? resolvedData.resetUrl : undefined,
       })
     }
 

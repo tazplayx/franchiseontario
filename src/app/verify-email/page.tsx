@@ -2,58 +2,106 @@
 /**
  * /verify-email?token=<token>
  *
- * Validates the HMAC token via /api/email/verify, then sets a localStorage
- * flag so the registration flow can confirm the email was verified.
+ * Validates the HMAC token, then:
+ * - If a registration draft is in localStorage (fo_reg_draft), creates the
+ *   franchisor account, sets the session, clears the draft, and redirects to
+ *   the dashboard.
+ * - Otherwise shows a "Continue Registration" fallback button.
  */
 import { Suspense, useEffect, useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react'
+import { registerAccount, setSession, getAccountByEmail } from '@/lib/leads'
 
-type Status = 'loading' | 'success' | 'error' | 'expired'
+type Status = 'loading' | 'creating' | 'success' | 'error' | 'expired'
+
+interface RegDraft {
+  franchiseId: string
+  franchiseName: string
+  name: string
+  email: string
+  title: string
+  tier: 'basic' | 'premium' | 'enterprise'
+  password: string
+}
 
 function VerifyEmailContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
   const token = searchParams.get('token')
   const [status, setStatus] = useState<Status>('loading')
   const [email, setEmail] = useState<string>('')
 
   useEffect(() => {
-    if (!token) {
-      setStatus('error')
-      return
-    }
+    if (!token) { setStatus('error'); return }
 
     fetch(`/api/email/verify?token=${encodeURIComponent(token)}`)
       .then((r) => r.json())
       .then((data) => {
-        if (data.valid && data.email) {
-          setEmail(data.email)
-          // Persist verification in localStorage so the registration page can read it
-          if (typeof window !== 'undefined') {
-            localStorage.setItem(`fo_email_verified_${data.email}`, 'true')
-          }
-          setStatus('success')
-        } else {
-          setStatus('expired')
+        if (!data.valid || !data.email) { setStatus('expired'); return }
+
+        const verifiedEmail: string = data.email
+        setEmail(verifiedEmail)
+
+        // Mark email as verified in localStorage (polled by the register page)
+        localStorage.setItem(`fo_email_verified_${verifiedEmail}`, 'true')
+
+        // Check if a registration draft is saved — if so, finalize the account now
+        const raw = localStorage.getItem('fo_reg_draft')
+        if (raw) {
+          try {
+            const draft: RegDraft = JSON.parse(raw)
+            // Only use the draft if it matches the verified email
+            if (draft.email.toLowerCase() === verifiedEmail.toLowerCase()) {
+              setStatus('creating')
+              // Create account if it doesn't already exist
+              let account = getAccountByEmail(verifiedEmail)
+              if (!account) {
+                account = registerAccount({
+                  franchiseId: draft.franchiseId,
+                  franchiseName: draft.franchiseName,
+                  name: draft.name,
+                  email: draft.email,
+                  title: draft.title || 'Franchise Owner',
+                  tier: draft.tier || 'basic',
+                  password: draft.password,
+                })
+              }
+              setSession({
+                franchiseId: account.franchiseId,
+                franchiseName: account.franchiseName,
+                email: account.email,
+                name: account.name,
+                tier: account.tier,
+              })
+              localStorage.removeItem('fo_reg_draft')
+              router.replace('/dashboard')
+              return
+            }
+          } catch { /* bad draft — ignore */ }
         }
+
+        setStatus('success')
       })
       .catch(() => setStatus('error'))
-  }, [token])
+  }, [token, router])
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 w-full max-w-md text-center">
 
-      {/* Loading */}
-      {status === 'loading' && (
+      {/* Loading / Creating account */}
+      {(status === 'loading' || status === 'creating') && (
         <>
           <Loader2 size={40} className="animate-spin text-red-600 mx-auto mb-4" />
-          <h1 className="text-xl font-black text-gray-900 mb-2">Verifying your email…</h1>
+          <h1 className="text-xl font-black text-gray-900 mb-2">
+            {status === 'creating' ? 'Setting up your account…' : 'Verifying your email…'}
+          </h1>
           <p className="text-sm text-gray-400">This will only take a moment.</p>
         </>
       )}
 
-      {/* Success */}
+      {/* Success (no draft found — falls back to continue registration) */}
       {status === 'success' && (
         <>
           <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-5">
@@ -64,7 +112,7 @@ function VerifyEmailContent() {
             Your email address <strong className="text-gray-700">{email}</strong> has been confirmed.
           </p>
           <p className="text-sm text-gray-500 mb-7">
-            You can now return to registration and complete your listing.
+            Return to the registration tab to complete your listing — the page should have advanced automatically.
           </p>
           <Link
             href="/register"
