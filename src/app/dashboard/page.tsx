@@ -22,6 +22,7 @@ import {
   getAccountByEmail, verifyPassword,
   FREE_LEAD_LIMIT, type FranchisorSession, type FranchiseLead,
 } from '@/lib/leads'
+import { franchises } from '@/data/franchises'
 
 // Simulated logged-in franchisee data
 const MOCK_USER = {
@@ -212,7 +213,42 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
 }
 
 // ── My Listing tab ─────────────────────────────────────────────────────────────
-function ListingTab() {
+function ListingTab({ session }: { session: FranchisorSession | null }) {
+  // For real sessions, look up the franchise in the directory
+  const realFranchise = session
+    ? franchises.find((f) => f.id === session.franchiseId) ?? null
+    : null
+
+  // If a real user is logged in but their listing isn't in the directory yet,
+  // show a pending review state
+  if (session && !realFranchise) {
+    return (
+      <div>
+        <div className="mb-6">
+          <h2 className="text-xl font-black text-gray-900">My Listing</h2>
+          <p className="text-sm text-gray-400 mt-0.5">What visitors see on your public listing page</p>
+        </div>
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center">
+          <Clock size={36} className="text-amber-500 mx-auto mb-4" />
+          <h3 className="text-lg font-black text-gray-900 mb-2">Listing Under Review</h3>
+          <p className="text-sm text-gray-600 mb-1">
+            <strong>{session.franchiseName}</strong> has been submitted and is currently being reviewed by our team.
+          </p>
+          <p className="text-sm text-gray-500 mb-6">
+            Basic listings typically go live within 24 hours. You'll receive an email confirmation once your listing is published.
+          </p>
+          <Link
+            href="/support"
+            className="inline-block text-sm font-semibold text-red-600 hover:underline"
+          >
+            Questions? Contact support →
+          </Link>
+        </div>
+      </div>
+    )
+  }
+
+  // For demo users (no real session), use MOCK_USER data
   const { franchise } = MOCK_USER
   const [isEditing, setIsEditing] = useState(false)
   const [removeConfirm, setRemoveConfirm] = useState(false)
@@ -1113,7 +1149,7 @@ export default function DashboardPage() {
           <h1 className="text-2xl font-black text-gray-900">{displayName}</h1>
         </div>
         {activeTab === 'leads' && <LeadsTab session={realSession} />}
-        {activeTab === 'listing' && <ListingTab />}
+        {activeTab === 'listing' && <ListingTab session={realSession} />}
         {activeTab === 'billing' && <BillingTab />}
         {activeTab === 'support' && <SupportTab session={realSession} />}
       </main>
