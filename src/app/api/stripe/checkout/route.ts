@@ -41,7 +41,7 @@ export async function POST(req: NextRequest) {
       line_items: lineItems,
 
       // Success/cancel redirects
-      success_url: `${baseUrl}/register/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${baseUrl}/register/success?plan=paid&session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${baseUrl}/register?cancelled=true`,
 
       // Pre-fill customer info if provided

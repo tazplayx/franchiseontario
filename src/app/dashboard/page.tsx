@@ -1089,7 +1089,17 @@ export default function DashboardPage() {
     setRealSession(null)
   }
 
-  if (!loggedIn) return <LoginScreen onLogin={() => { setLoggedIn(true); setActiveTab('listing') }} />
+  const handleRealLogin = () => {
+    const session = getSession()
+    if (session) {
+      setRealSession(session)
+      setLeadCount(getLeads(session.franchiseId).filter((l) => !l.read).length)
+    }
+    setLoggedIn(true)
+    setActiveTab('listing')
+  }
+
+  if (!loggedIn) return <LoginScreen onLogin={handleRealLogin} />
 
   const displayName = realSession?.name ?? MOCK_USER.name
   const displayEmail = realSession?.email ?? MOCK_USER.email

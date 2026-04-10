@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useState, useRef, useEffect } from 'react'
 import { Check, ArrowRight, Loader2, Upload, X, ImagePlus, Video, Image as ImageIcon, Mail, RefreshCw, Eye, EyeOff } from 'lucide-react'
 import { sendEmail } from '@/lib/email'
-import { registerAccount, getAccountByEmail } from '@/lib/leads'
+import { registerAccount, getAccountByEmail, setSession } from '@/lib/leads'
 
 type Step = 'plan' | 'details' | 'verify' | 'confirm'
 
@@ -592,7 +592,7 @@ export default function RegisterPage() {
                     alert('Passwords do not match.')
                     return
                   }
-                  // Check for duplicate email
+                  // Always check for duplicate email — regardless of verification status
                   const existing = getAccountByEmail(formData.email)
                   if (existing) {
                     setDuplicateEmailError(true)
@@ -735,23 +735,45 @@ export default function RegisterPage() {
               {/* Free basic plan — submit directly */}
               {selectedPlan === 'basic' && !addFeature ? (
                 <button
-                  onClick={() => {
-                    // Create franchisor account linked to this new listing
+                  onClick={async () => {
                     const franchiseId = formData.franchiseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-                    try {
-                      registerAccount({
-                        franchiseId,
-                        franchiseName: formData.franchiseName,
-                        name: formData.contactName,
-                        email: formData.email,
-                        title: formData.title || 'Franchise Owner',
-                        tier: 'basic',
-                        password: formData.password,
+                    // Create account if it doesn't already exist (may have been created at verify step)
+                    let account = getAccountByEmail(formData.email)
+                    if (!account) {
+                      try {
+                        account = registerAccount({
+                          franchiseId,
+                          franchiseName: formData.franchiseName,
+                          name: formData.contactName,
+                          email: formData.email,
+                          title: formData.title || 'Franchise Owner',
+                          tier: 'basic',
+                          password: formData.password,
+                        })
+                      } catch { /* account may already exist */ }
+                      account = getAccountByEmail(formData.email)
+                    }
+                    // Set session so header shows logged-in state
+                    if (account) {
+                      setSession({
+                        franchiseId: account.franchiseId,
+                        franchiseName: account.franchiseName,
+                        email: account.email,
+                        name: account.name,
+                        tier: account.tier,
                       })
-                    } catch { /* account may already exist */ }
-                    const body = `New Basic Listing\n\nFranchise: ${formData.franchiseName}\nContact: ${formData.contactName} (${formData.title || 'Owner'})\nEmail: ${formData.email}\nCategory: ${formData.category}\n\nApprove at: https://franchiseontario.com/admin`
-                    window.open(`mailto:cdeneire@proton.me?subject=[FranchiseOntario] New Basic Listing — ${formData.franchiseName}&body=${encodeURIComponent(body)}`)
-                    window.location.href = '/register/success'
+                    }
+                    // Notify admin
+                    await fetch('/api/email/send', {
+                      method: 'POST',
+                      headers: { 'Content-Type': 'application/json' },
+                      body: JSON.stringify({
+                        to: 'info@franchiseontario.com',
+                        type: 'welcome',
+                        data: { franchiseName: formData.franchiseName, contactName: formData.contactName, plan: 'Basic (Free)' },
+                      }),
+                    }).catch(() => {})
+                    window.location.href = '/register/success?plan=basic'
                   }}
                   className="flex-[2] btn-red py-3 rounded-xl font-bold text-sm"
                 >

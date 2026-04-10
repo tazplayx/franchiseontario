@@ -1,14 +1,14 @@
-import type { Metadata } from 'next'
+'use client'
+import { Suspense } from 'react'
 import Link from 'next/link'
-import { CheckCircle, ArrowRight, Clock, Mail } from 'lucide-react'
+import { useSearchParams } from 'next/navigation'
+import { CheckCircle, ArrowRight, Clock, Mail, LayoutDashboard } from 'lucide-react'
 
-export const metadata: Metadata = {
-  title: 'Registration Complete — FranchiseOntario.com',
-  description: 'Your franchise listing has been submitted and payment confirmed.',
-  robots: { index: false, follow: false },
-}
+function SuccessContent() {
+  const searchParams = useSearchParams()
+  const plan = searchParams.get('plan') ?? 'paid'
+  const isFree = plan === 'basic'
 
-export default function RegisterSuccessPage() {
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4 py-16">
       <div className="max-w-lg w-full">
@@ -20,11 +20,12 @@ export default function RegisterSuccessPage() {
           </div>
 
           <h1 className="text-3xl font-bold text-gray-900 mb-3">
-            Payment Confirmed!
+            {isFree ? 'Account Created!' : 'Payment Confirmed!'}
           </h1>
           <p className="text-gray-500 text-base leading-relaxed mb-8">
-            Your franchise listing has been submitted and your subscription is now active.
-            Our team will review and publish your listing within <strong>4–24 hours</strong>.
+            {isFree
+              ? 'Your account has been created and your email verified. Your free listing has been submitted for review and will go live within 24 hours.'
+              : 'Your franchise listing has been submitted and your subscription is now active. Our team will review and publish your listing within 4–24 hours.'}
           </p>
 
           {/* What happens next */}
@@ -35,7 +36,9 @@ export default function RegisterSuccessPage() {
               {
                 icon: <Mail size={16} className="text-red-500" />,
                 title: 'Confirmation email sent',
-                desc: 'Check your inbox — your receipt and listing details are on the way.',
+                desc: isFree
+                  ? 'Check your inbox — your listing details are on the way.'
+                  : 'Check your inbox — your receipt and listing details are on the way.',
               },
               {
                 icon: <Clock size={16} className="text-amber-500" />,
@@ -44,8 +47,10 @@ export default function RegisterSuccessPage() {
               },
               {
                 icon: <CheckCircle size={16} className="text-green-500" />,
-                title: 'Goes live within 24 hours',
-                desc: 'Premium & Enterprise listings are expedited — typically live in under 4 hours.',
+                title: isFree ? 'Goes live within 24 hours' : 'Goes live within 4–24 hours',
+                desc: isFree
+                  ? 'Basic listings are reviewed during business hours.'
+                  : 'Premium & Enterprise listings are expedited — typically live in under 4 hours.',
               },
             ].map((step) => (
               <div key={step.title} className="flex items-start gap-3">
@@ -69,27 +74,41 @@ export default function RegisterSuccessPage() {
 
           <div className="flex flex-col sm:flex-row gap-3">
             <Link
-              href="/directory"
+              href="/dashboard"
               className="btn-red flex-1 py-3 rounded-xl text-sm font-semibold text-center inline-flex items-center justify-center gap-2"
             >
-              View the Directory <ArrowRight size={14} />
+              <LayoutDashboard size={15} /> Go to Your Dashboard
             </Link>
             <Link
-              href="/"
-              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl text-sm font-semibold text-center transition-colors"
+              href="/directory"
+              className="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-xl text-sm font-semibold text-center transition-colors inline-flex items-center justify-center gap-2"
             >
-              Back to Homepage
+              View Directory <ArrowRight size={14} />
             </Link>
           </div>
         </div>
 
-        {/* Tax receipt note */}
-        <p className="text-center text-xs text-gray-400 leading-relaxed">
-          A payment receipt including applicable HST/GST has been emailed to you from Stripe.
-          You can manage your subscription, download invoices, or update your payment method at any time
-          from your account dashboard.
-        </p>
+        {/* Tax receipt note — only for paid */}
+        {!isFree && (
+          <p className="text-center text-xs text-gray-400 leading-relaxed">
+            A payment receipt including applicable HST/GST has been emailed to you from Stripe.
+            You can manage your subscription, download invoices, or update your payment method at any time
+            from your account dashboard.
+          </p>
+        )}
       </div>
     </div>
+  )
+}
+
+export default function RegisterSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-400 text-sm">Loading…</div>
+      </div>
+    }>
+      <SuccessContent />
+    </Suspense>
   )
 }
