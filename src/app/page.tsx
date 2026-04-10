@@ -88,18 +88,7 @@ function Hero() {
                 <Link
                   key={tag}
                   href={`/directory?category=${encodeURIComponent(tag)}`}
-                  className="px-3 py-1.5 rounded-full transition-colors border font-medium"
-                  style={{ background: 'var(--bg-soft)', color: 'var(--text-secondary)', borderColor: 'var(--border)' }}
-                  onMouseEnter={e => {
-                    ;(e.currentTarget as HTMLElement).style.background = '#fdeee7'
-                    ;(e.currentTarget as HTMLElement).style.color = 'var(--rust)'
-                    ;(e.currentTarget as HTMLElement).style.borderColor = '#f5c4b0'
-                  }}
-                  onMouseLeave={e => {
-                    ;(e.currentTarget as HTMLElement).style.background = 'var(--bg-soft)'
-                    ;(e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'
-                    ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'
-                  }}
+                  className="px-3 py-1.5 rounded-full transition-colors border font-medium bg-[#f9f1e8] text-[#4a3728] border-[#e8ddd5] hover:bg-[#fdeee7] hover:text-[#c7522a] hover:border-[#f5c4b0]"
                 >
                   {tag}
                 </Link>
@@ -239,19 +228,8 @@ function CategoryGrid() {
             <Link
               key={cat.name}
               href={`/categories?cat=${encodeURIComponent(cat.name)}`}
-              className="group bg-white p-3 text-center border transition-all card-hover"
-              style={{
-                borderRadius: '1.25rem',
-                borderColor: 'var(--border)',
-              }}
-              onMouseEnter={e => {
-                ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--rust)'
-                ;(e.currentTarget as HTMLElement).style.background = '#fdeee7'
-              }}
-              onMouseLeave={e => {
-                ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'
-                ;(e.currentTarget as HTMLElement).style.background = 'white'
-              }}
+              className="group bg-white p-3 text-center border border-[#e8ddd5] transition-all card-hover hover:border-[#c7522a] hover:bg-[#fdeee7]"
+              style={{ borderRadius: '1.25rem' }}
             >
               <div
                 className="w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center text-xl group-hover:scale-110 transition-transform"
@@ -351,16 +329,8 @@ function OntarioCities() {
             <Link
               key={city.slug}
               href={`/ontario/${city.slug}`}
-              className="group border p-3 text-center transition-all"
-              style={{ borderRadius: '1rem', borderColor: 'var(--border)', background: 'var(--bg-soft)' }}
-              onMouseEnter={e => {
-                ;(e.currentTarget as HTMLElement).style.background = '#fdeee7'
-                ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--rust)'
-              }}
-              onMouseLeave={e => {
-                ;(e.currentTarget as HTMLElement).style.background = 'var(--bg-soft)'
-                ;(e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'
-              }}
+              className="group border border-[#e8ddd5] bg-[#fdf8f4] p-3 text-center transition-all hover:bg-[#fdeee7] hover:border-[#c7522a]"
+              style={{ borderRadius: '1rem' }}
             >
               <div className="text-xl mb-1">{city.icon}</div>
               <p className="text-xs font-semibold leading-tight" style={{ color: 'var(--text-secondary)' }}>{city.name}</p>
