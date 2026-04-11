@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import JsonLd from '@/components/JsonLd'
 import { franchises, getFranchiseById } from '@/data/franchises'
 import ClientListingBody from '@/components/ClientListingBody'
+import ClientApprovedListingPage from '@/components/ClientApprovedListingPage'
 
 const BASE = 'https://www.franchiseontario.com'
 
@@ -25,9 +26,17 @@ export async function generateMetadata({ params }: { params: { id: string } }) {
   }
 }
 
+// Allow on-demand rendering for IDs not in generateStaticParams (i.e. user-submitted approved listings)
+export const dynamicParams = true
+
 export default function FranchiseProfilePage({ params }: { params: { id: string } }) {
   const franchise = getFranchiseById(params.id)
-  if (!franchise) notFound()
+
+  // Not in the static seed — could be a user-submitted approved listing stored in localStorage.
+  // Delegate to a client component that can read localStorage on mount.
+  if (!franchise) {
+    return <ClientApprovedListingPage id={params.id} />
+  }
 
   const f = franchise
 

@@ -16,6 +16,8 @@ import {
   isUserFranchiseRemoved,
   addUserTicket,
   removePendingListing,
+  getApprovedListings,
+  removeApprovedListing,
 } from '@/lib/store'
 import { sendEmail } from '@/lib/email'
 import {
@@ -23,7 +25,7 @@ import {
   getAccountByEmail, verifyPassword, deleteAccount,
   FREE_LEAD_LIMIT, type FranchisorSession, type FranchiseLead,
 } from '@/lib/leads'
-import { franchises } from '@/data/franchises'
+import { franchises, type Franchise } from '@/data/franchises'
 
 // Simulated logged-in franchisee data
 const MOCK_USER = {
@@ -308,26 +310,32 @@ function PendingListingTab({ session }: { session: FranchisorSession }) {
 
 // ── My Listing tab ─────────────────────────────────────────────────────────────
 function ListingTab({ session }: { session: FranchisorSession | null }) {
-  // For real sessions, look up the franchise in the directory
+  // Check both static seed franchises AND user-submitted approved listings
   const realFranchise = session
-    ? franchises.find((f) => f.id === session.franchiseId) ?? null
+    ? [...franchises, ...getApprovedListings()].find((f) => f.id === session.franchiseId) ?? null
     : null
 
-  // If a real user is logged in but their listing isn't in the directory yet,
+  // If a real user is logged in but their listing isn't approved yet,
   // show a pending review state with a delete option in the footer
   if (session && !realFranchise) {
     return <PendingListingTab session={session} />
   }
 
-  // For demo users (no real session), use MOCK_USER data
-  const { franchise } = MOCK_USER
+  // Use real franchise data when logged in, MOCK_USER data for the demo view
+  const franchise: Franchise = (session && realFranchise) ? realFranchise : MOCK_USER.franchise as unknown as Franchise
+  const effectiveEmail = session?.email ?? MOCK_USER.email
+  const effectiveName = session?.name ?? MOCK_USER.name
+  const effectivePlan = session
+    ? session.tier.charAt(0).toUpperCase() + session.tier.slice(1)
+    : (MOCK_USER.franchise as Record<string, unknown>).plan as string ?? 'Basic'
   const [isEditing, setIsEditing] = useState(false)
   const [removeConfirm, setRemoveConfirm] = useState(false)
   const [removed, setRemoved] = useState(false)
   const [saved, setSaved] = useState(false)
 
   // Merge stored overrides on top of the seed franchise
-  const storedOverrides = getUserFranchiseOverrides()
+  // For real users we don't apply the demo override store (it's per-franchise-id keyed to MOCK)
+  const storedOverrides = session ? {} : getUserFranchiseOverrides()
   const merged = { ...franchise, ...storedOverrides } as typeof franchise
 
   const [current, setCurrent] = useState(merged)
@@ -338,7 +346,7 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
     longDescription: '',
     city: merged.city,
     phone: merged.phone,
-    email: MOCK_USER.email,
+    email: effectiveEmail,
     website: merged.website,
     locations: String(merged.locations),
     established: String(merged.established),
@@ -384,13 +392,13 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
     }
     const updated = { ...current, ...saveData }
     saveUserFranchise(saveData as Record<string, unknown>)
-    setCurrent(updated)
+    setCurrent(updated as typeof current)
     setIsEditing(false)
     setSaved(true)
     setTimeout(() => setSaved(false), 3000)
-    sendEmail(MOCK_USER.email, 'listing-edited-user', {
+    sendEmail(effectiveEmail, 'listing-edited-user', {
       franchiseName: form.name || franchise.name,
-      contactName: MOCK_USER.name,
+      contactName: effectiveName,
     })
   }
 
@@ -400,9 +408,14 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
     // Also add to global removed set so directory + homepage stop showing it
     removeListing(franchise.id)
     // Notify user of confirmed removal
-    sendEmail(MOCK_USER.email, 'listing-removed-user', {
+    // For real approved listings, remove from the approved store too
+    if (session) {
+      removeApprovedListing(franchise.id)
+      removePendingListing(franchise.id)
+    }
+    sendEmail(effectiveEmail, 'listing-removed-user', {
       franchiseName: franchise.name,
-      contactName: MOCK_USER.name,
+      contactName: effectiveName,
     })
     setRemoveConfirm(false)
     setRemoved(true)
@@ -455,7 +468,7 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
           <div className="text-xs text-green-600">Your franchise is live and visible to all visitors on FranchiseOntario.</div>
         </div>
         <div className="ml-auto">
-          <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">{current.plan}</span>
+          <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">{effectivePlan}</span>
         </div>
       </div>
 
@@ -463,7 +476,7 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-5">
         <div className="p-6">
           <div className="flex items-start justify-between gap-4 mb-4">
-            <div className="w-14 h-14 rounded-2xl bg-amber-500 flex items-center justify-center text-white font-black text-sm shrink-0">SP</div>
+            <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white font-black text-sm shrink-0" style={{ backgroundColor: franchise.logoBg ?? '#F59E0B' }}>{franchise.logoInitials ?? 'SP'}</div>
             <div className="flex-1">
               <h3 className="font-black text-gray-900 text-lg leading-tight">{current.name}</h3>
               <p className="text-sm text-gray-500 italic mt-0.5">{current.tagline}</p>
@@ -479,7 +492,7 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
         </div>
         <div className="flex border-t border-gray-100 divide-x divide-gray-100">
           <button
-            onClick={() => { setIsEditing(true); setForm({ name: current.name, tagline: current.tagline ?? '', description: current.description, longDescription: '', city: current.city, phone: current.phone, email: MOCK_USER.email, website: current.website, locations: String(current.locations), established: String(current.established), territory: '', videoUrl: '', highlights: '', idealCandidate: '', supportOffered: '', franchiseFee: '', royaltyRate: '', investmentMin: '', investmentMax: '' }) }}
+            onClick={() => { setIsEditing(true); setForm({ name: current.name, tagline: current.tagline ?? '', description: current.description, longDescription: '', city: current.city, phone: current.phone, email: effectiveEmail, website: current.website, locations: String(current.locations), established: String(current.established), territory: '', videoUrl: '', highlights: '', idealCandidate: '', supportOffered: '', franchiseFee: '', royaltyRate: '', investmentMin: '', investmentMax: '' }) }}
             className="flex-1 flex items-center justify-center gap-2 py-3.5 text-sm font-semibold text-blue-600 hover:bg-blue-50 transition-colors"
           >
             <Pencil size={14} /> Edit Listing
