@@ -57,7 +57,10 @@ function ResetPasswordContent() {
     setStatus('saving')
     const account = getAccountByEmail(email)
     if (!account) {
-      setFormError('No account found for this email. Please register instead.')
+      setFormError(
+        'Your account was not found in this browser. This can happen if you registered on a different device or browser. ' +
+        'Please try logging in with the password you set during registration, or create a new account.'
+      )
       setStatus('ready')
       return
     }

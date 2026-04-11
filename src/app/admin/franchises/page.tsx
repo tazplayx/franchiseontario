@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, XCircle, Eye, LayoutDashboard, ListChecks, MessageSquare, Shield, LogOut, Building2, BarChart3, Users } from 'lucide-react'
-import { getPendingStatuses, savePendingStatus, saveApprovedListing, removeApprovedListing, type PendingStatus } from '@/lib/store'
+import { getPendingStatuses, savePendingStatus, saveApprovedListing, removeApprovedListing, getPendingListings, updatePendingListingStatus, type PendingStatus, type PendingListing } from '@/lib/store'
 import type { Franchise, FranchiseCategory } from '@/data/franchises'
 import { sendEmail } from '@/lib/email'
 
@@ -112,6 +112,109 @@ function AdminNav({ active }: { active: string }) {
   )
 }
 
+// Unified display type — merges seed listings and user-submitted listings
+type DisplayListing = {
+  id: string
+  name: string
+  category: string
+  plan: string
+  email: string
+  submittedAt: string
+  city: string
+  description: string
+  status: string
+  isUserSubmitted: boolean
+  // Rich fields from user submissions
+  contactName?: string
+  phone?: string
+  website?: string
+  locations?: number
+  established?: number
+  logoUrl?: string
+  mediaImages?: string[]
+  videoUrl?: string
+}
+
+function toDisplayListing(p: typeof initialPending[0]): DisplayListing {
+  return { ...p, isUserSubmitted: false }
+}
+
+function userPendingToDisplay(p: PendingListing): DisplayListing {
+  return {
+    id: p.id,
+    name: p.name,
+    category: p.category,
+    plan: p.plan,
+    email: p.email,
+    submittedAt: new Date(p.submittedAt).toISOString().split('T')[0],
+    city: p.city,
+    description: p.description,
+    status: p.status,
+    isUserSubmitted: true,
+    contactName: p.contactName,
+    phone: p.phone,
+    website: p.website,
+    locations: p.locations,
+    established: p.established,
+    logoUrl: p.logoUrl,
+    mediaImages: p.mediaImages,
+    videoUrl: p.videoUrl,
+  }
+}
+
+function userPendingToFranchise(p: PendingListing): Franchise {
+  const tierMap: Record<string, Franchise['tier']> = {
+    Enterprise: 'enterprise', Premium: 'premium', Basic: 'basic',
+  }
+  const initials = p.name.split(' ').filter(Boolean).slice(0, 3).map((w) => w[0]).join('').toUpperCase()
+  return {
+    id: p.id,
+    name: p.name,
+    tagline: p.description ? p.description.split('.')[0].trim() : p.name,
+    description: p.description || p.name,
+    longDescription: p.description || p.name,
+    category: (p.category || 'Business Services') as Franchise['category'],
+    tier: tierMap[p.plan] ?? 'basic',
+    isVIP: p.plan === 'Enterprise',
+    isFeatured: false,
+    logoInitials: initials,
+    logoColor: '#FFFFFF',
+    logoBg: '#6B7280',
+    logoUrl: p.logoUrl || undefined,
+    locations: p.locations || 0,
+    rating: 0,
+    reviews: 0,
+    established: p.established || new Date().getFullYear(),
+    financials: {
+      franchiseFee: 'Contact for details',
+      royaltyRate: 'Contact for details',
+      marketingFee: 'Contact for details',
+      investmentMin: 0,
+      investmentMax: 0,
+      averageUnitVolume: 'Contact for details',
+      netWorthRequired: 'Contact for details',
+      liquidCapitalRequired: 'Contact for details',
+    },
+    website: p.website || '',
+    phone: p.phone || '',
+    email: p.email,
+    city: p.city || '',
+    highlights: [],
+    popularityScore: 0,
+    rank: 999,
+    badges: [],
+    trainingWeeks: 0,
+    territory: '',
+    franchiseeCount: 0,
+    parent: '',
+    idealCandidate: [],
+    supportOffered: [],
+    mediaImages: p.mediaImages || [],
+    videoUrl: p.videoUrl || '',
+    faqs: [],
+  }
+}
+
 export default function AdminFranchisesPage() {
   const router = useRouter()
   useEffect(() => {
@@ -120,41 +223,53 @@ export default function AdminFranchisesPage() {
     }
   }, [router])
 
-  const [listings, setListings] = useState(() => {
+  const buildListings = (): DisplayListing[] => {
     const statuses = getPendingStatuses()
-    return initialPending.map((l) =>
-      statuses[l.id] ? { ...l, status: statuses[l.id] as PendingStatus } : l
+    const seed = initialPending.map((l) =>
+      toDisplayListing(statuses[l.id] ? { ...l, status: statuses[l.id] as PendingStatus } : l)
     )
-  })
+    // User-submitted listings from localStorage — exclude any whose ID matches a seed entry
+    const seedIds = new Set(initialPending.map((l) => l.id))
+    const userSubmitted = getPendingListings()
+      .filter((l) => !seedIds.has(l.id))
+      .map(userPendingToDisplay)
+    return [...userSubmitted, ...seed]
+  }
+
+  const [listings, setListings] = useState<DisplayListing[]>(buildListings)
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
-  const [selected, setSelected] = useState<typeof initialPending[0] | null>(null)
+  const [selected, setSelected] = useState<DisplayListing | null>(null)
 
   // Re-apply store on mount (handles SSR hydration)
   useEffect(() => {
-    const statuses = getPendingStatuses()
-    setListings(initialPending.map((l) =>
-      statuses[l.id] ? { ...l, status: statuses[l.id] as PendingStatus } : l
-    ))
+    setListings(buildListings())
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const update = (id: string, status: 'approved' | 'rejected') => {
-    savePendingStatus(id, status)
-    const listing = initialPending.find((l) => l.id === id)
-    if (listing) {
+    // Check user-submitted listings first
+    const userListing = getPendingListings().find((l) => l.id === id)
+    if (userListing) {
+      updatePendingListingStatus(id, status)
       if (status === 'approved') {
-        saveApprovedListing(pendingToFranchise(listing))
-        // Notify listing owner of approval
-        sendEmail(listing.email, 'listing-approved', {
-          franchiseName: listing.name,
-          plan: listing.plan,
-        })
+        saveApprovedListing(userPendingToFranchise(userListing))
+        sendEmail(userListing.email, 'listing-approved', { franchiseName: userListing.name, plan: userListing.plan })
       } else {
-        // Remove from approved store in case it was previously approved then rejected
         removeApprovedListing(id)
-        // Notify listing owner of rejection
-        sendEmail(listing.email, 'listing-rejected', {
-          franchiseName: listing.name,
-        })
+        sendEmail(userListing.email, 'listing-rejected', { franchiseName: userListing.name })
+      }
+    } else {
+      // Seed listing
+      savePendingStatus(id, status)
+      const listing = initialPending.find((l) => l.id === id)
+      if (listing) {
+        if (status === 'approved') {
+          saveApprovedListing(pendingToFranchise(listing))
+          sendEmail(listing.email, 'listing-approved', { franchiseName: listing.name, plan: listing.plan })
+        } else {
+          removeApprovedListing(id)
+          sendEmail(listing.email, 'listing-rejected', { franchiseName: listing.name })
+        }
       }
     }
     setListings((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)))
@@ -251,14 +366,38 @@ export default function AdminFranchisesPage() {
                 </div>
                 <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-600 text-xl leading-none">&times;</button>
               </div>
-              <div className="space-y-3 text-sm mb-5">
-                <div className="flex justify-between"><span className="text-gray-500">Plan</span><span className="font-semibold">{selected.plan}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Contact Email</span><span className="font-semibold">{selected.email}</span></div>
-                <div className="flex justify-between"><span className="text-gray-500">Submitted</span><span className="font-semibold">{selected.submittedAt}</span></div>
-                <div className="pt-2 border-t border-gray-100">
-                  <p className="text-gray-500 text-xs mb-1">Description</p>
-                  <p className="text-gray-700">{selected.description}</p>
+              {selected.isUserSubmitted && (
+                <div className="inline-flex items-center gap-1 bg-blue-50 border border-blue-200 rounded-full px-2.5 py-0.5 mb-3">
+                  <span className="text-[10px] font-bold text-blue-600 uppercase tracking-wide">New Submission</span>
                 </div>
+              )}
+              {selected.logoUrl && (
+                <img src={selected.logoUrl} alt="Logo" className="w-16 h-16 rounded-xl object-contain border border-gray-200 mb-3" />
+              )}
+              <div className="space-y-2.5 text-sm mb-5">
+                <div className="flex justify-between"><span className="text-gray-500">Plan</span><span className="font-semibold">{selected.plan}</span></div>
+                {selected.contactName && <div className="flex justify-between"><span className="text-gray-500">Contact</span><span className="font-semibold">{selected.contactName}</span></div>}
+                <div className="flex justify-between"><span className="text-gray-500">Email</span><span className="font-semibold">{selected.email}</span></div>
+                {selected.phone && <div className="flex justify-between"><span className="text-gray-500">Phone</span><span className="font-semibold">{selected.phone}</span></div>}
+                {selected.website && <div className="flex justify-between"><span className="text-gray-500">Website</span><span className="font-semibold truncate max-w-[180px]">{selected.website}</span></div>}
+                {selected.locations != null && selected.locations > 0 && <div className="flex justify-between"><span className="text-gray-500">Locations</span><span className="font-semibold">{selected.locations}</span></div>}
+                <div className="flex justify-between"><span className="text-gray-500">Submitted</span><span className="font-semibold">{selected.submittedAt}</span></div>
+                {selected.description && (
+                  <div className="pt-2 border-t border-gray-100">
+                    <p className="text-gray-500 text-xs mb-1">Description</p>
+                    <p className="text-gray-700">{selected.description}</p>
+                  </div>
+                )}
+                {selected.mediaImages && selected.mediaImages.length > 0 && (
+                  <div className="pt-2 border-t border-gray-100">
+                    <p className="text-gray-500 text-xs mb-2">Photos ({selected.mediaImages.length})</p>
+                    <div className="flex gap-2 flex-wrap">
+                      {selected.mediaImages.slice(0, 4).map((img, i) => (
+                        <img key={i} src={img} alt="" className="w-14 h-14 rounded-lg object-cover border border-gray-200" />
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
               {selected.status === 'pending' && (
                 <div className="flex gap-3">

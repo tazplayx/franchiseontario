@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Check, ArrowRight, Loader2, Upload, X, ImagePlus, Video, Image as ImageIcon, Mail, RefreshCw, Eye, EyeOff } from 'lucide-react'
 import { sendEmail } from '@/lib/email'
 import { registerAccount, getAccountByEmail, setSession } from '@/lib/leads'
+import { savePendingListing } from '@/lib/store'
 
 type Step = 'plan' | 'details' | 'verify' | 'confirm'
 
@@ -604,14 +605,25 @@ export default function RegisterPage() {
                   } else {
                     // Save draft so verify-email page can create the account after verification
                     const franchiseId = formData.franchiseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+                    const draftPlan = selectedPlan as 'basic' | 'premium' | 'enterprise'
                     localStorage.setItem('fo_reg_draft', JSON.stringify({
                       franchiseId,
                       franchiseName: formData.franchiseName,
                       name: formData.contactName,
                       email: formData.email,
                       title: formData.title || 'Franchise Owner',
-                      tier: selectedPlan as 'basic' | 'premium' | 'enterprise',
+                      tier: draftPlan,
                       password: formData.password,
+                      // Extra form data for rich pending listing
+                      category: formData.category,
+                      phone: formData.phone,
+                      website: formData.website,
+                      description: formData.description,
+                      locations: formData.locations,
+                      established: formData.established,
+                      logoPreview: formData.logoPreview,
+                      galleryPreviews: formData.galleryPreviews,
+                      videoUrl: formData.videoUrl,
                     }))
                     sendVerificationEmail()
                     setStep('verify')
@@ -761,6 +773,26 @@ export default function RegisterPage() {
                         email: account.email,
                         name: account.name,
                         tier: account.tier,
+                      })
+                      // Save to admin pending queue with full form data
+                      savePendingListing({
+                        id: account.franchiseId,
+                        name: formData.franchiseName,
+                        category: formData.category,
+                        plan: 'Basic',
+                        email: formData.email,
+                        contactName: formData.contactName,
+                        phone: formData.phone,
+                        website: formData.website,
+                        city: '',
+                        description: formData.description,
+                        locations: Number(formData.locations) || 0,
+                        established: Number(formData.established) || new Date().getFullYear(),
+                        logoUrl: formData.logoPreview,
+                        mediaImages: formData.galleryPreviews,
+                        videoUrl: formData.videoUrl,
+                        submittedAt: new Date().toISOString(),
+                        status: 'pending',
                       })
                     }
                     // Notify admin

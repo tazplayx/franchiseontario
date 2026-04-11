@@ -15,11 +15,12 @@ import {
   removeListing,
   isUserFranchiseRemoved,
   addUserTicket,
+  removePendingListing,
 } from '@/lib/store'
 import { sendEmail } from '@/lib/email'
 import {
   getSession, clearSession, setSession, getLeads, markLeadRead,
-  getAccountByEmail, verifyPassword,
+  getAccountByEmail, verifyPassword, deleteAccount,
   FREE_LEAD_LIMIT, type FranchisorSession, type FranchiseLead,
 } from '@/lib/leads'
 import { franchises } from '@/data/franchises'
@@ -212,6 +213,99 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   )
 }
 
+// ── Pending listing tab (real session, listing not yet approved) ───────────────
+function PendingListingTab({ session }: { session: FranchisorSession }) {
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [deleted, setDeleted] = useState(false)
+
+  const handleDelete = () => {
+    // Remove the pending listing from the admin queue
+    removePendingListing(session.franchiseId)
+    // Remove the account
+    const account = getAccountByEmail(session.email)
+    if (account) deleteAccount(account.id)
+    // Clear session
+    clearSession()
+    setDeleted(true)
+  }
+
+  if (deleted) {
+    return (
+      <div className="max-w-lg mx-auto text-center py-20">
+        <div className="w-16 h-16 bg-red-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <Trash2 size={24} className="text-red-600" />
+        </div>
+        <h2 className="text-xl font-black text-gray-900 mb-2">Listing & Account Deleted</h2>
+        <p className="text-sm text-gray-500 mb-6">Your submission has been removed. You can register again at any time.</p>
+        <Link href="/register" className="inline-block bg-red-600 text-white font-bold px-6 py-3 rounded-xl text-sm hover:bg-red-700 transition-colors">
+          Register a New Listing
+        </Link>
+      </div>
+    )
+  }
+
+  return (
+    <div>
+      <div className="mb-6">
+        <h2 className="text-xl font-black text-gray-900">My Listing</h2>
+        <p className="text-sm text-gray-400 mt-0.5">What visitors see on your public listing page</p>
+      </div>
+
+      <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center mb-6">
+        <Clock size={36} className="text-amber-500 mx-auto mb-4" />
+        <h3 className="text-lg font-black text-gray-900 mb-2">Listing Under Review</h3>
+        <p className="text-sm text-gray-600 mb-1">
+          <strong>{session.franchiseName}</strong> has been submitted and is currently being reviewed by our team.
+        </p>
+        <p className="text-sm text-gray-500 mb-6">
+          Basic listings typically go live within 24 hours. You&apos;ll receive an email confirmation once your listing is published.
+        </p>
+        <Link href="/support" className="inline-block text-sm font-semibold text-red-600 hover:underline">
+          Questions? Contact support →
+        </Link>
+      </div>
+
+      {/* ── Danger zone footer ───────────────────────────── */}
+      <div className="border border-red-200 rounded-2xl p-5">
+        <h4 className="text-sm font-black text-red-700 mb-1 flex items-center gap-2">
+          <AlertTriangle size={14} /> Danger Zone
+        </h4>
+        <p className="text-xs text-gray-500 mb-4">
+          Permanently delete this listing submission and your account. This cannot be undone.
+        </p>
+        {!deleteConfirm ? (
+          <button
+            onClick={() => setDeleteConfirm(true)}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-red-600 border border-red-200 rounded-xl hover:bg-red-50 transition-colors"
+          >
+            <Trash2 size={14} /> Delete My Listing & Account
+          </button>
+        ) : (
+          <div className="bg-red-50 border border-red-200 rounded-xl p-4">
+            <p className="text-sm font-semibold text-red-800 mb-3">
+              Are you sure? This will permanently delete your listing submission and account for <strong>{session.franchiseName}</strong>.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirm(false)}
+                className="flex-1 bg-white border border-gray-200 text-gray-700 font-semibold py-2 rounded-xl text-sm hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDelete}
+                className="flex-1 bg-red-600 text-white font-semibold py-2 rounded-xl text-sm hover:bg-red-700 transition-colors flex items-center justify-center gap-2"
+              >
+                <Trash2 size={13} /> Yes, Delete Everything
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 // ── My Listing tab ─────────────────────────────────────────────────────────────
 function ListingTab({ session }: { session: FranchisorSession | null }) {
   // For real sessions, look up the franchise in the directory
@@ -220,32 +314,9 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
     : null
 
   // If a real user is logged in but their listing isn't in the directory yet,
-  // show a pending review state
+  // show a pending review state with a delete option in the footer
   if (session && !realFranchise) {
-    return (
-      <div>
-        <div className="mb-6">
-          <h2 className="text-xl font-black text-gray-900">My Listing</h2>
-          <p className="text-sm text-gray-400 mt-0.5">What visitors see on your public listing page</p>
-        </div>
-        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-8 text-center">
-          <Clock size={36} className="text-amber-500 mx-auto mb-4" />
-          <h3 className="text-lg font-black text-gray-900 mb-2">Listing Under Review</h3>
-          <p className="text-sm text-gray-600 mb-1">
-            <strong>{session.franchiseName}</strong> has been submitted and is currently being reviewed by our team.
-          </p>
-          <p className="text-sm text-gray-500 mb-6">
-            Basic listings typically go live within 24 hours. You'll receive an email confirmation once your listing is published.
-          </p>
-          <Link
-            href="/support"
-            className="inline-block text-sm font-semibold text-red-600 hover:underline"
-          >
-            Questions? Contact support →
-          </Link>
-        </div>
-      </div>
-    )
+    return <PendingListingTab session={session} />
   }
 
   // For demo users (no real session), use MOCK_USER data

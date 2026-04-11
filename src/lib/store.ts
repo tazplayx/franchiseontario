@@ -248,6 +248,50 @@ export function clearNotifications(): void {
   write(NOTIFICATION_LOG_KEY, [])
 }
 
+// ── User-submitted pending listings ───────────────────────────────────────────
+
+const PENDING_LISTINGS_KEY = 'fo_pending_listings_v1'
+
+export interface PendingListing {
+  id: string          // franchiseId slug
+  name: string
+  category: string
+  plan: string        // 'Basic' | 'Premium' | 'Enterprise'
+  email: string
+  contactName: string
+  phone: string
+  website: string
+  city: string
+  description: string
+  locations: number
+  established: number
+  logoUrl: string     // base64 or URL
+  mediaImages: string[]
+  videoUrl: string
+  submittedAt: string
+  status: 'pending' | 'approved' | 'rejected'
+}
+
+export function getPendingListings(): PendingListing[] {
+  return read<PendingListing[]>(PENDING_LISTINGS_KEY, [])
+}
+
+export function savePendingListing(listing: PendingListing): void {
+  const existing = getPendingListings()
+  const others = existing.filter((l) => l.id !== listing.id)
+  write(PENDING_LISTINGS_KEY, [...others, listing])
+}
+
+export function updatePendingListingStatus(id: string, status: PendingListing['status']): void {
+  const listings = getPendingListings()
+  write(PENDING_LISTINGS_KEY, listings.map((l) => l.id === id ? { ...l, status } : l))
+}
+
+export function removePendingListing(id: string): void {
+  const listings = getPendingListings()
+  write(PENDING_LISTINGS_KEY, listings.filter((l) => l.id !== id))
+}
+
 // ── Listing claims ─────────────────────────────────────────────────────────────
 
 const LISTING_CLAIMS_KEY = 'fo_listing_claims_v1'

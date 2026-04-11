@@ -13,6 +13,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react'
 import { registerAccount, setSession, getAccountByEmail } from '@/lib/leads'
+import { savePendingListing } from '@/lib/store'
 
 type Status = 'loading' | 'creating' | 'success' | 'error' | 'expired'
 
@@ -24,6 +25,16 @@ interface RegDraft {
   title: string
   tier: 'basic' | 'premium' | 'enterprise'
   password: string
+  // Optional rich form data
+  category?: string
+  phone?: string
+  website?: string
+  description?: string
+  locations?: string
+  established?: string
+  logoPreview?: string
+  galleryPreviews?: string[]
+  videoUrl?: string
 }
 
 function VerifyEmailContent() {
@@ -74,6 +85,26 @@ function VerifyEmailContent() {
                 email: account.email,
                 name: account.name,
                 tier: account.tier,
+              })
+              // Save to admin pending queue with all available form data
+              savePendingListing({
+                id: account.franchiseId,
+                name: account.franchiseName,
+                category: draft.category ?? '',
+                plan: draft.tier.charAt(0).toUpperCase() + draft.tier.slice(1),
+                email: account.email,
+                contactName: account.name,
+                phone: draft.phone ?? '',
+                website: draft.website ?? '',
+                city: '',
+                description: draft.description ?? '',
+                locations: Number(draft.locations) || 0,
+                established: Number(draft.established) || new Date().getFullYear(),
+                logoUrl: draft.logoPreview ?? '',
+                mediaImages: draft.galleryPreviews ?? [],
+                videoUrl: draft.videoUrl ?? '',
+                submittedAt: new Date().toISOString(),
+                status: 'pending',
               })
               localStorage.removeItem('fo_reg_draft')
               router.replace('/dashboard')
