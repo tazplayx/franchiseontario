@@ -876,79 +876,93 @@ function LeadsTab({ session }: { session: FranchisorSession | null }) {
 }
 
 // ── Billing tab ────────────────────────────────────────────────────────────────
-function BillingTab() {
-  const { franchise } = MOCK_USER
-  const [loading, setLoading] = useState(false)
+function BillingTab({ session }: { session: FranchisorSession | null }) {
+  const tier = session?.tier ?? (MOCK_USER.franchise.tier as 'basic' | 'premium' | 'enterprise')
+  const planLabel = tier.charAt(0).toUpperCase() + tier.slice(1)
+  const PLAN_AMOUNT: Record<string, string> = { basic: 'Free', premium: '$79.00 CAD / month', enterprise: '$199.00 CAD / month' }
+  const planAmount = PLAN_AMOUNT[tier] ?? 'Free'
+  const isDemo = !session
 
-  const openPortal = async () => {
-    setLoading(true)
-    try {
-      const res = await fetch('/api/stripe/portal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ customerId: franchise.stripeCustomerId }),
-      })
-      const data = await res.json()
-      if (data.url) {
-        window.location.href = data.url
-      }
-    } catch {
-      setLoading(false)
-    }
-  }
+  const plans = [
+    { name: 'Basic',      tier: 'basic',      price: 'Free',              desc: 'Standard directory listing, visible to all visitors',            icon: <FileText size={14} /> },
+    { name: 'Premium',    tier: 'premium',    price: '$79/mo',            desc: 'Priority placement, photo gallery, lead notifications',           icon: <Star size={14} className="text-blue-500" /> },
+    { name: 'Enterprise', tier: 'enterprise', price: '$199/mo',           desc: 'VIP badge, top placement, dedicated account manager',             icon: <Crown size={14} className="text-amber-500" /> },
+  ]
 
   return (
     <div>
       <div className="mb-6">
         <h2 className="text-xl font-black text-gray-900">Billing & Subscription</h2>
-        <p className="text-sm text-gray-400 mt-0.5">Manage your plan, payment method, and invoices</p>
+        <p className="text-sm text-gray-400 mt-0.5">Your current plan and upgrade options</p>
       </div>
 
       {/* Current plan */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-gray-900 text-sm">Current Plan</h3>
-          <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">{franchise.plan}</span>
+          <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">{planLabel}</span>
         </div>
-        <div className="grid grid-cols-2 gap-4 text-sm mb-4">
-          <div><span className="text-gray-400 text-xs">Amount</span><div className="font-semibold text-gray-900">{franchise.planAmount}</div></div>
-          <div><span className="text-gray-400 text-xs">Next billing date</span><div className="font-semibold text-gray-900">{franchise.nextBillingDate}</div></div>
-          <div><span className="text-gray-400 text-xs">Status</span><div className="font-semibold text-green-600 flex items-center gap-1"><CheckCircle size={12} /> Active</div></div>
-          <div><span className="text-gray-400 text-xs">Payment</span><div className="font-semibold text-gray-900">Visa •••• 4242</div></div>
+        <div className="grid grid-cols-2 gap-4 text-sm mb-5">
+          <div>
+            <span className="text-gray-400 text-xs">Amount</span>
+            <div className="font-semibold text-gray-900">{planAmount}</div>
+          </div>
+          <div>
+            <span className="text-gray-400 text-xs">Status</span>
+            <div className="font-semibold text-green-600 flex items-center gap-1"><CheckCircle size={12} /> Active</div>
+          </div>
+          {!isDemo && session && (
+            <div>
+              <span className="text-gray-400 text-xs">Account Email</span>
+              <div className="font-semibold text-gray-900 truncate">{session.email}</div>
+            </div>
+          )}
         </div>
-        <button
-          onClick={openPortal}
-          disabled={loading}
-          className="w-full flex items-center justify-center gap-2 bg-[#0D1B2A] hover:bg-[#1a2d45] text-white font-bold py-3 rounded-xl text-sm transition-colors disabled:opacity-60"
-        >
-          {loading ? <Loader2 size={16} className="animate-spin" /> : <ExternalLink size={16} />}
-          {loading ? 'Opening portal…' : 'Manage Subscription & Invoices'}
-        </button>
+
+        {tier === 'basic' ? (
+          <a
+            href="mailto:hello@franchiseontario.com?subject=Upgrade%20my%20listing%20plan"
+            className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl text-sm transition-colors"
+          >
+            <Zap size={15} /> Upgrade My Plan
+          </a>
+        ) : (
+          <a
+            href="mailto:hello@franchiseontario.com?subject=Manage%20my%20subscription"
+            className="w-full flex items-center justify-center gap-2 bg-[#0D1B2A] hover:bg-[#1a2d45] text-white font-bold py-3 rounded-xl text-sm transition-colors"
+          >
+            <Mail size={15} /> Contact Us to Manage Subscription
+          </a>
+        )}
+        <p className="text-[11px] text-gray-400 text-center mt-3">
+          To upgrade, downgrade, or cancel — email <strong>hello@franchiseontario.com</strong> and we&apos;ll handle it within 1 business day.
+        </p>
       </div>
 
       {/* Plan comparison */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-        <h3 className="font-bold text-gray-900 text-sm mb-4">Compare Plans</h3>
+        <h3 className="font-bold text-gray-900 text-sm mb-4">Available Plans</h3>
         <div className="space-y-3">
-          {[
-            { name: 'Basic', price: 'Free', desc: 'Standard directory listing, no analytics', icon: <FileText size={14} /> },
-            { name: 'Premium', price: '$79/mo', desc: 'Priority placement, photo gallery, analytics dashboard', icon: <Star size={14} className="text-blue-500" />, current: true },
-            { name: 'Enterprise', price: '$199/mo', desc: 'VIP badge, top placement, dedicated account manager', icon: <Crown size={14} className="text-amber-500" /> },
-          ].map((plan) => (
-            <div key={plan.name} className={`flex items-center gap-4 p-4 rounded-xl border ${plan.current ? 'border-blue-200 bg-blue-50' : 'border-gray-100'}`}>
-              <div className="shrink-0">{plan.icon}</div>
-              <div className="flex-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-bold text-sm text-gray-900">{plan.name}</span>
-                  {plan.current && <span className="bg-blue-200 text-blue-800 text-[9px] font-bold px-1.5 py-0.5 rounded">CURRENT</span>}
+          {plans.map((plan) => {
+            const isCurrent = plan.tier === tier
+            return (
+              <div key={plan.name} className={`flex items-center gap-4 p-4 rounded-xl border ${isCurrent ? 'border-blue-200 bg-blue-50' : 'border-gray-100'}`}>
+                <div className="shrink-0">{plan.icon}</div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-bold text-sm text-gray-900">{plan.name}</span>
+                    {isCurrent && <span className="bg-blue-200 text-blue-800 text-[9px] font-bold px-1.5 py-0.5 rounded">CURRENT</span>}
+                  </div>
+                  <p className="text-xs text-gray-500">{plan.desc}</p>
                 </div>
-                <p className="text-xs text-gray-500">{plan.desc}</p>
+                <div className="text-sm font-bold text-gray-900 shrink-0">{plan.price}</div>
               </div>
-              <div className="text-sm font-bold text-gray-900 shrink-0">{plan.price}</div>
-            </div>
-          ))}
+            )
+          })}
         </div>
-        <p className="text-xs text-gray-400 mt-4">To upgrade or downgrade, click "Manage Subscription" above. All plan changes take effect immediately.</p>
+        <p className="text-xs text-gray-400 mt-4">
+          Email <strong>hello@franchiseontario.com</strong> to change your plan. Changes take effect within 1 business day.
+        </p>
       </div>
     </div>
   )
@@ -1242,7 +1256,7 @@ export default function DashboardPage() {
         </div>
         {activeTab === 'leads' && <LeadsTab session={realSession} />}
         {activeTab === 'listing' && <ListingTab session={realSession} />}
-        {activeTab === 'billing' && <BillingTab />}
+        {activeTab === 'billing' && <BillingTab session={realSession} />}
         {activeTab === 'support' && <SupportTab session={realSession} />}
       </main>
     </div>
