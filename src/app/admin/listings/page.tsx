@@ -183,6 +183,12 @@ export default function AdminListingsPage() {
 
   const [listings, setListings] = useState<Franchise[]>(() => applyListingStore(franchises))
   const [filter, setFilter] = useState<'all' | FranchiseTier>('all')
+
+  // Re-read from localStorage on client mount to pick up newly approved listings
+  useEffect(() => {
+    setListings(applyListingStore(franchises))
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [search, setSearch] = useState('')
   const [editing, setEditing] = useState<Franchise | null>(null)
   const [editForm, setEditForm] = useState<EditableFields | null>(null)

@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { CheckCircle, XCircle, Eye, LayoutDashboard, ListChecks, MessageSquare, Shield, LogOut, Building2, BarChart3, Users } from 'lucide-react'
-import { getPendingStatuses, savePendingStatus, saveApprovedListing, removeApprovedListing, getPendingListings, updatePendingListingStatus, type PendingStatus, type PendingListing } from '@/lib/store'
+import { getPendingStatuses, savePendingStatus, saveApprovedListing, removeApprovedListing, getPendingListings, savePendingListing, updatePendingListingStatus, getApprovedListings, type PendingStatus, type PendingListing } from '@/lib/store'
 import type { Franchise, FranchiseCategory } from '@/data/franchises'
 import { sendEmail } from '@/lib/email'
+import { getAccounts } from '@/lib/leads'
 
 const initialPending = [
   { id: 'p1', name: 'Sunset Poutine Co.', category: 'Fast Food', plan: 'Premium', email: 'owner@sunsetpoutine.ca', submittedAt: '2026-03-25', city: 'Mississauga, ON', description: 'A Quebec-inspired poutine franchise bringing authentic curds and gravy to Ontario markets. 3 existing locations in Quebec.', status: 'pending' },
@@ -236,15 +237,51 @@ export default function AdminFranchisesPage() {
     return [...userSubmitted, ...seed]
   }
 
+  const buildOrphaned = () => {
+    const accounts = getAccounts()
+    const pendingIds = new Set([
+      ...getPendingListings().map((l) => l.id),
+      ...initialPending.map((l) => l.id),
+      ...getApprovedListings().map((l) => l.id),
+    ])
+    return accounts.filter((a) => !pendingIds.has(a.franchiseId))
+  }
+
   const [listings, setListings] = useState<DisplayListing[]>(buildListings)
-  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('all')
+  const [orphaned, setOrphaned] = useState(buildOrphaned)
+  const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending')
   const [selected, setSelected] = useState<DisplayListing | null>(null)
 
   // Re-apply store on mount (handles SSR hydration)
   useEffect(() => {
     setListings(buildListings())
+    setOrphaned(buildOrphaned())
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  const createStubListing = (account: ReturnType<typeof getAccounts>[number]) => {
+    savePendingListing({
+      id: account.franchiseId,
+      name: account.franchiseName,
+      category: '',
+      plan: account.tier.charAt(0).toUpperCase() + account.tier.slice(1),
+      email: account.email,
+      contactName: account.name,
+      phone: '',
+      website: '',
+      city: '',
+      description: '',
+      locations: 0,
+      established: new Date().getFullYear(),
+      logoUrl: '',
+      mediaImages: [],
+      videoUrl: '',
+      submittedAt: new Date().toISOString(),
+      status: 'pending',
+    })
+    setListings(buildListings())
+    setOrphaned(buildOrphaned())
+  }
 
   const update = (id: string, status: 'approved' | 'rejected') => {
     // Check user-submitted listings first
@@ -354,6 +391,47 @@ export default function AdminFranchisesPage() {
             <div className="text-center py-12 text-gray-400 text-sm">No listings in this category</div>
           )}
         </div>
+
+        {/* Orphaned registrations — accounts with no pending listing */}
+        {orphaned.length > 0 && (
+          <div className="mt-8">
+            <h2 className="text-sm font-bold text-gray-500 uppercase tracking-wider mb-3">
+              Registered Accounts Without Listings ({orphaned.length})
+            </h2>
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-amber-100">
+                    <th className="text-left px-5 py-3 text-xs font-bold text-amber-700 uppercase tracking-wider">Account</th>
+                    <th className="text-left px-5 py-3 text-xs font-bold text-amber-700 uppercase tracking-wider hidden sm:table-cell">Email</th>
+                    <th className="text-left px-5 py-3 text-xs font-bold text-amber-700 uppercase tracking-wider">Plan</th>
+                    <th className="px-5 py-3"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-amber-50">
+                  {orphaned.map((account) => (
+                    <tr key={account.id} className="hover:bg-amber-100/40 transition-colors">
+                      <td className="px-5 py-4">
+                        <div className="font-semibold text-gray-900">{account.franchiseName}</div>
+                        <div className="text-xs text-gray-400">{account.name}</div>
+                      </td>
+                      <td className="px-5 py-4 text-gray-500 hidden sm:table-cell">{account.email}</td>
+                      <td className="px-5 py-4 text-gray-500 capitalize">{account.tier}</td>
+                      <td className="px-5 py-4 text-right">
+                        <button
+                          onClick={() => createStubListing(account)}
+                          className="text-xs bg-amber-600 hover:bg-amber-700 text-white font-semibold px-3 py-1.5 rounded-lg transition-colors"
+                        >
+                          Add to Pending →
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
 
         {/* Detail modal */}
         {selected && (
