@@ -12,12 +12,16 @@ export async function POST(req: NextRequest) {
       franchiseName,
       email,
       contactName,
+      isUpgrade,
+      franchiseId,
     }: {
       plan: PlanKey
       addFeatureSpotlight?: boolean
       franchiseName?: string
       email?: string
       contactName?: string
+      isUpgrade?: boolean
+      franchiseId?: string
     } = body
 
     const planConfig = PLANS[plan]
@@ -40,9 +44,13 @@ export async function POST(req: NextRequest) {
       payment_method_types: ['card'],
       line_items: lineItems,
 
-      // Success/cancel redirects
-      success_url: `${baseUrl}/register/success?plan=paid&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${baseUrl}/register?cancelled=true`,
+      // Success/cancel redirects — upgrades return to dashboard, new signups to register/success
+      success_url: isUpgrade
+        ? `${baseUrl}/dashboard?upgrade_success=true&new_tier=${plan}`
+        : `${baseUrl}/register/success?plan=paid&session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: isUpgrade
+        ? `${baseUrl}/dashboard?upgrade_cancelled=true`
+        : `${baseUrl}/register?cancelled=true`,
 
       // Pre-fill customer info if provided
       customer_email: email || undefined,
@@ -56,6 +64,8 @@ export async function POST(req: NextRequest) {
         franchiseName: franchiseName ?? '',
         contactName: contactName ?? '',
         addFeatureSpotlight: addFeatureSpotlight ? 'true' : 'false',
+        isUpgrade: isUpgrade ? 'true' : 'false',
+        franchiseId: franchiseId ?? '',
       },
 
       // Also attach to the subscription itself for webhook lookups
@@ -63,6 +73,9 @@ export async function POST(req: NextRequest) {
         metadata: {
           plan,
           franchiseName: franchiseName ?? '',
+          contactName: contactName ?? '',
+          contactEmail: email ?? '',
+          franchiseId: franchiseId ?? '',
         },
       },
     })

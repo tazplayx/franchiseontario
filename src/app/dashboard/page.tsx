@@ -906,61 +906,81 @@ const PLAN_INFO: { tier: PlanTier; name: string; price: string; amount: string; 
   },
 ]
 
-function BillingTab({ session }: { session: FranchisorSession | null }) {
+function BillingTab({ session, successPlan }: { session: FranchisorSession | null; successPlan?: string | null }) {
   const currentTier: PlanTier = session?.tier ?? (MOCK_USER.franchise.tier as PlanTier)
   const isDemo = !session
 
   const [confirmTier, setConfirmTier] = useState<PlanTier | null>(null)
-  const [upgrading, setUpgrading] = useState(false)
-  const [upgraded, setUpgraded] = useState(false)
+  const [processing, setProcessing] = useState(false)
+  const [checkoutError, setCheckoutError] = useState('')
+  const [downgraded, setDowngraded] = useState(false)
 
   const currentPlan = PLAN_INFO.find((p) => p.tier === currentTier)!
 
   const handleSelectPlan = (tier: PlanTier) => {
     if (tier === currentTier || isDemo) return
     setConfirmTier(tier)
+    setCheckoutError('')
   }
 
-  const handleConfirmUpgrade = () => {
+  const handleConfirmUpgrade = async () => {
     if (!confirmTier || !session) return
-    setUpgrading(true)
 
-    // Update account tier in localStorage
-    updateAccountTier(session.franchiseId, confirmTier)
-
-    // Update the session with new tier
-    const newSession = { ...session, tier: confirmTier }
-    setSession(newSession)
-
-    // If the franchise has an approved listing, update its tier too
-    const approved = getApprovedListings()
-    const listing = approved.find((l) => l.id === session.franchiseId)
-    if (listing) {
-      saveApprovedListing({
-        ...listing,
-        tier: confirmTier,
-        isVIP: confirmTier === 'enterprise',
-        isFeatured: confirmTier === 'enterprise',
-      })
+    // Downgrade to Basic is free — apply immediately, no Stripe needed
+    if (confirmTier === 'basic') {
+      setProcessing(true)
+      updateAccountTier(session.franchiseId, 'basic')
+      const newSession = { ...session, tier: 'basic' as const }
+      setSession(newSession)
+      const approved = getApprovedListings()
+      const listing = approved.find((l) => l.id === session.franchiseId)
+      if (listing) {
+        saveApprovedListing({ ...listing, tier: 'basic', isVIP: false, isFeatured: false })
+      }
+      setProcessing(false)
+      setConfirmTier(null)
+      setDowngraded(true)
+      setTimeout(() => window.location.reload(), 2000)
+      return
     }
 
-    setUpgrading(false)
-    setUpgraded(true)
-    setConfirmTier(null)
-
-    // Reload after brief delay so the user sees the success message
-    setTimeout(() => window.location.reload(), 2000)
+    // Paid plan — redirect to Stripe Checkout; plan activates only after payment succeeds
+    setProcessing(true)
+    setCheckoutError('')
+    try {
+      const res = await fetch('/api/stripe/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          plan: confirmTier,
+          email: session.email,
+          franchiseName: session.franchiseName,
+          contactName: session.name,
+          isUpgrade: true,
+          franchiseId: session.franchiseId,
+        }),
+      })
+      const data = await res.json()
+      if (!res.ok || data.error || !data.url) {
+        setCheckoutError(data.error ?? 'Could not start checkout. Please try again.')
+        setProcessing(false)
+        return
+      }
+      window.location.href = data.url
+    } catch {
+      setCheckoutError('Network error. Please try again.')
+      setProcessing(false)
+    }
   }
 
-  if (upgraded) {
-    const newPlan = PLAN_INFO.find((p) => p.tier === confirmTier || p.tier === currentTier)
+  if (downgraded) {
     return (
       <div className="max-w-lg mx-auto text-center py-20">
         <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
           <CheckCircle size={28} className="text-green-600" />
         </div>
-        <h2 className="text-xl font-black text-gray-900 mb-2">Plan Updated!</h2>
-        <p className="text-sm text-gray-500">Your listing has been upgraded. Refreshing your dashboard…</p>
+        <h2 className="text-xl font-black text-gray-900 mb-2">Plan Updated</h2>
+        <p className="text-sm text-gray-500">Your listing has been moved to the Basic plan. Refreshing…</p>
       </div>
     )
   }
@@ -971,6 +991,17 @@ function BillingTab({ session }: { session: FranchisorSession | null }) {
         <h2 className="text-xl font-black text-gray-900">Billing & Subscription</h2>
         <p className="text-sm text-gray-400 mt-0.5">Your current plan and upgrade options</p>
       </div>
+
+      {/* Post-payment success banner (returned from Stripe) */}
+      {successPlan && (
+        <div className="mb-5 bg-green-50 border border-green-200 rounded-2xl p-4 flex items-center gap-3">
+          <CheckCircle size={18} className="text-green-600 shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-green-800">Payment successful — welcome to {successPlan}!</p>
+            <p className="text-xs text-green-700 mt-0.5">Your listing has been upgraded and a receipt has been sent to your email.</p>
+          </div>
+        </div>
+      )}
 
       {/* Current plan summary */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-5">
@@ -1071,28 +1102,40 @@ function BillingTab({ session }: { session: FranchisorSession | null }) {
         </p>
       </div>
 
-      {/* Confirm upgrade modal */}
+      {/* Confirm plan change modal */}
       {confirmTier && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setConfirmTier(null)}>
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => !processing && setConfirmTier(null)}>
           <div className="bg-white rounded-2xl shadow-2xl p-7 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
-            <h3 className="font-black text-gray-900 text-lg mb-1">Confirm Plan Change</h3>
-            <p className="text-sm text-gray-500 mb-5">
-              Switch to <strong>{PLAN_INFO.find(p => p.tier === confirmTier)?.name}</strong> ({PLAN_INFO.find(p => p.tier === confirmTier)?.price})? Your listing will be updated immediately.
+            <h3 className="font-black text-gray-900 text-lg mb-1">
+              {confirmTier === 'basic' ? 'Downgrade to Basic?' : 'Proceed to Payment'}
+            </h3>
+            <p className="text-sm text-gray-500 mb-4">
+              {confirmTier === 'basic'
+                ? 'Your listing will be moved to the free Basic plan immediately. Premium features will be removed.'
+                : <>You&apos;ll be taken to a secure Stripe checkout to pay <strong>{PLAN_INFO.find(p => p.tier === confirmTier)?.price}</strong>. Your plan activates the moment payment is confirmed.</>
+              }
             </p>
+            {checkoutError && (
+              <p className="text-xs text-red-600 bg-red-50 border border-red-200 rounded-xl px-3 py-2 mb-4">{checkoutError}</p>
+            )}
             <div className="flex gap-3">
               <button
-                onClick={() => setConfirmTier(null)}
-                className="flex-1 border border-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors"
+                onClick={() => { setConfirmTier(null); setCheckoutError('') }}
+                disabled={processing}
+                className="flex-1 border border-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
               >
                 Cancel
               </button>
               <button
                 onClick={handleConfirmUpgrade}
-                disabled={upgrading}
+                disabled={processing}
                 className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
               >
-                {upgrading ? <Loader2 size={14} className="animate-spin" /> : null}
-                {upgrading ? 'Applying…' : 'Confirm'}
+                {processing ? <Loader2 size={14} className="animate-spin" /> : null}
+                {processing
+                  ? (confirmTier === 'basic' ? 'Applying…' : 'Redirecting…')
+                  : (confirmTier === 'basic' ? 'Confirm Downgrade' : 'Pay Now →')
+                }
               </button>
             </div>
           </div>
@@ -1341,18 +1384,51 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('leads')
   const [realSession, setRealSession] = useState<FranchisorSession | null>(null)
   const [leadCount, setLeadCount] = useState(0)
+  const [upgradeSuccessPlan, setUpgradeSuccessPlan] = useState<string | null>(null)
 
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const upgradeSuccess = params.get('upgrade_success')
+    const newTier = params.get('new_tier') as PlanTier | null
+
     // Check for real franchisor session first
     const session = getSession()
     if (session) {
+      // Handle return from successful Stripe payment
+      if (upgradeSuccess === 'true' && newTier && ['basic', 'premium', 'enterprise'].includes(newTier)) {
+        updateAccountTier(session.franchiseId, newTier)
+        const updatedSession: FranchisorSession = { ...session, tier: newTier }
+        setSession(updatedSession)
+
+        const approved = getApprovedListings()
+        const listing = approved.find((l) => l.id === session.franchiseId)
+        if (listing) {
+          saveApprovedListing({
+            ...listing,
+            tier: newTier,
+            isVIP: newTier === 'enterprise',
+            isFeatured: newTier === 'enterprise',
+          })
+        }
+
+        const planName = PLAN_INFO.find((p) => p.tier === newTier)?.name ?? newTier
+        setUpgradeSuccessPlan(planName)
+        setRealSession(updatedSession)
+        setLeadCount(getLeads(updatedSession.franchiseId).filter((l) => !l.read).length)
+        setActiveTab('billing')
+        setLoggedIn(true)
+        // Clean up URL params
+        window.history.replaceState({}, '', '/dashboard')
+        return
+      }
+
       setRealSession(session)
       setLeadCount(getLeads(session.franchiseId).filter((l) => !l.read).length)
       setLoggedIn(true)
       return
     }
     // Fall back to demo session
-    if (typeof window !== 'undefined' && localStorage.getItem('fo_user') === 'authenticated') {
+    if (localStorage.getItem('fo_user') === 'authenticated') {
       setLoggedIn(true)
       setActiveTab('listing')
     }
@@ -1390,7 +1466,7 @@ export default function DashboardPage() {
         </div>
         {activeTab === 'leads' && <LeadsTab session={realSession} />}
         {activeTab === 'listing' && <ListingTab session={realSession} />}
-        {activeTab === 'billing' && <BillingTab session={realSession} />}
+        {activeTab === 'billing' && <BillingTab session={realSession} successPlan={upgradeSuccessPlan} />}
         {activeTab === 'support' && <SupportTab session={realSession} />}
       </main>
     </div>

@@ -47,24 +47,49 @@ export async function POST(req: NextRequest) {
       // ── New subscription paid ────────────────────────────────────────
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
-        const { plan, franchiseName, contactName, addFeatureSpotlight } = session.metadata ?? {}
+        const { plan, franchiseName, contactName, isUpgrade } = session.metadata ?? {}
+        const customerEmail = session.customer_email ?? ''
 
-        console.log(`[Webhook] New subscription — Plan: ${plan}, Franchise: ${franchiseName}`)
+        console.log(`[Webhook] ${isUpgrade === 'true' ? 'Upgrade' : 'New subscription'} — Plan: ${plan}, Franchise: ${franchiseName}`)
 
-        // TODO: In production, persist to your database here:
-        // await db.listing.create({
-        //   customerId: session.customer as string,
-        //   subscriptionId: session.subscription as string,
-        //   plan,
-        //   franchiseName,
-        //   status: 'pending_review',
-        // })
+        // Retrieve the subscription to get amount + next billing date
+        let amountDisplay = ''
+        let nextBillingDate = ''
+        let invoiceUrl = ''
+        if (session.subscription) {
+          try {
+            const sub = await getStripe().subscriptions.retrieve(session.subscription as string)
+            const item = sub.items.data[0]
+            if (item?.price) {
+              const cents = item.price.unit_amount ?? 0
+              const currency = (item.price.currency ?? 'cad').toUpperCase()
+              amountDisplay = `$${(cents / 100).toFixed(2)} ${currency} / month`
+            }
+            const periodEnd = (sub as unknown as Record<string, unknown>).current_period_end as number | undefined
+            if (periodEnd) {
+              nextBillingDate = new Date(periodEnd * 1000).toLocaleDateString('en-CA', {
+                year: 'numeric', month: 'long', day: 'numeric',
+              })
+            }
+          } catch { /* non-critical */ }
+        }
 
-        // Send admin notification email
-        // await sendAdminEmail({ franchiseName, plan, contactName, addFeatureSpotlight })
+        // Retrieve hosted invoice URL from latest invoice
+        if (session.invoice) {
+          try {
+            const inv = await getStripe().invoices.retrieve(session.invoice as string)
+            invoiceUrl = inv.hosted_invoice_url ?? ''
+          } catch { /* non-critical */ }
+        }
 
-        // Send confirmation to customer
-        // await sendCustomerEmail({ email: session.customer_email, plan })
+        // Send payment receipt to customer
+        if (customerEmail) {
+          const planName = (plan ?? '').charAt(0).toUpperCase() + (plan ?? '').slice(1)
+          await fireEmail(customerEmail, 'payment-receipt', {
+            franchiseName, contactName, plan: planName,
+            amount: amountDisplay, invoiceUrl, nextBillingDate,
+          })
+        }
 
         break
       }
@@ -125,12 +150,43 @@ export async function POST(req: NextRequest) {
         break
       }
 
-      // ── Invoice paid (recurring) ─────────────────────────────────────
+      // ── Invoice paid (recurring monthly charge) ─────────────────────
       case 'invoice.paid': {
         const invoice = event.data.object as Stripe.Invoice
         console.log(`[Webhook] Invoice paid — ${invoice.id}`)
 
-        // TODO: Update subscription renewal date in DB
+        // Skip the very first invoice — already handled by checkout.session.completed
+        if (invoice.billing_reason === 'subscription_create') break
+
+        const customerEmail = invoice.customer_email ?? ''
+        if (!customerEmail) break
+
+        // Retrieve subscription metadata for plan + franchise info
+        const subscriptionId = (invoice as unknown as { subscription?: string }).subscription
+        const sub = subscriptionId
+          ? await getStripe().subscriptions.retrieve(subscriptionId).catch(() => null)
+          : null
+        const { plan, franchiseName, contactName } = sub?.metadata ?? {}
+
+        const planName = (plan ?? '').charAt(0).toUpperCase() + (plan ?? '').slice(1)
+        const cents = invoice.amount_paid ?? 0
+        const currency = (invoice.currency ?? 'cad').toUpperCase()
+        const amountDisplay = `$${(cents / 100).toFixed(2)} ${currency}`
+        const invoiceUrl = invoice.hosted_invoice_url ?? ''
+
+        let nextBillingDate = ''
+        const subPeriodEnd = (sub as unknown as Record<string, unknown> | null)?.current_period_end as number | undefined
+        if (subPeriodEnd) {
+          nextBillingDate = new Date(subPeriodEnd * 1000).toLocaleDateString('en-CA', {
+            year: 'numeric', month: 'long', day: 'numeric',
+          })
+        }
+
+        await fireEmail(customerEmail, 'payment-receipt', {
+          franchiseName, contactName, plan: planName,
+          amount: amountDisplay, invoiceUrl, nextBillingDate,
+        })
+
         break
       }
 

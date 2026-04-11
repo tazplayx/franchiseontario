@@ -18,6 +18,7 @@ export type EmailType =
   | 'listing-edited-user'
   | 'membership-ending'
   | 'payment-failed'
+  | 'payment-receipt'
   | 'newsletter-confirm'
 
 export interface EmailData {
@@ -27,6 +28,9 @@ export interface EmailData {
   verifyUrl?: string
   resetUrl?: string
   editedFields?: string[]
+  amount?: string
+  invoiceUrl?: string
+  nextBillingDate?: string
 }
 
 // ── Branded shell ──────────────────────────────────────────────────────────────
@@ -207,6 +211,34 @@ export function getEmailContent(
           ${p('To keep your premium listing features active, please update your payment method as soon as possible.')}
           ${btn('https://www.franchiseontario.com/dashboard', 'Update Payment Method →')}
           ${p('<span style="color:#64748b;font-size:13px">If payment is not updated, your listing may be moved to the Basic tier after 7 days.</span>')}
+        `),
+      }
+
+    case 'payment-receipt':
+      return {
+        subject: `Payment receipt — ${franchise} (${plan} Plan)`,
+        html: shell('Payment Receipt', `
+          ${p(`Hi ${name},`)}
+          ${p(`Thank you for your payment. Your <strong>${plan}</strong> subscription for <strong>${franchise}</strong> is active and your listing is live on FranchiseOntario.com.`)}
+          <div style="background:#fff;border:1px solid #e2e8f0;border-radius:10px;padding:18px 20px;margin:0 0 18px">
+            <table style="width:100%;font-size:13px;border-collapse:collapse">
+              <tr>
+                <td style="color:#64748b;padding:5px 0">Plan</td>
+                <td style="text-align:right;font-weight:700;color:#0D1B2A">${plan}</td>
+              </tr>
+              <tr>
+                <td style="color:#64748b;padding:5px 0">Amount Charged</td>
+                <td style="text-align:right;font-weight:700;color:#0D1B2A">${data.amount ?? 'N/A'}</td>
+              </tr>
+              ${data.nextBillingDate ? `<tr>
+                <td style="color:#64748b;padding:5px 0">Next Billing Date</td>
+                <td style="text-align:right;font-weight:700;color:#0D1B2A">${data.nextBillingDate}</td>
+              </tr>` : ''}
+            </table>
+          </div>
+          ${data.invoiceUrl ? btn(data.invoiceUrl, 'View Full Invoice →') : ''}
+          ${btn('https://www.franchiseontario.com/dashboard', 'Go to Your Dashboard →')}
+          ${p('<span style="color:#64748b;font-size:13px">Questions about your billing? Reply to this email or visit our support page.</span>')}
         `),
       }
 
