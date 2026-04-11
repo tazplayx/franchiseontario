@@ -125,6 +125,29 @@ function parseRSS(xml: string, feedIndex: number): NewsArticle[] {
   return items
 }
 
+// ── Category fallback thumbnails (Unsplash) ────────────────────────────────────
+const CATEGORY_IMAGES: Record<string, string> = {
+  'Expansion':          'https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=800&h=450&fit=crop&auto=format',
+  'Brand News':         'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=800&h=450&fit=crop&auto=format',
+  'Market News':        'https://images.unsplash.com/photo-1611273426858-450d8e3c9fce?w=800&h=450&fit=crop&auto=format',
+  'Financing':          'https://images.unsplash.com/photo-1579621970563-ebec7560ff3e?w=800&h=450&fit=crop&auto=format',
+  'Legal & Regulatory': 'https://images.unsplash.com/photo-1589829545856-d10d557cf95f?w=800&h=450&fit=crop&auto=format',
+  'Industry Report':    'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=800&h=450&fit=crop&auto=format',
+  'Guides':             'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&h=450&fit=crop&auto=format',
+}
+const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=450&fit=crop&auto=format'
+
+/** Reject OG images that are just Google's own icons / logos. */
+function isValidThumbnail(url: string): boolean {
+  try {
+    const { hostname } = new URL(url)
+    return !['google.com', 'googleapis.com', 'gstatic.com', 'googleusercontent.com']
+      .some((d) => hostname === d || hostname.endsWith('.' + d))
+  } catch {
+    return false
+  }
+}
+
 // ── OG image fetcher ───────────────────────────────────────────────────────────
 async function fetchOgImage(url: string): Promise<string | null> {
   try {
@@ -199,13 +222,17 @@ export async function GET() {
   }
 
   // Fetch OG images concurrently (best-effort, 4s timeout each)
+  // Falls back to a curated category image so every article always has a thumbnail.
   if (unique.length > 0) {
     const imageResults = await Promise.allSettled(
       unique.map((a) => fetchOgImage(a.sourceUrl))
     )
     imageResults.forEach((result, i) => {
-      if (result.status === 'fulfilled' && result.value) {
-        unique[i].thumbnailUrl = result.value
+      const ogUrl = result.status === 'fulfilled' ? result.value : null
+      if (ogUrl && isValidThumbnail(ogUrl)) {
+        unique[i].thumbnailUrl = ogUrl
+      } else {
+        unique[i].thumbnailUrl = CATEGORY_IMAGES[unique[i].category] ?? DEFAULT_IMAGE
       }
     })
   }

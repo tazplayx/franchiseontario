@@ -200,37 +200,24 @@ export default function NewsPage() {
             {/* Featured */}
             {featured && (
               <article className="bg-white rounded-2xl border border-gray-200 overflow-hidden card-hover group shadow-sm">
-                {featured.thumbnailUrl ? (
-                  <div className="relative h-52 overflow-hidden">
-                    <img
-                      src={featured.thumbnailUrl}
-                      alt={featured.title}
-                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
-                    <div className="absolute top-3 left-3 flex flex-wrap gap-2">
-                      <span className="bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-                        ⭐ Featured
-                      </span>
-                      <span className="bg-black/50 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full backdrop-blur-sm">
-                        {featured.category}
-                      </span>
-                    </div>
+                <div className="relative h-56 overflow-hidden">
+                  <img
+                    src={featured.thumbnailUrl || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=450&fit=crop&auto=format'}
+                    alt={featured.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=800&h=450&fit=crop&auto=format' }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
+                  <div className="absolute top-3 left-3 flex flex-wrap gap-2">
+                    <span className="bg-red-600 text-white text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
+                      ⭐ Featured
+                    </span>
+                    <span className="bg-black/50 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full backdrop-blur-sm">
+                      {featured.category}
+                    </span>
                   </div>
-                ) : (
-                  <div className="h-2 bg-gradient-to-r from-red-600 to-amber-500" />
-                )}
+                </div>
                 <div className="p-6">
-                  {!featured.thumbnailUrl && (
-                    <div className="flex flex-wrap items-center gap-2 mb-3">
-                      <span className="bg-red-100 text-red-700 text-[10px] font-bold px-2.5 py-1 rounded-full uppercase tracking-wider">
-                        ⭐ Featured
-                      </span>
-                      <span className="bg-gray-100 text-gray-600 text-[10px] font-semibold px-2 py-0.5 rounded-full">
-                        {featured.category}
-                      </span>
-                    </div>
-                  )}
                   <div className="flex items-center gap-2 mb-3">
                     <span className="text-xs text-gray-400">{featured.source}</span>
                     <span className="text-xs text-gray-400">•</span>
@@ -268,6 +255,7 @@ export default function NewsPage() {
                     src={article.thumbnailUrl || 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=250&fit=crop&auto=format'}
                     alt={article.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=400&h=250&fit=crop&auto=format' }}
                   />
                 </div>
                 {/* Content */}
