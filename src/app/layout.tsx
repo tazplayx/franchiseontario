@@ -113,7 +113,7 @@ const organizationSchema = {
   },
   contactPoint: {
     '@type': 'ContactPoint',
-    email: 'hello@franchiseontario.com',
+    email: 'info@franchiseontario.com',
     contactType: 'customer service',
     areaServed: 'CA-ON',
     availableLanguage: 'English',

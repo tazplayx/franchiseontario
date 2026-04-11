@@ -17,12 +17,13 @@ import {
   addUserTicket,
   removePendingListing,
   getApprovedListings,
+  saveApprovedListing,
   removeApprovedListing,
 } from '@/lib/store'
 import { sendEmail } from '@/lib/email'
 import {
   getSession, clearSession, setSession, getLeads, markLeadRead,
-  getAccountByEmail, verifyPassword, deleteAccount,
+  getAccountByEmail, verifyPassword, deleteAccount, updateAccountTier,
   FREE_LEAD_LIMIT, type FranchisorSession, type FranchiseLead,
 } from '@/lib/leads'
 import { franchises, type Franchise } from '@/data/franchises'
@@ -876,18 +877,93 @@ function LeadsTab({ session }: { session: FranchisorSession | null }) {
 }
 
 // ── Billing tab ────────────────────────────────────────────────────────────────
+type PlanTier = 'basic' | 'premium' | 'enterprise'
+
+const PLAN_INFO: { tier: PlanTier; name: string; price: string; amount: string; desc: string; features: string[] }[] = [
+  {
+    tier: 'basic',
+    name: 'Basic',
+    price: 'Free',
+    amount: 'Free',
+    desc: 'Get listed in the Ontario franchise directory',
+    features: ['Public directory listing', 'Contact enquiry button', 'Basic listing card'],
+  },
+  {
+    tier: 'premium',
+    name: 'Premium',
+    price: '$79/mo',
+    amount: '$79.00 CAD / month',
+    desc: 'Stand out with priority placement and richer content',
+    features: ['Everything in Basic', 'Priority placement in search', 'Photo gallery (up to 10 images)', 'Video embed', 'Lead notifications by email'],
+  },
+  {
+    tier: 'enterprise',
+    name: 'Enterprise',
+    price: '$199/mo',
+    amount: '$199.00 CAD / month',
+    desc: 'Maximum visibility with VIP badge and top placement',
+    features: ['Everything in Premium', 'VIP gold badge', 'Top directory placement', 'Featured on homepage', 'Dedicated account manager'],
+  },
+]
+
 function BillingTab({ session }: { session: FranchisorSession | null }) {
-  const tier = session?.tier ?? (MOCK_USER.franchise.tier as 'basic' | 'premium' | 'enterprise')
-  const planLabel = tier.charAt(0).toUpperCase() + tier.slice(1)
-  const PLAN_AMOUNT: Record<string, string> = { basic: 'Free', premium: '$79.00 CAD / month', enterprise: '$199.00 CAD / month' }
-  const planAmount = PLAN_AMOUNT[tier] ?? 'Free'
+  const currentTier: PlanTier = session?.tier ?? (MOCK_USER.franchise.tier as PlanTier)
   const isDemo = !session
 
-  const plans = [
-    { name: 'Basic',      tier: 'basic',      price: 'Free',              desc: 'Standard directory listing, visible to all visitors',            icon: <FileText size={14} /> },
-    { name: 'Premium',    tier: 'premium',    price: '$79/mo',            desc: 'Priority placement, photo gallery, lead notifications',           icon: <Star size={14} className="text-blue-500" /> },
-    { name: 'Enterprise', tier: 'enterprise', price: '$199/mo',           desc: 'VIP badge, top placement, dedicated account manager',             icon: <Crown size={14} className="text-amber-500" /> },
-  ]
+  const [confirmTier, setConfirmTier] = useState<PlanTier | null>(null)
+  const [upgrading, setUpgrading] = useState(false)
+  const [upgraded, setUpgraded] = useState(false)
+
+  const currentPlan = PLAN_INFO.find((p) => p.tier === currentTier)!
+
+  const handleSelectPlan = (tier: PlanTier) => {
+    if (tier === currentTier || isDemo) return
+    setConfirmTier(tier)
+  }
+
+  const handleConfirmUpgrade = () => {
+    if (!confirmTier || !session) return
+    setUpgrading(true)
+
+    // Update account tier in localStorage
+    updateAccountTier(session.franchiseId, confirmTier)
+
+    // Update the session with new tier
+    const newSession = { ...session, tier: confirmTier }
+    setSession(newSession)
+
+    // If the franchise has an approved listing, update its tier too
+    const approved = getApprovedListings()
+    const listing = approved.find((l) => l.id === session.franchiseId)
+    if (listing) {
+      saveApprovedListing({
+        ...listing,
+        tier: confirmTier,
+        isVIP: confirmTier === 'enterprise',
+        isFeatured: confirmTier === 'enterprise',
+      })
+    }
+
+    setUpgrading(false)
+    setUpgraded(true)
+    setConfirmTier(null)
+
+    // Reload after brief delay so the user sees the success message
+    setTimeout(() => window.location.reload(), 2000)
+  }
+
+  if (upgraded) {
+    const newPlan = PLAN_INFO.find((p) => p.tier === confirmTier || p.tier === currentTier)
+    return (
+      <div className="max-w-lg mx-auto text-center py-20">
+        <div className="w-16 h-16 bg-green-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <CheckCircle size={28} className="text-green-600" />
+        </div>
+        <h2 className="text-xl font-black text-gray-900 mb-2">Plan Updated!</h2>
+        <p className="text-sm text-gray-500">Your listing has been upgraded. Refreshing your dashboard…</p>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -896,74 +972,132 @@ function BillingTab({ session }: { session: FranchisorSession | null }) {
         <p className="text-sm text-gray-400 mt-0.5">Your current plan and upgrade options</p>
       </div>
 
-      {/* Current plan */}
+      {/* Current plan summary */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-5">
         <div className="flex items-center justify-between mb-4">
           <h3 className="font-bold text-gray-900 text-sm">Current Plan</h3>
-          <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">{planLabel}</span>
+          <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2.5 py-1 rounded-full">{currentPlan.name}</span>
         </div>
-        <div className="grid grid-cols-2 gap-4 text-sm mb-5">
+        <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
             <span className="text-gray-400 text-xs">Amount</span>
-            <div className="font-semibold text-gray-900">{planAmount}</div>
+            <div className="font-semibold text-gray-900">{currentPlan.amount}</div>
           </div>
           <div>
             <span className="text-gray-400 text-xs">Status</span>
             <div className="font-semibold text-green-600 flex items-center gap-1"><CheckCircle size={12} /> Active</div>
           </div>
           {!isDemo && session && (
-            <div>
+            <div className="col-span-2">
               <span className="text-gray-400 text-xs">Account Email</span>
               <div className="font-semibold text-gray-900 truncate">{session.email}</div>
             </div>
           )}
         </div>
-
-        {tier === 'basic' ? (
-          <a
-            href="mailto:hello@franchiseontario.com?subject=Upgrade%20my%20listing%20plan"
-            className="w-full flex items-center justify-center gap-2 bg-red-600 hover:bg-red-700 text-white font-bold py-3 rounded-xl text-sm transition-colors"
-          >
-            <Zap size={15} /> Upgrade My Plan
-          </a>
-        ) : (
-          <a
-            href="mailto:hello@franchiseontario.com?subject=Manage%20my%20subscription"
-            className="w-full flex items-center justify-center gap-2 bg-[#0D1B2A] hover:bg-[#1a2d45] text-white font-bold py-3 rounded-xl text-sm transition-colors"
-          >
-            <Mail size={15} /> Contact Us to Manage Subscription
-          </a>
-        )}
-        <p className="text-[11px] text-gray-400 text-center mt-3">
-          To upgrade, downgrade, or cancel — email <strong>hello@franchiseontario.com</strong> and we&apos;ll handle it within 1 business day.
-        </p>
       </div>
 
-      {/* Plan comparison */}
+      {/* Plan selection */}
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-        <h3 className="font-bold text-gray-900 text-sm mb-4">Available Plans</h3>
-        <div className="space-y-3">
-          {plans.map((plan) => {
-            const isCurrent = plan.tier === tier
+        <h3 className="font-bold text-gray-900 text-sm mb-1">
+          {currentTier === 'enterprise' ? 'Your Plan' : 'Upgrade Your Plan'}
+        </h3>
+        <p className="text-xs text-gray-400 mb-5">
+          {currentTier === 'enterprise'
+            ? 'You\'re on our highest tier — thank you!'
+            : 'Choose a plan below to upgrade instantly.'}
+        </p>
+        <div className="space-y-4">
+          {PLAN_INFO.map((plan) => {
+            const isCurrent = plan.tier === currentTier
+            const isDowngrade = PLAN_INFO.findIndex(p => p.tier === plan.tier) < PLAN_INFO.findIndex(p => p.tier === currentTier)
             return (
-              <div key={plan.name} className={`flex items-center gap-4 p-4 rounded-xl border ${isCurrent ? 'border-blue-200 bg-blue-50' : 'border-gray-100'}`}>
-                <div className="shrink-0">{plan.icon}</div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-gray-900">{plan.name}</span>
-                    {isCurrent && <span className="bg-blue-200 text-blue-800 text-[9px] font-bold px-1.5 py-0.5 rounded">CURRENT</span>}
+              <div
+                key={plan.tier}
+                className={`rounded-2xl border p-5 transition-all ${
+                  isCurrent
+                    ? 'border-blue-300 bg-blue-50 ring-2 ring-blue-200'
+                    : 'border-gray-200 hover:border-gray-300'
+                }`}
+              >
+                <div className="flex items-start justify-between gap-4 mb-3">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      {plan.tier === 'basic' && <FileText size={15} className="text-gray-500" />}
+                      {plan.tier === 'premium' && <Star size={15} className="text-blue-500" />}
+                      {plan.tier === 'enterprise' && <Crown size={15} className="text-amber-500" />}
+                      <span className="font-bold text-gray-900">{plan.name}</span>
+                      {isCurrent && (
+                        <span className="bg-blue-200 text-blue-800 text-[9px] font-bold px-1.5 py-0.5 rounded-full">CURRENT</span>
+                      )}
+                    </div>
+                    <p className="text-xs text-gray-500 mb-2">{plan.desc}</p>
+                    <ul className="space-y-1">
+                      {plan.features.map((f) => (
+                        <li key={f} className="flex items-center gap-1.5 text-xs text-gray-600">
+                          <CheckCircle size={11} className="text-green-500 shrink-0" />
+                          {f}
+                        </li>
+                      ))}
+                    </ul>
                   </div>
-                  <p className="text-xs text-gray-500">{plan.desc}</p>
+                  <div className="text-right shrink-0">
+                    <div className="text-lg font-black text-gray-900">{plan.price}</div>
+                    {plan.tier !== 'basic' && <div className="text-[10px] text-gray-400">per month</div>}
+                  </div>
                 </div>
-                <div className="text-sm font-bold text-gray-900 shrink-0">{plan.price}</div>
+                {!isCurrent && !isDemo && (
+                  <button
+                    onClick={() => handleSelectPlan(plan.tier)}
+                    className={`w-full mt-1 py-2.5 rounded-xl text-sm font-bold transition-colors ${
+                      isDowngrade
+                        ? 'border border-gray-200 text-gray-600 hover:bg-gray-50'
+                        : plan.tier === 'enterprise'
+                        ? 'bg-amber-500 hover:bg-amber-600 text-white'
+                        : 'bg-red-600 hover:bg-red-700 text-white'
+                    }`}
+                  >
+                    {isDowngrade ? `Switch to ${plan.name}` : `Upgrade to ${plan.name}`}
+                  </button>
+                )}
+                {!isCurrent && isDemo && (
+                  <p className="text-xs text-gray-400 mt-2 text-center">Sign in to upgrade</p>
+                )}
               </div>
             )
           })}
         </div>
-        <p className="text-xs text-gray-400 mt-4">
-          Email <strong>hello@franchiseontario.com</strong> to change your plan. Changes take effect within 1 business day.
+        <p className="text-xs text-gray-400 mt-5 text-center">
+          Need help? Email <strong>info@franchiseontario.com</strong>
         </p>
       </div>
+
+      {/* Confirm upgrade modal */}
+      {confirmTier && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => setConfirmTier(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl p-7 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
+            <h3 className="font-black text-gray-900 text-lg mb-1">Confirm Plan Change</h3>
+            <p className="text-sm text-gray-500 mb-5">
+              Switch to <strong>{PLAN_INFO.find(p => p.tier === confirmTier)?.name}</strong> ({PLAN_INFO.find(p => p.tier === confirmTier)?.price})? Your listing will be updated immediately.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmTier(null)}
+                className="flex-1 border border-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmUpgrade}
+                disabled={upgrading}
+                className="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 rounded-xl text-sm transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {upgrading ? <Loader2 size={14} className="animate-spin" /> : null}
+                {upgrading ? 'Applying…' : 'Confirm'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
