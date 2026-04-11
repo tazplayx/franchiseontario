@@ -17,6 +17,10 @@ import {
 } from '@/lib/store'
 import type { Franchise, FranchiseCategory } from '@/data/franchises'
 import { franchises as seedFranchises } from '@/data/franchises'
+import { getAccounts } from '@/lib/leads'
+import { getApprovedListings, getPendingListings } from '@/lib/store'
+
+const PLAN_PRICE: Record<string, number> = { basic: 0, premium: 79, enterprise: 199 }
 
 // Seed pending listings (same as admin/franchises/page)
 const allPending = [
@@ -126,20 +130,31 @@ export default function AdminDashboardPage() {
   const [openTickets, setOpenTickets] = useState(seedTickets.filter(t => t.status === 'Open').length)
   const [pendingListings, setPendingListings] = useState(allPending.slice(0, 3))
   const [notifications, setNotifications] = useState<NotificationEntry[]>([])
+  const [paidAccounts, setPaidAccounts] = useState<ReturnType<typeof getAccounts>>([])
+  const [mrr, setMrr] = useState(0)
 
   useEffect(() => {
     const live = applyListingStore(seedFranchises)
     setTotalListings(live.length)
 
     const pendingStatuses = getPendingStatuses()
-    const stillPending = allPending.filter(p => !pendingStatuses[p.id] || pendingStatuses[p.id] === 'pending')
-    setPendingCount(stillPending.length)
-    setPendingListings(stillPending.slice(0, 3))
+    // Merge seed pending + user-submitted pending (exclude approved/rejected)
+    const userPending = getPendingListings().filter(p => p.status === 'pending')
+    const seedPending = allPending.filter(p => !pendingStatuses[p.id] || pendingStatuses[p.id] === 'pending')
+    const allStillPending = [...userPending.map(p => ({ id: p.id, name: p.name, category: p.category, city: p.city, plan: p.plan })), ...seedPending]
+    setPendingCount(allStillPending.length)
+    setPendingListings(allStillPending.slice(0, 3) as typeof allPending)
 
     const allTickets = applyTicketStore(seedTickets)
     setOpenTickets(allTickets.filter(t => t.status === 'Open').length)
 
     setNotifications(getNotifications())
+
+    // Real revenue from registered accounts
+    const accounts = getAccounts()
+    const paid = accounts.filter(a => a.tier !== 'basic')
+    setPaidAccounts(paid)
+    setMrr(accounts.reduce((sum, a) => sum + (PLAN_PRICE[a.tier] ?? 0), 0))
   }, [])
 
   const handleClearNotifications = () => {
@@ -167,11 +182,13 @@ export default function AdminDashboardPage() {
     setPendingListings(stillPending.slice(0, 3))
   }
 
+  const mrrDisplay = mrr > 0 ? `$${mrr.toLocaleString('en-CA')}` : '$0'
+  const paidCount = paidAccounts.length
   const stats = [
-    { label: 'Total Listings', value: totalListings, sub: `${seedFranchises.filter(f => f.tier === 'enterprise').length} enterprise VIP`, icon: <Users size={18} />, color: 'bg-blue-500' },
+    { label: 'Total Listings', value: totalListings, sub: `${applyListingStore(seedFranchises).filter(f => f.tier === 'enterprise').length} enterprise VIP`, icon: <Users size={18} />, color: 'bg-blue-500' },
     { label: 'Pending Approval', value: pendingCount, sub: 'Awaiting review', icon: <Clock size={18} />, color: 'bg-amber-500' },
     { label: 'Open Tickets', value: openTickets, sub: 'Need response', icon: <Ticket size={18} />, color: 'bg-red-500' },
-    { label: 'This Month Revenue', value: '$597', sub: '3 active paid plans', icon: <TrendingUp size={18} />, color: 'bg-green-500' },
+    { label: 'Monthly Revenue', value: mrrDisplay, sub: paidCount > 0 ? `${paidCount} paid plan${paidCount !== 1 ? 's' : ''}` : 'No paid plans yet', icon: <TrendingUp size={18} />, color: 'bg-green-500' },
   ]
 
   return (
@@ -257,31 +274,31 @@ export default function AdminDashboardPage() {
         {/* Revenue breakdown */}
         <div className="mt-6 bg-white rounded-2xl border border-gray-200 shadow-sm p-5">
           <h2 className="font-bold text-gray-900 text-sm mb-4">Active Paid Listings</h2>
-          <div className="space-y-3">
-            {[
-              { name: "Chuck's Roadhouse Bar and Grill", plan: 'Enterprise', amount: '$199/mo', featured: true, status: 'Active' },
-              { name: 'Coffee Culture Café & Eatery', plan: 'Enterprise', amount: '$199/mo', featured: true, status: 'Active' },
-            ].map((listing) => (
-              <div key={listing.name} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
-                <div>
-                  <div className="text-sm font-semibold text-gray-900">{listing.name}</div>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <span className="text-xs text-gray-400">{listing.plan}</span>
-                    {listing.featured && (
-                      <span className="vip-badge text-[9px] px-1.5 py-0.5 rounded-full">Featured</span>
-                    )}
+          {paidAccounts.length === 0 ? (
+            <div className="text-center py-6 text-sm text-gray-400">No paid accounts yet</div>
+          ) : (
+            <div className="space-y-0">
+              {paidAccounts.map((account) => (
+                <div key={account.id} className="flex items-center justify-between py-3 border-b border-gray-50 last:border-0">
+                  <div>
+                    <div className="text-sm font-semibold text-gray-900">{account.franchiseName}</div>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <span className="text-xs text-gray-400 capitalize">{account.tier}</span>
+                      <span className="text-xs text-gray-300">·</span>
+                      <span className="text-xs text-gray-400">{account.email}</span>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-sm font-bold text-green-600">${PLAN_PRICE[account.tier]}/mo</div>
+                    <div className="text-[10px] text-gray-400">Active</div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-bold text-green-600">{listing.amount}</div>
-                  <div className="text-[10px] text-gray-400">{listing.status}</div>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
           <div className="mt-4 pt-4 border-t border-gray-100 flex justify-between items-center">
             <span className="text-sm text-gray-500">Monthly Recurring Revenue</span>
-            <span className="text-lg font-black text-green-600">$398.00 CAD</span>
+            <span className="text-lg font-black text-green-600">{mrrDisplay} CAD</span>
           </div>
         </div>
 

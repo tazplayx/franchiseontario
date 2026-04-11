@@ -506,21 +506,29 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
         </div>
       </div>
 
-      {/* Stats row */}
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { label: 'Profile Views', value: '1,284', sub: 'Last 30 days', icon: <Eye size={16} />, color: 'text-blue-500' },
-          { label: 'Enquiry Clicks', value: '47', sub: 'Last 30 days', icon: <TrendingUp size={16} />, color: 'text-green-500' },
-          { label: 'Directory Rank', value: '#12', sub: 'In Fast Food', icon: <Star size={16} />, color: 'text-amber-500' },
-        ].map((stat) => (
-          <div key={stat.label} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
-            <div className={`${stat.color} mb-2`}>{stat.icon}</div>
-            <div className="text-xl font-black text-gray-900">{stat.value}</div>
-            <div className="text-xs font-semibold text-gray-600">{stat.label}</div>
-            <div className="text-[10px] text-gray-400">{stat.sub}</div>
+      {/* Stats row — real data from localStorage */}
+      {(() => {
+        const leads = getLeads(franchise.id)
+        const totalLeads = leads.length
+        const unreadLeads = leads.filter((l) => !l.read).length
+        const realStats = [
+          { label: 'Total Leads', value: totalLeads, sub: 'Enquiries received', icon: <Users size={16} />, color: 'text-blue-500' },
+          { label: 'Unread Leads', value: unreadLeads, sub: unreadLeads > 0 ? 'Needs your attention' : 'All caught up', icon: <TrendingUp size={16} />, color: unreadLeads > 0 ? 'text-amber-500' : 'text-green-500' },
+          { label: 'Current Plan', value: effectivePlan, sub: session ? 'Active subscription' : 'Demo account', icon: <Star size={16} />, color: 'text-purple-500' },
+        ]
+        return (
+          <div className="grid grid-cols-3 gap-4">
+            {realStats.map((stat) => (
+              <div key={stat.label} className="bg-white rounded-2xl border border-gray-200 shadow-sm p-4">
+                <div className={`${stat.color} mb-2`}>{stat.icon}</div>
+                <div className="text-xl font-black text-gray-900">{stat.value}</div>
+                <div className="text-xs font-semibold text-gray-600">{stat.label}</div>
+                <div className="text-[10px] text-gray-400">{stat.sub}</div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
+        )
+      })()}
 
       {/* Edit modal */}
       {isEditing && (

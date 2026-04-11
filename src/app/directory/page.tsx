@@ -650,7 +650,6 @@ export default function DirectoryPage() {
                     <FranchiseCard
                       franchise={franchise}
                       showRank
-                      detailHref={SEED_IDS.has(franchise.id) ? undefined : `mailto:${franchise.email}`}
                     />
                     {/* Compare checkbox */}
                     <div className="absolute top-2 left-2 z-20">
