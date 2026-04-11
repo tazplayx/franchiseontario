@@ -111,44 +111,14 @@ function Hero() {
             </div>
           </div>
 
-          {/* Right: Lifestyle photo grid */}
-          <div className="hidden lg:grid grid-cols-2 gap-4" style={{ height: '580px' }}>
-            <div className="flex flex-col gap-4">
-              <div className="photo-card flex-1 min-h-0">
-                <img
-                  src="https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?auto=format&fit=crop&w=600&q=80"
-                  alt="Franchise entrepreneur"
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                />
-              </div>
-              <div className="photo-card" style={{ height: '180px' }}>
-                <img
-                  src="https://images.unsplash.com/photo-1554118811-1e0d58224f24?auto=format&fit=crop&w=600&q=80"
-                  alt="Coffee shop interior"
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                />
-              </div>
-            </div>
-            <div className="flex flex-col gap-4 pt-10">
-              <div className="photo-card" style={{ height: '180px' }}>
-                <img
-                  src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=600&q=80"
-                  alt="Restaurant franchise"
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                />
-              </div>
-              <div className="photo-card flex-1 min-h-0">
-                <img
-                  src="https://images.unsplash.com/photo-1542744094-3a31f272c490?auto=format&fit=crop&w=600&q=80"
-                  alt="Business success"
-                  className="w-full h-full object-cover"
-                  loading="eager"
-                />
-              </div>
-            </div>
+          {/* Right: Single lifestyle hero photo */}
+          <div className="hidden lg:block photo-card" style={{ height: '580px' }}>
+            <img
+              src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=900&q=85"
+              alt="Franchise owners celebrating their business investment"
+              className="w-full h-full object-cover"
+              loading="eager"
+            />
           </div>
 
         </div>
