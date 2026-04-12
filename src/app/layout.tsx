@@ -11,6 +11,11 @@ const BASE = 'https://www.franchiseontario.com'
 
 export const metadata: Metadata = {
   metadataBase: new URL(BASE),
+  icons: {
+    icon: '/favicon.png',
+    shortcut: '/favicon.png',
+    apple: '/favicon.png',
+  },
   title: {
     default: "FranchiseOntario.com — Ontario-Focused. Canada-Wide Franchise Directory.",
     template: '%s | FranchiseOntario.com',
