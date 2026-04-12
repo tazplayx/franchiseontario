@@ -331,6 +331,7 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
     : (MOCK_USER.franchise as Record<string, unknown>).plan as string ?? 'Basic'
   const [isEditing, setIsEditing] = useState(false)
   const [removeConfirm, setRemoveConfirm] = useState(false)
+  const [removing, setRemoving] = useState(false)
   const [removed, setRemoved] = useState(false)
   const [saved, setSaved] = useState(false)
 
@@ -403,21 +404,23 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
     })
   }
 
-  const handleRemove = () => {
+  const handleRemove = async () => {
+    setRemoving(true)
     // Remove from user dashboard flag
     removeUserFranchise()
     // Also add to global removed set so directory + homepage stop showing it
     removeListing(franchise.id)
-    // Notify user of confirmed removal
-    // For real approved listings, remove from the approved store too
+    // For real approved listings, remove from the approved + pending store too
     if (session) {
       removeApprovedListing(franchise.id)
       removePendingListing(franchise.id)
+      clearSession()
     }
-    sendEmail(effectiveEmail, 'listing-removed-user', {
+    await sendEmail(effectiveEmail, 'listing-removed-user', {
       franchiseName: franchise.name,
       contactName: effectiveName,
     })
+    setRemoving(false)
     setRemoveConfirm(false)
     setRemoved(true)
   }
@@ -672,9 +675,9 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
               Your listing will be taken offline immediately. If you have an active paid plan, please cancel your subscription first via the Billing tab to avoid future charges.
             </p>
             <div className="flex gap-3 mt-5">
-              <button onClick={() => setRemoveConfirm(false)} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors">Cancel</button>
-              <button onClick={handleRemove} className="flex-1 bg-red-600 text-white font-bold py-2.5 rounded-xl text-sm hover:bg-red-700 transition-colors flex items-center justify-center gap-2">
-                <Trash2 size={14} /> Remove
+              <button onClick={() => setRemoveConfirm(false)} disabled={removing} className="flex-1 border border-gray-200 text-gray-600 font-semibold py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors disabled:opacity-50">Cancel</button>
+              <button onClick={handleRemove} disabled={removing} className="flex-1 bg-red-600 text-white font-bold py-2.5 rounded-xl text-sm hover:bg-red-700 transition-colors flex items-center justify-center gap-2 disabled:opacity-60">
+                {removing ? <><Loader2 size={14} className="animate-spin" /> Removing…</> : <><Trash2 size={14} /> Remove</>}
               </button>
             </div>
           </div>
