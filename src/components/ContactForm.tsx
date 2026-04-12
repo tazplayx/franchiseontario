@@ -52,7 +52,7 @@ export default function ContactForm() {
           value={form.name}
           onChange={(e) => setForm({ ...form, name: e.target.value })}
           required
-          className="bg-gray-800 border border-gray-700 text-gray-200 placeholder-gray-500 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-red-500 transition-colors"
+          className="bg-white border border-white/30 text-gray-900 placeholder-gray-400 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-red-400 transition-colors"
         />
         <input
           type="email"
@@ -60,7 +60,7 @@ export default function ContactForm() {
           value={form.email}
           onChange={(e) => setForm({ ...form, email: e.target.value })}
           required
-          className="bg-gray-800 border border-gray-700 text-gray-200 placeholder-gray-500 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-red-500 transition-colors"
+          className="bg-white border border-white/30 text-gray-900 placeholder-gray-400 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-red-400 transition-colors"
         />
       </div>
       <input
@@ -68,7 +68,7 @@ export default function ContactForm() {
         placeholder="Subject (optional)"
         value={form.subject}
         onChange={(e) => setForm({ ...form, subject: e.target.value })}
-        className="w-full bg-gray-800 border border-gray-700 text-gray-200 placeholder-gray-500 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-red-500 transition-colors"
+        className="w-full bg-white border border-white/30 text-gray-900 placeholder-gray-400 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-red-400 transition-colors"
       />
       <textarea
         rows={3}
@@ -76,7 +76,7 @@ export default function ContactForm() {
         value={form.message}
         onChange={(e) => setForm({ ...form, message: e.target.value })}
         required
-        className="w-full bg-gray-800 border border-gray-700 text-gray-200 placeholder-gray-500 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-red-500 transition-colors resize-none"
+        className="w-full bg-white border border-white/30 text-gray-900 placeholder-gray-400 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-red-400 transition-colors resize-none"
       />
       {status === 'error' && (
         <div className="flex items-center gap-1.5 text-red-400 text-xs">

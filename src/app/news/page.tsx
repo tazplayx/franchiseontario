@@ -77,7 +77,7 @@ function NewsletterWidget() {
           placeholder="your@email.com"
           required
           disabled={status === 'loading'}
-          className="w-full bg-white/20 border border-white/30 rounded-lg px-3 py-2 text-white placeholder-red-200 text-xs outline-none focus:bg-white/30 disabled:opacity-60"
+          className="w-full bg-white border border-white/30 rounded-lg px-3 py-2 text-gray-900 placeholder-gray-400 text-xs outline-none focus:ring-2 focus:ring-white/60 disabled:opacity-60"
         />
         {errorMsg && (
           <p className="text-red-200 text-[11px]">{errorMsg}</p>
