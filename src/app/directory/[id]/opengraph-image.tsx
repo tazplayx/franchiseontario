@@ -8,15 +8,21 @@ export const contentType = 'image/png'
 export default async function Image({ params }: { params: { id: string } }) {
   const franchise = franchises.find((f) => f.id === params.id)
 
+  const dmSans = await fetch(
+    new URL('https://fonts.gstatic.com/s/dmsans/v15/rP2Hp2ywxg089UriCZOIHQ.woff2')
+  ).then((res) => res.arrayBuffer()).catch(() => null)
+
+  const fontFamily = dmSans ? 'DM Sans' : 'system-ui, -apple-system, sans-serif'
+  const fonts = dmSans ? [{ name: 'DM Sans', data: dmSans, style: 'normal' as const, weight: 900 as const }] : []
+
   if (!franchise) {
-    // Fallback generic image
     return new ImageResponse(
       (
-        <div style={{ background: '#00228e', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ background: '#00228e', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily }}>
           <span style={{ color: '#fff', fontSize: 48, fontWeight: 900 }}>FranchiseOntario.com</span>
         </div>
       ),
-      { ...size }
+      { ...size, fonts }
     )
   }
 
@@ -40,18 +46,17 @@ export default async function Image({ params }: { params: { id: string } }) {
           alignItems: 'flex-start',
           justifyContent: 'space-between',
           padding: '60px 72px',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
+          fontFamily,
         }}
       >
         {/* Top: site brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
           <div style={{ width: 36, height: 36, background: '#ff000d', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 900, color: '#fff' }}>F</div>
-          <span style={{ color: '#6b7280', fontSize: 15, fontWeight: 600 }}>FranchiseOntario.com</span>
+          <span style={{ color: '#9ca3af', fontSize: 15, fontWeight: 600 }}>FranchiseOntario.com</span>
         </div>
 
         {/* Centre: franchise info */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20, flex: 1, justifyContent: 'center' }}>
-          {/* Logo initial */}
           <div
             style={{
               width: 80,
@@ -106,6 +111,6 @@ export default async function Image({ params }: { params: { id: string } }) {
         </div>
       </div>
     ),
-    { ...size }
+    { ...size, fonts }
   )
 }

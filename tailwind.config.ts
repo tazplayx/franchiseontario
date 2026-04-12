@@ -8,6 +8,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      fontFamily: {
+        sans: ['DM Sans', 'system-ui', 'sans-serif'],
+      },
       maxWidth: {
         '7xl': '90rem', // 1440px — wider than default 80rem (1280px)
       },

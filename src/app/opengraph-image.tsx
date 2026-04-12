@@ -6,6 +6,10 @@ export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 export default async function Image() {
+  const dmSans = await fetch(
+    new URL('https://fonts.gstatic.com/s/dmsans/v15/rP2Hp2ywxg089UriCZOIHQ.woff2')
+  ).then((res) => res.arrayBuffer()).catch(() => null)
+
   return new ImageResponse(
     (
       <div
@@ -18,7 +22,7 @@ export default async function Image() {
           alignItems: 'flex-start',
           justifyContent: 'space-between',
           padding: '60px 72px',
-          fontFamily: 'system-ui, -apple-system, sans-serif',
+          fontFamily: dmSans ? 'DM Sans' : 'system-ui, -apple-system, sans-serif',
         }}
       >
         {/* Top: logo area */}
@@ -79,7 +83,7 @@ export default async function Image() {
             <span style={{ color: '#ff000d' }}>Franchise</span>
           </h1>
           <p style={{ color: '#9ca3af', fontSize: 24, margin: 0, lineHeight: 1.4 }}>
-            Browse 332+ franchise listings · Compare investment levels ·<br />
+            Browse 332+ franchise listings · Compare investment levels ·
             Connect with top Canadian brands
           </p>
         </div>
@@ -100,6 +104,11 @@ export default async function Image() {
         </div>
       </div>
     ),
-    { ...size }
+    {
+      ...size,
+      fonts: dmSans
+        ? [{ name: 'DM Sans', data: dmSans, style: 'normal', weight: 900 }]
+        : [],
+    }
   )
 }
