@@ -18,8 +18,9 @@ export default function Header() {
 
   useEffect(() => {
     const check = () => {
-      const session = getSession()
       const isAdmin = localStorage.getItem('fo_admin') === 'authenticated'
+      // If admin is logged in, don't show the franchisor session — can't be both
+      const session = isAdmin ? null : getSession()
       const isDemo = !session && !isAdmin && localStorage.getItem('fo_user') === 'authenticated'
       setRealSession(session)
       setAdminLoggedIn(isAdmin)

@@ -5,6 +5,7 @@ import { Check, ArrowRight, Loader2, Upload, X, ImagePlus, Video, Image as Image
 import { sendEmail } from '@/lib/email'
 import { registerAccount, getAccountByEmail, setSession } from '@/lib/leads'
 import { savePendingListing } from '@/lib/store'
+import { categories } from '@/data/franchises'
 
 type Step = 'plan' | 'details' | 'verify' | 'confirm'
 
@@ -386,8 +387,8 @@ export default function RegisterPage() {
                 <label className="block text-xs font-semibold text-gray-600 mb-1.5">Category *</label>
                 <select required value={formData.category} onChange={(e) => setFormData({ ...formData, category: e.target.value })} className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm outline-none focus:border-red-400 bg-white">
                   <option value="">Select a category</option>
-                  {['Bar & Grill', 'Coffee & Café', 'Fast Food', 'Pizza', 'Fitness & Wellness', 'Retail', 'Home Services', 'Automotive', 'Education', 'Beauty & Salon', 'Pet Services'].map((c) => (
-                    <option key={c}>{c}</option>
+                  {categories.map((c) => (
+                    <option key={c.name} value={c.name}>{c.icon} {c.name}</option>
                   ))}
                 </select>
               </div>

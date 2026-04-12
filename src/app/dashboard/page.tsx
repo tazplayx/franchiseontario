@@ -22,9 +22,9 @@ import {
 } from '@/lib/store'
 import { sendEmail } from '@/lib/email'
 import {
-  getSession, clearSession, setSession, getLeads, markLeadRead,
+  getSession, clearSession, setSession, getLeads, markLeadRead, updateLeadStatus,
   getAccountByEmail, verifyPassword, deleteAccount, updateAccountTier,
-  FREE_LEAD_LIMIT, type FranchisorSession, type FranchiseLead,
+  FREE_LEAD_LIMIT, type FranchisorSession, type FranchiseLead, type LeadStatus,
 } from '@/lib/leads'
 import { franchises, type Franchise } from '@/data/franchises'
 
@@ -693,6 +693,22 @@ function LeadsTab({ session }: { session: FranchisorSession | null }) {
   const tier = session?.tier ?? 'basic'
   const [leads, setLeads] = useState<FranchiseLead[]>([])
   const [selectedLead, setSelectedLead] = useState<FranchiseLead | null>(null)
+  const [statusLead, setStatusLead] = useState<FranchiseLead | null>(null)
+
+  const FUNNEL_STAGES: { value: LeadStatus; label: string; color: string }[] = [
+    { value: 'new', label: 'New', color: 'bg-blue-100 text-blue-700' },
+    { value: 'contacted', label: 'Contacted', color: 'bg-purple-100 text-purple-700' },
+    { value: 'qualified', label: 'Qualified', color: 'bg-amber-100 text-amber-700' },
+    { value: 'meeting_scheduled', label: 'Meeting Scheduled', color: 'bg-orange-100 text-orange-700' },
+    { value: 'proposal_sent', label: 'Proposal Sent', color: 'bg-indigo-100 text-indigo-700' },
+    { value: 'closed_won', label: 'Closed Won', color: 'bg-green-100 text-green-700' },
+    { value: 'closed_lost', label: 'Closed Lost', color: 'bg-red-100 text-red-700' },
+  ]
+
+  const getStatusBadge = (status?: LeadStatus) => {
+    const stage = FUNNEL_STAGES.find(s => s.value === (status ?? 'new')) ?? FUNNEL_STAGES[0]
+    return <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${stage.color}`}>{stage.label}</span>
+  }
 
   useEffect(() => {
     if (franchiseId) setLeads(getLeads(franchiseId))
@@ -756,6 +772,29 @@ function LeadsTab({ session }: { session: FranchisorSession | null }) {
                   <p className="text-sm text-gray-700 leading-relaxed">{selectedLead.message}</p>
                 </div>
               )}
+              <div className="bg-gray-50 rounded-xl p-3">
+                <p className="text-[10px] font-semibold text-gray-400 uppercase mb-2">Sales Stage</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {FUNNEL_STAGES.map((stage) => {
+                    const isCurrent = (selectedLead.status ?? 'new') === stage.value
+                    return (
+                      <button
+                        key={stage.value}
+                        onClick={() => {
+                          if (franchiseId) {
+                            updateLeadStatus(franchiseId, selectedLead.id, stage.value)
+                            setLeads((prev) => prev.map((l) => l.id === selectedLead.id ? { ...l, status: stage.value, read: true } : l))
+                            setSelectedLead((prev) => prev ? { ...prev, status: stage.value } : null)
+                          }
+                        }}
+                        className={`text-[10px] font-bold px-2.5 py-1 rounded-full transition-colors ${isCurrent ? stage.color + ' ring-2 ring-offset-1 ring-blue-400' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                      >
+                        {stage.label}
+                      </button>
+                    )
+                  })}
+                </div>
+              </div>
               <div className="flex gap-2 pt-1">
                 <a href={`mailto:${selectedLead.email}?subject=Your Inquiry About ${encodeURIComponent(selectedLead.franchiseName)}&body=Hi ${encodeURIComponent(selectedLead.name)},%0A%0AThank you for your interest in ${encodeURIComponent(selectedLead.franchiseName)}.`}
                   className="flex-1 btn-red py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2">
@@ -768,6 +807,44 @@ function LeadsTab({ session }: { session: FranchisorSession | null }) {
                   </a>
                 )}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Status picker modal */}
+      {statusLead && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setStatusLead(null)}>
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center justify-between p-5 border-b border-gray-100">
+              <div>
+                <p className="font-bold text-gray-900 text-sm">Update Lead Status</p>
+                <p className="text-xs text-gray-400 mt-0.5">{statusLead.name}</p>
+              </div>
+              <button onClick={() => setStatusLead(null)} className="p-1.5 hover:bg-gray-100 rounded-lg"><X size={16} className="text-gray-500" /></button>
+            </div>
+            <div className="p-4 space-y-2">
+              {FUNNEL_STAGES.map((stage) => {
+                const isCurrent = (statusLead.status ?? 'new') === stage.value
+                return (
+                  <button
+                    key={stage.value}
+                    onClick={() => {
+                      if (franchiseId) {
+                        updateLeadStatus(franchiseId, statusLead.id, stage.value)
+                        setLeads((prev) => prev.map((l) => l.id === statusLead.id ? { ...l, status: stage.value, read: true } : l))
+                      }
+                      setStatusLead(null)
+                    }}
+                    className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+                      isCurrent ? 'ring-2 ring-blue-400 ' + stage.color : 'hover:bg-gray-50 text-gray-700'
+                    }`}
+                  >
+                    <span>{stage.label}</span>
+                    {isCurrent && <CheckCircle size={14} className="text-blue-500" />}
+                  </button>
+                )
+              })}
             </div>
           </div>
         </div>
@@ -827,7 +904,10 @@ function LeadsTab({ session }: { session: FranchisorSession | null }) {
                   {lead.name.charAt(0)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-gray-900 text-sm">{lead.name}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="font-semibold text-gray-900 text-sm">{lead.name}</p>
+                    {getStatusBadge(lead.status)}
+                  </div>
                   <div className="flex flex-wrap gap-3 text-xs text-gray-400 mt-0.5">
                     <span className="flex items-center gap-1"><MapPin size={9} /> {lead.city}</span>
                     <span className="flex items-center gap-1"><DollarSign size={9} /> {lead.investmentBudget}</span>
@@ -835,9 +915,14 @@ function LeadsTab({ session }: { session: FranchisorSession | null }) {
                     <span className="flex items-center gap-1"><Clock size={9} /> {timeAgo}</span>
                   </div>
                 </div>
-                <button onClick={() => handleView(lead)} className="shrink-0 text-xs text-red-600 font-semibold flex items-center gap-1 hover:underline">
-                  <Eye size={12} /> View
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button onClick={() => setStatusLead(lead)} className="text-xs text-gray-500 font-semibold flex items-center gap-1 hover:text-gray-700 border border-gray-200 rounded-lg px-2 py-1 hover:bg-gray-50 transition-colors">
+                    Set Status
+                  </button>
+                  <button onClick={() => handleView(lead)} className="text-xs text-red-600 font-semibold flex items-center gap-1 hover:underline">
+                    <Eye size={12} /> View
+                  </button>
+                </div>
               </div>
             )
           })}
@@ -917,6 +1002,29 @@ function BillingTab({ session, successPlan }: { session: FranchisorSession | nul
   const [processing, setProcessing] = useState(false)
   const [checkoutError, setCheckoutError] = useState('')
   const [downgraded, setDowngraded] = useState(false)
+  const [portalLoading, setPortalLoading] = useState(false)
+
+  const handleOpenPortal = async () => {
+    if (!session) return
+    setPortalLoading(true)
+    try {
+      const res = await fetch('/api/stripe/portal/by-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: session.email, returnUrl: window.location.href }),
+      })
+      const data = await res.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        window.location.href = `mailto:info@franchiseontario.com?subject=Billing Request - ${session.franchiseName}`
+      }
+    } catch {
+      window.location.href = `mailto:info@franchiseontario.com?subject=Billing Request - ${session.franchiseName}`
+    } finally {
+      setPortalLoading(false)
+    }
+  }
 
   const currentPlan = PLAN_INFO.find((p) => p.tier === currentTier)!
 
@@ -1104,6 +1212,31 @@ function BillingTab({ session, successPlan }: { session: FranchisorSession | nul
           Need help? Email <strong>info@franchiseontario.com</strong>
         </p>
       </div>
+
+      {/* Subscription management */}
+      {!isDemo && session && currentTier !== 'basic' && (
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-5">
+          <h3 className="font-bold text-gray-900 text-sm mb-1">Subscription Management</h3>
+          <p className="text-xs text-gray-400 mb-4">Manage your payment method, download invoices, or cancel your subscription.</p>
+          <div className="flex flex-col sm:flex-row gap-3">
+            <button
+              onClick={handleOpenPortal}
+              disabled={portalLoading}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-gray-200 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors disabled:opacity-60"
+            >
+              {portalLoading ? <Loader2 size={13} className="animate-spin" /> : <ExternalLink size={13} />}
+              {portalLoading ? 'Opening…' : 'Manage Billing & Invoices'}
+            </button>
+            <button
+              onClick={() => handleSelectPlan('basic')}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-red-200 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+            >
+              Cancel Subscription
+            </button>
+          </div>
+          <p className="text-[11px] text-gray-400 mt-3">Cancelling moves your listing to the free Basic tier immediately. You will not be charged again.</p>
+        </div>
+      )}
 
       {/* Confirm plan change modal */}
       {confirmTier && (

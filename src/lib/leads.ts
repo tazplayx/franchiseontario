@@ -3,6 +3,8 @@
  * Leads are stored per franchise. Franchise owners access them via /dashboard.
  */
 
+export type LeadStatus = 'new' | 'contacted' | 'qualified' | 'meeting_scheduled' | 'proposal_sent' | 'closed_won' | 'closed_lost'
+
 export interface FranchiseLead {
   id: string
   franchiseId: string
@@ -16,6 +18,7 @@ export interface FranchiseLead {
   investmentBudget: string
   message: string
   read: boolean
+  status?: LeadStatus
 }
 
 export interface FranchisorAccount {
@@ -81,6 +84,11 @@ export function getLeadCount(franchiseId: string): number {
 export function markLeadRead(franchiseId: string, leadId: string): void {
   const leads = read<FranchiseLead[]>(`${LEADS_PREFIX}${franchiseId}`, [])
   write(`${LEADS_PREFIX}${franchiseId}`, leads.map((l) => l.id === leadId ? { ...l, read: true } : l))
+}
+
+export function updateLeadStatus(franchiseId: string, leadId: string, status: LeadStatus): void {
+  const leads = read<FranchiseLead[]>(`${LEADS_PREFIX}${franchiseId}`, [])
+  write(`${LEADS_PREFIX}${franchiseId}`, leads.map((l) => l.id === leadId ? { ...l, status, read: true } : l))
 }
 
 // ── Franchisor accounts ────────────────────────────────────────────────────────
