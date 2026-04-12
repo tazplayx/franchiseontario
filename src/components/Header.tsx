@@ -157,7 +157,7 @@ export default function Header() {
                     </div>
                     {adminItems.map((item) => (
                       <Link key={item.label} href={item.href} onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-orange-50"
+                        className="flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-blue-50"
                         style={{ color: 'var(--text-secondary)' }}>
                         <span style={{ color: 'var(--text-muted)' }}>{item.icon}</span>
                         {item.label}
@@ -189,11 +189,11 @@ export default function Header() {
                     <div className="px-3 py-2 border-b mb-1" style={{ borderColor: 'var(--border-light)' }}>
                       <p className="text-xs font-bold text-black truncate">{displayName}</p>
                       <p className="text-[11px] truncate" style={{ color: 'var(--text-muted)' }}>{realSession.email}</p>
-                      <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase" style={{ background: '#fdeee7', color: 'var(--rust)' }}>{realSession.tier}</span>
+                      <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase" style={{ background: 'var(--cream)', color: 'var(--rust-deep)' }}>{realSession.tier}</span>
                     </div>
                     {franchisorItems.map((item) => (
                       <Link key={item.label} href={item.href} onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-orange-50"
+                        className="flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-blue-50"
                         style={{ color: 'var(--text-secondary)' }}>
                         <span style={{ color: 'var(--text-muted)' }}>{item.icon}</span>
                         {item.label}
@@ -202,7 +202,7 @@ export default function Header() {
                     <div className="border-t mt-1 pt-1" style={{ borderColor: 'var(--border-light)' }}>
                       {realSession.franchiseId && (
                         <Link href={`/directory/${realSession.franchiseId}`} onClick={() => setDropdownOpen(false)}
-                          className="flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-orange-50"
+                          className="flex items-center gap-2.5 px-3 py-2 text-sm transition-colors hover:bg-blue-50"
                           style={{ color: 'var(--text-secondary)' }}>
                           <span style={{ color: 'var(--text-muted)' }}><FileText size={13} /></span>
                           View My Listing
@@ -232,8 +232,8 @@ export default function Header() {
               </Link>
             )}
 
-            <Link href="/quiz" className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-full transition-all border" style={{ background: 'var(--cream)', color: 'var(--rust-dark)', borderColor: '#e5c185' }}>
-              <Sparkles size={13} style={{ color: 'var(--gold-dark, #c8a06a)' }} />
+            <Link href="/quiz" className="flex items-center gap-1.5 px-4 py-2 text-[13px] font-semibold rounded-full transition-all border" style={{ background: 'var(--cream)', color: 'var(--rust-deep)', borderColor: 'var(--gold)' }}>
+              <Sparkles size={13} style={{ color: 'var(--gold)' }} />
               Fit Quiz
             </Link>
             <Link href="/register" className="btn-red px-5 py-2.5 text-[13px]">
@@ -312,7 +312,7 @@ export default function Header() {
                 <LayoutDashboard size={15} style={{ color: 'var(--text-muted)' }} /> Franchisor Login
               </Link>
             )}
-            <Link href="/quiz" className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold border" style={{ background: 'var(--cream)', color: 'var(--rust-dark)', borderColor: 'var(--gold)' }} onClick={() => setMenuOpen(false)}>
+            <Link href="/quiz" className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-full text-sm font-bold border" style={{ background: 'var(--cream)', color: 'var(--rust-deep)', borderColor: 'var(--gold)' }} onClick={() => setMenuOpen(false)}>
               <Sparkles size={14} /> Franchise Fit Quiz
             </Link>
             <Link href="/register" className="btn-red block text-center px-4 py-2.5 text-sm font-semibold" onClick={() => setMenuOpen(false)}>

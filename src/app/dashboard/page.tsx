@@ -86,11 +86,11 @@ function DashNav({ active, onTab, onLogout, email, unread }: { active: ActiveTab
     { label: 'Support', tab: 'support', icon: <LifeBuoy size={16} /> },
   ]
   return (
-    <aside className="bg-[#0D1B2A] text-white w-56 shrink-0 min-h-screen flex-col hidden md:flex">
+    <aside className="bg-[#00228e] text-white w-56 shrink-0 min-h-screen flex-col hidden md:flex">
       <div className="p-5 border-b border-white/10">
         <Link href="/" className="flex items-center gap-2">
           <svg viewBox="0 0 40 40" fill="none" className="w-9 h-9 shrink-0">
-            <rect width="40" height="40" rx="9" fill="#C8102E" />
+            <rect width="40" height="40" rx="9" fill="#ff000d" />
             <path d="M10 9 H30 V14 H15 V19.5 H27 V24.5 H15 V31 H10 Z" fill="white" />
           </svg>
           <div>
@@ -163,7 +163,7 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
       <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 w-full max-w-sm">
         <div className="flex justify-center mb-6">
           <svg viewBox="0 0 40 40" fill="none" className="w-12 h-12">
-            <rect width="40" height="40" rx="9" fill="#C8102E" />
+            <rect width="40" height="40" rx="9" fill="#ff000d" />
             <path d="M10 9 H30 V14 H15 V19.5 H27 V24.5 H15 V31 H10 Z" fill="white" />
           </svg>
         </div>
@@ -1355,7 +1355,7 @@ function SupportTab({ session }: { session: FranchisorSession | null }) {
               ))}
             </div>
           </div>
-          <div className="bg-[#0D1B2A] rounded-2xl p-5 text-white">
+          <div className="bg-[#00228e] rounded-2xl p-5 text-white">
             <div className="text-sm font-bold mb-1">Enterprise clients</div>
             <p className="text-xs text-white/60 mb-3">Enterprise plan subscribers have access to a dedicated account manager.</p>
             <Link href="/pricing" className="text-xs font-semibold text-red-400 hover:text-red-300">Upgrade to Enterprise →</Link>

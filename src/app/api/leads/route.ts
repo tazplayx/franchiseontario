@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
 
     const html = `
       <div style="font-family:sans-serif;max-width:580px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:12px">
-        <div style="background:#C8102E;color:#fff;padding:14px 24px;border-radius:8px 8px 0 0;margin:-24px -24px 24px">
+        <div style="background:#00228e;color:#fff;padding:14px 24px;border-radius:8px 8px 0 0;margin:-24px -24px 24px">
           <h1 style="margin:0;font-size:17px">🔔 New Lead — ${franchiseName}</h1>
         </div>
         <p style="color:#374151;font-size:14px;margin:0 0 16px">
@@ -38,13 +38,13 @@ export async function POST(req: NextRequest) {
         </p>
         <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px">
           <tr><td style="padding:8px 0;color:#6b7280;width:140px">Name</td><td style="padding:8px 0;font-weight:600;color:#111827">${lead.name}</td></tr>
-          <tr><td style="padding:8px 0;color:#6b7280">Email</td><td style="padding:8px 0"><a href="mailto:${lead.email}" style="color:#C8102E">${lead.email}</a></td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280">Email</td><td style="padding:8px 0"><a href="mailto:${lead.email}" style="color:#00228e">${lead.email}</a></td></tr>
           <tr><td style="padding:8px 0;color:#6b7280">Phone</td><td style="padding:8px 0;color:#374151">${lead.phone || 'Not provided'}</td></tr>
           <tr><td style="padding:8px 0;color:#6b7280">City</td><td style="padding:8px 0;color:#374151">${lead.city || 'Not provided'}</td></tr>
           <tr><td style="padding:8px 0;color:#6b7280">Investment Budget</td><td style="padding:8px 0;font-weight:600;color:#111827">${lead.investmentBudget}</td></tr>
         </table>
         ${lead.message ? `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:20px"><p style="margin:0 0 6px;font-size:12px;color:#9ca3af;font-weight:600;text-transform:uppercase">Message</p><p style="margin:0;font-size:14px;color:#374151">${lead.message}</p></div>` : ''}
-        <a href="https://www.franchiseontario.com/dashboard" style="display:inline-block;background:#C8102E;color:#fff;padding:11px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px">
+        <a href="https://www.franchiseontario.com/dashboard" style="display:inline-block;background:#00228e;color:#fff;padding:11px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px">
           View All Leads in Dashboard →
         </a>
         <p style="margin:20px 0 0;font-size:11px;color:#9ca3af">FranchiseOntario.com — your franchise lead management platform</p>

@@ -702,7 +702,7 @@ export default function RegisterPage() {
               )}
               <div className="border-t border-gray-200 pt-2 flex justify-between font-bold">
                 <span>Plan Total</span>
-                <span className="text-[#C8102E]">
+                <span className="text-red-600">
                   {selectedPlan === 'basic' && !addFeature
                     ? 'Free'
                     : `$${(selectedPlan === 'premium' ? 79 : selectedPlan === 'enterprise' ? 199 : 0) + (addFeature ? 14.99 : 0)} CAD`}

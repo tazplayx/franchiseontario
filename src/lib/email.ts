@@ -36,8 +36,8 @@ export interface EmailData {
 // ── Branded shell ──────────────────────────────────────────────────────────────
 function shell(title: string, body: string): string {
   return `
-<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;color:#0D1B2A">
-  <div style="background:#C8102E;padding:22px 28px;border-radius:10px 10px 0 0">
+<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:600px;margin:0 auto;color:#0a1428">
+  <div style="background:#00228e;padding:22px 28px;border-radius:10px 10px 0 0">
     <div style="display:flex;align-items:center;gap:12px">
       <div style="width:32px;height:32px;background:rgba(255,255,255,0.2);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px">🍁</div>
       <div>
@@ -51,18 +51,18 @@ function shell(title: string, body: string): string {
     <hr style="border:none;border-top:1px solid #e2e8f0;margin:24px 0 18px" />
     <p style="margin:0;font-size:12px;color:#94a3b8;line-height:1.6">
       FranchiseOntario.com — Ontario&rsquo;s #1 Franchise Directory<br />
-      Questions? <a href="https://www.franchiseontario.com/support" style="color:#C8102E;text-decoration:none">Visit our support page</a> or reply to this email.
+      Questions? <a href="https://www.franchiseontario.com/support" style="color:#05d4fe;text-decoration:none">Visit our support page</a> or reply to this email.
     </p>
   </div>
 </div>`.trim()
 }
 
 function btn(href: string, label: string): string {
-  return `<a href="${href}" style="display:inline-block;background:#C8102E;color:white;padding:13px 26px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin:16px 0">${label}</a>`
+  return `<a href="${href}" style="display:inline-block;background:#ff000d;color:white;padding:13px 26px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin:16px 0">${label}</a>`
 }
 
 function p(text: string): string {
-  return `<p style="margin:0 0 14px;font-size:14px;line-height:1.7;color:#0D1B2A">${text}</p>`
+  return `<p style="margin:0 0 14px;font-size:14px;line-height:1.7;color:#0a1428">${text}</p>`
 }
 
 // ── Templates ─────────────────────────────────────────────────────────────────
@@ -83,7 +83,7 @@ export function getEmailContent(
           ${p(`Hi ${name},`)}
           ${p(`Thank you for submitting <strong>${franchise}</strong> to FranchiseOntario.com — Ontario's #1 franchise directory.`)}
           ${p('<strong>What happens next:</strong>')}
-          <ol style="padding-left:20px;line-height:2;font-size:14px;color:#0D1B2A;margin:0 0 14px">
+          <ol style="padding-left:20px;line-height:2;font-size:14px;color:#0a1428;margin:0 0 14px">
             <li>Our team will review your listing within 1–4 business hours</li>
             <li>You'll receive an email confirmation once it's approved and live</li>
             <li>Your listing will be visible to thousands of Ontario franchise investors</li>
@@ -125,7 +125,7 @@ export function getEmailContent(
           ${p(`Great news! Your franchise listing for <strong>${franchise}</strong> has been reviewed and approved by our team. It's now live on FranchiseOntario.com.`)}
           ${p(`Your listing plan: <strong>${plan}</strong>`)}
           ${btn('https://www.franchiseontario.com/directory', 'View the Directory →')}
-          ${p(`Manage your listing, view analytics, and get support from your <a href="https://www.franchiseontario.com/dashboard" style="color:#C8102E">Franchisor Dashboard</a>.`)}
+          ${p(`Manage your listing, view analytics, and get support from your <a href="https://www.franchiseontario.com/dashboard" style="color:#ff000d">Franchisor Dashboard</a>.`)}
         `),
       }
 
@@ -149,7 +149,7 @@ export function getEmailContent(
           ${p(`Your listing for <strong>${franchise}</strong> has been removed from FranchiseOntario.com by our team.`)}
           ${p('If you believe this was done in error or would like to discuss reinstatement, please contact our support team.')}
           ${btn('https://www.franchiseontario.com/support', 'Contact Support →')}
-          ${p(`If you'd like to re-list your franchise, you're welcome to <a href="https://www.franchiseontario.com/register" style="color:#C8102E">submit a new listing</a> at any time.`)}
+          ${p(`If you'd like to re-list your franchise, you're welcome to <a href="https://www.franchiseontario.com/register" style="color:#ff000d">submit a new listing</a> at any time.`)}
         `),
       }
 
@@ -162,7 +162,7 @@ export function getEmailContent(
           ${data.editedFields && data.editedFields.length > 0
             ? `<div style="background:#fff;border:1px solid #e2e8f0;border-radius:8px;padding:12px 16px;margin:0 0 14px;font-size:13px">
                 <strong style="color:#64748b;font-size:11px;text-transform:uppercase;letter-spacing:0.05em">Fields Updated</strong><br />
-                <span style="color:#0D1B2A">${data.editedFields.join(', ')}</span>
+                <span style="color:#0a1428">${data.editedFields.join(', ')}</span>
                </div>`
             : ''}
           ${p('You can review your listing and request any corrections from your dashboard.')}
@@ -177,7 +177,7 @@ export function getEmailContent(
           ${p(`Hi ${name},`)}
           ${p(`We've confirmed the removal of <strong>${franchise}</strong> from FranchiseOntario.com as requested.`)}
           ${p('Your listing is no longer visible to the public. If you have an active paid subscription, please cancel it through your billing settings to avoid future charges.')}
-          ${p('We\'re sorry to see you go! You can always <a href="https://www.franchiseontario.com/register" style="color:#C8102E">re-list your franchise</a> at any time.')}
+          ${p('We\'re sorry to see you go! You can always <a href="https://www.franchiseontario.com/register" style="color:#ff000d">re-list your franchise</a> at any time.')}
         `),
       }
 
@@ -224,15 +224,15 @@ export function getEmailContent(
             <table style="width:100%;font-size:13px;border-collapse:collapse">
               <tr>
                 <td style="color:#64748b;padding:5px 0">Plan</td>
-                <td style="text-align:right;font-weight:700;color:#0D1B2A">${plan}</td>
+                <td style="text-align:right;font-weight:700;color:#0a1428">${plan}</td>
               </tr>
               <tr>
                 <td style="color:#64748b;padding:5px 0">Amount Charged</td>
-                <td style="text-align:right;font-weight:700;color:#0D1B2A">${data.amount ?? 'N/A'}</td>
+                <td style="text-align:right;font-weight:700;color:#0a1428">${data.amount ?? 'N/A'}</td>
               </tr>
               ${data.nextBillingDate ? `<tr>
                 <td style="color:#64748b;padding:5px 0">Next Billing Date</td>
-                <td style="text-align:right;font-weight:700;color:#0D1B2A">${data.nextBillingDate}</td>
+                <td style="text-align:right;font-weight:700;color:#0a1428">${data.nextBillingDate}</td>
               </tr>` : ''}
             </table>
           </div>
@@ -249,7 +249,7 @@ export function getEmailContent(
           ${p(`Hi ${name},`)}
           ${p(`You're now subscribed to <strong>Franchise News Weekly</strong> — Ontario's freshest franchise industry digest delivered every Monday morning.`)}
           ${p('<strong>What to expect each week:</strong>')}
-          <ul style="padding-left:20px;line-height:2;font-size:14px;color:#0D1B2A;margin:0 0 14px">
+          <ul style="padding-left:20px;line-height:2;font-size:14px;color:#0a1428;margin:0 0 14px">
             <li>Top franchise expansion news across Ontario</li>
             <li>Investment opportunities and new listings</li>
             <li>Legal and regulatory updates affecting franchise buyers</li>

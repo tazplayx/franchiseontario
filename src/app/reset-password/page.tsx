@@ -84,7 +84,7 @@ function ResetPasswordContent() {
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 w-full max-w-sm">
       <div className="flex justify-center mb-6">
         <svg viewBox="0 0 40 40" fill="none" className="w-12 h-12">
-          <rect width="40" height="40" rx="9" fill="#C8102E" />
+          <rect width="40" height="40" rx="9" fill="#ff000d" />
           <path d="M10 9 H30 V14 H15 V19.5 H27 V24.5 H15 V31 H10 Z" fill="white" />
         </svg>
       </div>

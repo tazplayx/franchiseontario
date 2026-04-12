@@ -26,8 +26,8 @@ export async function POST(req: NextRequest) {
         reply_to: email,
         subject: `[FranchiseOntario Contact] ${subject || 'General Inquiry'} — from ${name}`,
         html: `
-          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0D1B2A">
-            <div style="background:#C8102E;padding:20px 24px;border-radius:8px 8px 0 0">
+          <div style="font-family:sans-serif;max-width:600px;margin:0 auto;color:#0a1428">
+            <div style="background:#00228e;padding:20px 24px;border-radius:8px 8px 0 0">
               <h1 style="color:white;margin:0;font-size:18px">New Contact Form Message</h1>
               <p style="color:#fca5a5;margin:4px 0 0;font-size:13px">FranchiseOntario.com</p>
             </div>
@@ -35,20 +35,20 @@ export async function POST(req: NextRequest) {
               <table style="width:100%;border-collapse:collapse;font-size:14px">
                 <tr>
                   <td style="padding:8px 12px 8px 0;color:#64748b;white-space:nowrap;vertical-align:top"><strong>Name</strong></td>
-                  <td style="padding:8px 0;color:#0D1B2A">${name}</td>
+                  <td style="padding:8px 0;color:#0a1428">${name}</td>
                 </tr>
                 <tr>
                   <td style="padding:8px 12px 8px 0;color:#64748b;white-space:nowrap;vertical-align:top"><strong>Email</strong></td>
-                  <td style="padding:8px 0"><a href="mailto:${email}" style="color:#C8102E">${email}</a></td>
+                  <td style="padding:8px 0"><a href="mailto:${email}" style="color:#00228e">${email}</a></td>
                 </tr>
                 <tr>
                   <td style="padding:8px 12px 8px 0;color:#64748b;white-space:nowrap;vertical-align:top"><strong>Subject</strong></td>
-                  <td style="padding:8px 0;color:#0D1B2A">${subject || 'General Inquiry'}</td>
+                  <td style="padding:8px 0;color:#0a1428">${subject || 'General Inquiry'}</td>
                 </tr>
               </table>
               <div style="margin-top:20px;padding:16px;background:white;border:1px solid #e2e8f0;border-radius:8px">
                 <p style="margin:0 0 8px;font-size:13px;color:#64748b;font-weight:600">MESSAGE</p>
-                <p style="margin:0;font-size:14px;line-height:1.6;color:#0D1B2A;white-space:pre-wrap">${message}</p>
+                <p style="margin:0;font-size:14px;line-height:1.6;color:#0a1428;white-space:pre-wrap">${message}</p>
               </div>
               <p style="margin:20px 0 0;font-size:12px;color:#94a3b8">
                 Reply directly to this email to respond to ${name}.

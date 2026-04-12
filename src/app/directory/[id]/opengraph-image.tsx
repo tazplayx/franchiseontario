@@ -12,7 +12,7 @@ export default async function Image({ params }: { params: { id: string } }) {
     // Fallback generic image
     return new ImageResponse(
       (
-        <div style={{ background: '#0D1B2A', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ background: '#00228e', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
           <span style={{ color: '#fff', fontSize: 48, fontWeight: 900 }}>FranchiseOntario.com</span>
         </div>
       ),
@@ -32,7 +32,7 @@ export default async function Image({ params }: { params: { id: string } }) {
     (
       <div
         style={{
-          background: '#0D1B2A',
+          background: '#00228e',
           width: '100%',
           height: '100%',
           display: 'flex',
@@ -45,7 +45,7 @@ export default async function Image({ params }: { params: { id: string } }) {
       >
         {/* Top: site brand */}
         <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <div style={{ width: 36, height: 36, background: '#C8102E', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 900, color: '#fff' }}>F</div>
+          <div style={{ width: 36, height: 36, background: '#ff000d', borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, fontWeight: 900, color: '#fff' }}>F</div>
           <span style={{ color: '#6b7280', fontSize: 15, fontWeight: 600 }}>FranchiseOntario.com</span>
         </div>
 
@@ -57,7 +57,7 @@ export default async function Image({ params }: { params: { id: string } }) {
               width: 80,
               height: 80,
               borderRadius: 16,
-              background: franchise.logoBg || '#C8102E',
+              background: franchise.logoBg || '#ff000d',
               color: franchise.logoColor || '#fff',
               display: 'flex',
               alignItems: 'center',

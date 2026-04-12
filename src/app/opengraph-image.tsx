@@ -10,7 +10,7 @@ export default async function Image() {
     (
       <div
         style={{
-          background: '#0D1B2A',
+          background: '#00228e',
           width: '100%',
           height: '100%',
           display: 'flex',
@@ -27,7 +27,7 @@ export default async function Image() {
             style={{
               width: 52,
               height: 52,
-              background: '#C8102E',
+              background: '#ff000d',
               borderRadius: 10,
               display: 'flex',
               alignItems: 'center',
@@ -53,7 +53,7 @@ export default async function Image() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 900 }}>
           <div
             style={{
-              background: '#C8102E',
+              background: '#ff000d',
               color: '#fff',
               fontSize: 13,
               fontWeight: 700,
@@ -76,7 +76,7 @@ export default async function Image() {
             }}
           >
             Find Your Next{' '}
-            <span style={{ color: '#C8102E' }}>Franchise</span>
+            <span style={{ color: '#ff000d' }}>Franchise</span>
           </h1>
           <p style={{ color: '#9ca3af', fontSize: 24, margin: 0, lineHeight: 1.4 }}>
             Browse 332+ franchise listings · Compare investment levels ·<br />
