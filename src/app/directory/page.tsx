@@ -1,7 +1,7 @@
 'use client'
 import { useState, useMemo, useEffect, useRef } from 'react'
 import { useRouter } from 'next/navigation'
-import { Search, SlidersHorizontal, Crown, Zap, DollarSign, Filter, X, ArrowRight } from 'lucide-react'
+import { Search, SlidersHorizontal, Crown, DollarSign, Filter, X, ArrowRight } from 'lucide-react'
 import { franchises, categories } from '@/data/franchises'
 import type { Franchise, FranchiseTier } from '@/data/franchises'
 import FranchiseCard from '@/components/FranchiseCard'
@@ -419,104 +419,55 @@ export default function DirectoryPage() {
 
             {/* Investment filter */}
             <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
+              <label className="font-bold text-gray-900 text-sm mb-2 flex items-center gap-2">
                 <DollarSign size={14} className="text-green-500" />
                 Investment Budget
-              </h3>
-              <div className="space-y-1.5">
-                {investmentBrackets.map(({ key, label, sub }) => (
-                  <button
-                    key={key}
-                    onClick={() => setInvestment(key)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
-                      investment === key
-                        ? 'bg-red-600 text-white font-semibold'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    <div className="flex flex-col items-start">
-                      <span>{label}</span>
-                      {sub && <span className={`text-[10px] mt-0.5 ${investment === key ? 'text-red-100' : 'text-gray-400'}`}>{sub}</span>}
-                    </div>
-                    {investment === key && (
-                      <span className="text-white text-xs font-bold ml-2">✓</span>
-                    )}
-                  </button>
+              </label>
+              <select
+                value={investment}
+                onChange={(e) => setInvestment(e.target.value as InvestmentBracket)}
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-red-400 bg-white text-gray-700"
+              >
+                {investmentBrackets.map(({ key, label }) => (
+                  <option key={key} value={key}>{label}</option>
                 ))}
-              </div>
+              </select>
             </div>
 
             {/* Tier filter */}
             <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
+              <label className="font-bold text-gray-900 text-sm mb-2 flex items-center gap-2">
                 <Crown size={14} className="text-amber-500" />
                 Listing Tier
-              </h3>
-              <div className="space-y-1.5">
-                {(
-                  [
-                    { key: 'all', label: 'All Tiers', icon: null },
-                    { key: 'enterprise', label: 'Enterprise', icon: <Crown size={12} className="text-amber-500" /> },
-                    { key: 'premium', label: 'Premium', icon: <Zap size={12} className="text-blue-500" /> },
-                    { key: 'basic', label: 'Basic', icon: null },
-                  ] as { key: FranchiseTier | 'all'; label: string; icon: React.ReactNode }[]
-                ).map(({ key, label, icon }) => (
-                  <button
-                    key={key}
-                    onClick={() => setTier(key)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-lg text-sm transition-all ${
-                      tier === key
-                        ? 'bg-red-600 text-white font-semibold'
-                        : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      {icon}
-                      {label}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <span className={`text-xs ${tier === key ? 'text-red-100' : 'text-gray-400'}`}>
-                        {tierCounts[key]}
-                      </span>
-                      {tier === key && <span className="text-white text-xs font-bold">✓</span>}
-                    </div>
-                  </button>
-                ))}
-              </div>
+              </label>
+              <select
+                value={tier}
+                onChange={(e) => setTier(e.target.value as FranchiseTier | 'all')}
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-red-400 bg-white text-gray-700"
+              >
+                <option value="all">All Tiers ({tierCounts.all})</option>
+                <option value="enterprise">Enterprise ({tierCounts.enterprise})</option>
+                <option value="premium">Premium ({tierCounts.premium})</option>
+                <option value="basic">Basic ({tierCounts.basic})</option>
+              </select>
             </div>
 
             {/* Category filter */}
             <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <h3 className="font-bold text-gray-900 text-sm mb-3 flex items-center gap-2">
+              <label className="font-bold text-gray-900 text-sm mb-2 flex items-center gap-2">
                 <SlidersHorizontal size={14} className="text-gray-400" />
                 Category
-              </h3>
-              <div className="space-y-1">
-                <button
-                  onClick={() => setCategory('all')}
-                  className={`w-full flex items-center justify-between text-left px-3 py-1.5 rounded-lg text-sm transition-all ${
-                    category === 'all' ? 'bg-red-600 text-white font-semibold' : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <span>All Categories</span>
-                  {category === 'all' && <span className="text-white text-xs font-bold">✓</span>}
-                </button>
+              </label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full text-sm border border-gray-200 rounded-lg px-3 py-2 outline-none focus:border-red-400 bg-white text-gray-700"
+              >
+                <option value="all">All Categories</option>
                 {categories.map((cat) => (
-                  <button
-                    key={cat.name}
-                    onClick={() => setCategory(cat.name)}
-                    className={`w-full flex items-center justify-between text-left px-3 py-1.5 rounded-lg text-sm transition-all ${
-                      category === cat.name ? 'bg-red-600 text-white font-semibold' : 'text-gray-600 hover:bg-gray-50'
-                    }`}
-                  >
-                    <span className="flex items-center gap-2">
-                      <span>{cat.icon}</span>
-                      <span>{cat.name}</span>
-                    </span>
-                    {category === cat.name && <span className="text-white text-xs font-bold shrink-0">✓</span>}
-                  </button>
+                  <option key={cat.name} value={cat.name}>{cat.icon} {cat.name}</option>
                 ))}
-              </div>
+              </select>
             </div>
 
             {/* Quiz CTA */}
