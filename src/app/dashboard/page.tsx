@@ -1676,6 +1676,12 @@ export default function DashboardPage() {
       setRealSession(session)
       setLeadCount(getLeads(session.franchiseId).filter((l) => !l.read).length)
       setLoggedIn(true)
+      // Honour ?tab= from nav dropdown links
+      const tabParam = params.get('tab') as ActiveTab | null
+      if (tabParam && ['leads', 'listing', 'billing', 'support'].includes(tabParam)) {
+        setActiveTab(tabParam)
+        window.history.replaceState({}, '', '/dashboard')
+      }
       return
     }
     // Fall back to demo session
