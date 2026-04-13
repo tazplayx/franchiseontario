@@ -604,9 +604,15 @@ export default function ClientListingBody({ seed }: { seed: Franchise }) {
               </div>
               <p className="text-red-100 text-xs mb-4 leading-relaxed">Request the official franchise information package directly from {f.name}.</p>
               <div className="space-y-2.5 mb-4">
-                <a href={`mailto:${f.email}`} className="flex items-center gap-2 text-sm text-red-100 hover:text-white transition-colors"><Mail size={14} />{f.email}</a>
-                <a href={`tel:${f.phone}`} className="flex items-center gap-2 text-sm text-red-100 hover:text-white transition-colors"><Phone size={14} />{f.phone}</a>
-                <a href={f.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-red-100 hover:text-white transition-colors"><Globe size={14} />{f.website.replace('https://', '')}</a>
+                {f.email && f.email !== 'See website' && (
+                  <a href={`mailto:${f.email}`} className="flex items-center gap-2 text-sm text-red-100 hover:text-white transition-colors"><Mail size={14} />{f.email}</a>
+                )}
+                {f.phone && f.phone !== 'See website' && (
+                  <a href={`tel:${f.phone}`} className="flex items-center gap-2 text-sm text-red-100 hover:text-white transition-colors"><Phone size={14} />{f.phone}</a>
+                )}
+                {f.website && (
+                  <a href={f.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-red-100 hover:text-white transition-colors"><Globe size={14} />{f.website.replace('https://', '')}</a>
+                )}
               </div>
               <ClientLeadSection franchiseId={seed.id} franchiseName={f.name} />
             </div>

@@ -6,7 +6,7 @@ import {
   Pencil, Trash2, X, Save, AlertTriangle, CheckCircle,
   ExternalLink, Star, Crown, TrendingUp, Eye, Loader2,
   Users, Mail, Phone, MapPin, DollarSign, MessageSquare,
-  Clock, Lock, Zap,
+  Clock, Lock, Zap, Download, Receipt,
 } from 'lucide-react'
 import {
   getUserFranchiseOverrides,
@@ -1004,6 +1004,35 @@ function BillingTab({ session, successPlan }: { session: FranchisorSession | nul
   const [downgraded, setDowngraded] = useState(false)
   const [portalLoading, setPortalLoading] = useState(false)
 
+  type StripeInvoice = {
+    id: string
+    number: string | null
+    created: number
+    amount_paid: number
+    currency: string
+    status: string | null
+    hosted_invoice_url: string | null
+    invoice_pdf: string | null
+    period_start: number
+    period_end: number
+  }
+  const [invoices, setInvoices] = useState<StripeInvoice[]>([])
+  const [invoicesLoading, setInvoicesLoading] = useState(false)
+  const [invoicesError, setInvoicesError] = useState('')
+
+  useEffect(() => {
+    if (!session || currentTier === 'basic') return
+    setInvoicesLoading(true)
+    fetch(`/api/stripe/invoices?email=${encodeURIComponent(session.email)}`)
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.invoices) setInvoices(data.invoices)
+        else setInvoicesError('Could not load invoices.')
+      })
+      .catch(() => setInvoicesError('Could not load invoices.'))
+      .finally(() => setInvoicesLoading(false))
+  }, [session, currentTier])
+
   const handleOpenPortal = async () => {
     if (!session) return
     setPortalLoading(true)
@@ -1238,9 +1267,96 @@ function BillingTab({ session, successPlan }: { session: FranchisorSession | nul
         </div>
       )}
 
+      {/* Invoice history */}
+      {!isDemo && session && currentTier !== 'basic' && (
+        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mt-5">
+          <div className="flex items-center gap-2 mb-1">
+            <Receipt size={15} className="text-gray-500" />
+            <h3 className="font-bold text-gray-900 text-sm">Billing History</h3>
+          </div>
+          <p className="text-xs text-gray-400 mb-4">Your monthly invoices and receipts. Click Download to save a PDF copy.</p>
+
+          {invoicesLoading && (
+            <div className="flex items-center gap-2 text-sm text-gray-400 py-4">
+              <Loader2 size={14} className="animate-spin" /> Loading invoices…
+            </div>
+          )}
+
+          {invoicesError && !invoicesLoading && (
+            <p className="text-xs text-red-500">{invoicesError}</p>
+          )}
+
+          {!invoicesLoading && !invoicesError && invoices.length === 0 && (
+            <p className="text-sm text-gray-400 py-2">No invoices yet — your first invoice will appear here after your initial billing cycle.</p>
+          )}
+
+          {!invoicesLoading && invoices.length > 0 && (
+            <div className="overflow-x-auto -mx-6">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-gray-100">
+                    <th className="text-left px-6 py-2.5 text-xs font-bold text-gray-400 uppercase tracking-wider">Date</th>
+                    <th className="text-left px-4 py-2.5 text-xs font-bold text-gray-400 uppercase tracking-wider hidden sm:table-cell">Invoice #</th>
+                    <th className="text-left px-4 py-2.5 text-xs font-bold text-gray-400 uppercase tracking-wider">Amount</th>
+                    <th className="text-left px-4 py-2.5 text-xs font-bold text-gray-400 uppercase tracking-wider hidden sm:table-cell">Status</th>
+                    <th className="px-4 py-2.5"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-50">
+                  {invoices.map((inv) => {
+                    const date = new Date(inv.created * 1000).toLocaleDateString('en-CA', { year: 'numeric', month: 'short', day: 'numeric' })
+                    const amount = `$${(inv.amount_paid / 100).toFixed(2)} ${inv.currency.toUpperCase()}`
+                    return (
+                      <tr key={inv.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-3 text-gray-700 text-xs">{date}</td>
+                        <td className="px-4 py-3 text-gray-500 text-xs hidden sm:table-cell">{inv.number ?? '—'}</td>
+                        <td className="px-4 py-3 font-semibold text-gray-900 text-xs">{amount}</td>
+                        <td className="px-4 py-3 hidden sm:table-cell">
+                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                            inv.status === 'paid' ? 'bg-green-100 text-green-700' :
+                            inv.status === 'open' ? 'bg-amber-100 text-amber-700' :
+                            'bg-gray-100 text-gray-500'
+                          }`}>
+                            {inv.status ?? '—'}
+                          </span>
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <div className="flex items-center justify-end gap-2">
+                            {inv.hosted_invoice_url && (
+                              <a
+                                href={inv.hosted_invoice_url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1 transition-colors"
+                              >
+                                <Eye size={12} /> View
+                              </a>
+                            )}
+                            {inv.invoice_pdf && (
+                              <a
+                                href={inv.invoice_pdf}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-700 font-semibold px-2.5 py-1 rounded-lg flex items-center gap-1 transition-colors"
+                              >
+                                <Download size={11} /> PDF
+                              </a>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Confirm plan change modal */}
       {confirmTier && (
-        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => !processing && setConfirmTier(null)}>
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" onClick={() => { setConfirmTier(null); setCheckoutError(''); setProcessing(false) }}>
           <div className="bg-white rounded-2xl shadow-2xl p-7 max-w-sm w-full" onClick={(e) => e.stopPropagation()}>
             <h3 className="font-black text-gray-900 text-lg mb-1">
               {confirmTier === 'basic' ? 'Downgrade to Basic?' : 'Proceed to Payment'}
@@ -1256,9 +1372,8 @@ function BillingTab({ session, successPlan }: { session: FranchisorSession | nul
             )}
             <div className="flex gap-3">
               <button
-                onClick={() => { setConfirmTier(null); setCheckoutError('') }}
-                disabled={processing}
-                className="flex-1 border border-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors disabled:opacity-50"
+                onClick={() => { setConfirmTier(null); setCheckoutError(''); setProcessing(false) }}
+                className="flex-1 border border-gray-200 text-gray-700 font-semibold py-2.5 rounded-xl text-sm hover:bg-gray-50 transition-colors"
               >
                 Cancel
               </button>
