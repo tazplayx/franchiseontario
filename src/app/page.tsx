@@ -502,7 +502,7 @@ function PricingPromo() {
 /* ── Editorial Feature ───────────────────────────────────────── */
 function EditorialFeature() {
   return (
-    <section className="py-24 bg-white border-b" style={{ borderColor: 'var(--border)' }}>
+    <section className="py-24 bg-white border-b overflow-hidden" style={{ borderColor: 'var(--border)' }}>
       <div className="max-w-7xl mx-auto px-6 sm:px-10 lg:px-14">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
           <SlideInLeft>
@@ -513,7 +513,7 @@ function EditorialFeature() {
                 containerClassName="photo-card h-full"
                 strength={0.08}
               />
-              <div className="flex flex-col gap-4">
+              <div className="flex flex-col gap-4" style={{ height: '500px' }}>
                 <ParallaxImage
                   src="https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=600&q=80"
                   alt="Business meeting"
@@ -523,7 +523,7 @@ function EditorialFeature() {
                 <ParallaxImage
                   src="https://images.unsplash.com/photo-1559136555-9303baea8ebd?auto=format&fit=crop&w=600&q=80"
                   alt="Entrepreneur"
-                  containerClassName="photo-card"
+                  containerClassName="photo-card flex-1"
                   strength={0.06}
                 />
               </div>
