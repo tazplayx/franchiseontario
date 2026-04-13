@@ -122,14 +122,14 @@ function Hero() {
 
         {/* Right — parallax photo */}
         <FadeIn delay={0.2} className="hidden lg:block">
-          <ParallaxImage
-            src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=900&q=85"
-            alt="Franchise owners celebrating their business investment"
-            containerClassName="photo-card"
-            className=""
-            strength={0.1}
-          />
-          <style>{`.photo-card { height: 600px; }`}</style>
+          <div style={{ height: '600px' }}>
+            <ParallaxImage
+              src="https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&w=900&q=85"
+              alt="Franchise owners celebrating their business investment"
+              containerClassName="photo-card h-full"
+              strength={0.1}
+            />
+          </div>
         </FadeIn>
       </div>
 
@@ -525,9 +525,7 @@ function EditorialFeature() {
                   alt="Entrepreneur"
                   containerClassName="photo-card"
                   strength={0.06}
-                  className=""
                 />
-                <style>{`.photo-card { border-radius: 1.25rem; overflow: hidden; }`}</style>
               </div>
             </div>
           </SlideInLeft>
