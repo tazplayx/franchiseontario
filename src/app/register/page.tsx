@@ -632,7 +632,7 @@ export default function RegisterPage() {
                 }}
                 className="flex-[2] btn-red py-3 rounded-xl font-bold text-sm"
               >
-                Review & Pay →
+                {selectedPlan === 'basic' ? 'Review →' : 'Review & Pay →'}
               </button>
             </div>
           </div>
