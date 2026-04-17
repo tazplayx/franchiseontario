@@ -1,5 +1,6 @@
 import { MetadataRoute } from 'next'
 import { franchises } from '@/data/franchises'
+import { blogPosts } from '@/data/blog-posts'
 
 const BASE = 'https://www.franchiseontario.com'
 
@@ -15,7 +16,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/directory`, priority: 0.95, changeFrequency: 'daily' as const },
     { url: `${BASE}/quiz`, priority: 0.9, changeFrequency: 'monthly' as const },
     { url: `${BASE}/ontario`, priority: 0.9, changeFrequency: 'weekly' as const },
-    { url: `${BASE}/news`, priority: 0.9, changeFrequency: 'daily' as const },
+    { url: `${BASE}/insights`, priority: 0.9, changeFrequency: 'daily' as const },
     { url: `${BASE}/resources`, priority: 0.85, changeFrequency: 'weekly' as const },
     { url: `${BASE}/categories`, priority: 0.8, changeFrequency: 'weekly' as const },
     { url: `${BASE}/compare`, priority: 0.75, changeFrequency: 'weekly' as const },
@@ -33,6 +34,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: 'weekly' as const,
   }))
 
+  const blogPages = blogPosts.map((p) => ({
+    url: `${BASE}/insights/${p.id}`,
+    priority: 0.8,
+    changeFrequency: 'monthly' as const,
+  }))
+
   const cityPages = ontarioCities.map((city) => ({
     url: `${BASE}/ontario/${city}`,
     priority: city === 'toronto' || city === 'ottawa' ? 0.85 : 0.75,
@@ -40,6 +47,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
   }))
 
   return [
+    ...blogPages.map((p) => ({
+      url: p.url,
+      lastModified: new Date(),
+      changeFrequency: p.changeFrequency,
+      priority: p.priority,
+    })),
     ...staticPages.map((p) => ({
       url: p.url,
       lastModified: new Date(),

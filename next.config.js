@@ -9,6 +9,21 @@ const nextConfig = {
     ],
   },
 
+  async redirects() {
+    return [
+      {
+        source: '/news',
+        destination: '/insights',
+        permanent: true,
+      },
+      {
+        source: '/news/:path*',
+        destination: '/insights/:path*',
+        permanent: true,
+      },
+    ]
+  },
+
   async headers() {
     return [
       {

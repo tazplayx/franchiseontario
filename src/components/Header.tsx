@@ -78,7 +78,7 @@ export default function Header() {
     { href: '/',          label: 'Home' },
     { href: '/directory', label: 'Directory' },
     { href: '/categories',label: 'Categories' },
-    { href: '/news',      label: 'News', dot: true },
+    { href: '/insights',  label: 'Insights', dot: true },
     { href: '/resources', label: 'Resources' },
     { href: '/faq',       label: 'FAQ' },
   ]
@@ -244,7 +244,7 @@ export default function Header() {
               { href: '/directory', label: 'Directory' },
               { href: '/ontario',   label: '🍁 Ontario Cities' },
               { href: '/categories',label: 'Categories' },
-              { href: '/news',      label: 'News' },
+              { href: '/insights',  label: 'Insights ✨' },
               { href: '/resources', label: 'Buyer Resources' },
               { href: '/faq',       label: 'FAQ' },
               { href: '/pricing',   label: 'Pricing' },

@@ -90,7 +90,7 @@ export default function Footer() {
                 ['Arthur Wishart Act',       '/resources#arthur-wishart'],
                 ['Financing Sources',        '/resources#financing'],
                 ['FAQ',                      '/faq'],
-                ['Franchise News',           '/news'],
+                ['Franchise Insights',        '/insights'],
               ].map(([label, href]) => (
                 <li key={label}>
                   <Link href={href} className="transition-colors hover:text-white" style={{ color: 'rgba(255,255,255,0.55)' }}>
