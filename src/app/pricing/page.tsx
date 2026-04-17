@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Check, ArrowRight } from 'lucide-react'
+import JsonLd from '@/components/JsonLd'
 
 export const metadata: Metadata = {
   title: 'Franchise Listing Plans & Pricing — List in Ontario & Across Canada',
@@ -100,9 +101,73 @@ const plans = [
   },
 ]
 
+const pricingSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebPage',
+  '@id': 'https://www.franchiseontario.com/pricing#webpage',
+  name: 'Franchise Listing Plans & Pricing — FranchiseOntario.com',
+  url: 'https://www.franchiseontario.com/pricing',
+  description: "List your Ontario or Canadian franchise for free, or upgrade to Premium ($79/mo) or Enterprise ($199/mo).",
+  breadcrumb: {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.franchiseontario.com' },
+      { '@type': 'ListItem', position: 2, name: 'Pricing', item: 'https://www.franchiseontario.com/pricing' },
+    ],
+  },
+  mainEntity: {
+    '@type': 'ItemList',
+    name: 'Franchise Listing Plans',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        item: {
+          '@type': 'Offer',
+          name: 'Basic Listing',
+          description: 'Free franchise profile listing on FranchiseOntario.com — visible across Ontario and Canada.',
+          price: '0',
+          priceCurrency: 'CAD',
+          eligibleRegion: { '@type': 'Place', name: 'Ontario, Canada' },
+          seller: { '@type': 'Organization', name: 'FranchiseOntario.com' },
+        },
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        item: {
+          '@type': 'Offer',
+          name: 'Premium Listing',
+          description: 'Priority placement, photo gallery, highlights section, analytics, and premium badge. $79/month.',
+          price: '79',
+          priceCurrency: 'CAD',
+          billingIncrement: 'P1M',
+          eligibleRegion: { '@type': 'Place', name: 'Ontario, Canada' },
+          seller: { '@type': 'Organization', name: 'FranchiseOntario.com' },
+        },
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        item: {
+          '@type': 'Offer',
+          name: 'Enterprise Listing',
+          description: 'Top-of-category placement, VIP badge, dedicated account manager, press releases, unlimited photos, and full brand profile. $199/month.',
+          price: '199',
+          priceCurrency: 'CAD',
+          billingIncrement: 'P1M',
+          eligibleRegion: { '@type': 'Place', name: 'Ontario, Canada' },
+          seller: { '@type': 'Organization', name: 'FranchiseOntario.com' },
+        },
+      },
+    ],
+  },
+}
+
 export default function PricingPage() {
   return (
     <div className="min-h-screen bg-gray-50">
+      <JsonLd data={pricingSchema} />
       {/* Header */}
       <div className="bg-white border-b border-gray-100 py-16 text-center">
         <div className="max-w-3xl mx-auto px-4">

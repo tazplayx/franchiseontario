@@ -123,7 +123,12 @@ const organizationSchema = {
     areaServed: 'CA-ON',
     availableLanguage: 'English',
   },
-  sameAs: ['https://github.com/tazplayx/franchiseontario'],
+  sameAs: [
+    'https://github.com/tazplayx/franchiseontario',
+    'https://www.linkedin.com/company/franchiseontario',
+    'https://twitter.com/FranchiseON',
+    'https://www.crunchbase.com/organization/franchiseontario',
+  ],
 }
 
 const websiteSchema = {

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import Link from 'next/link'
 import { TrendingUp, Star, MapPin } from 'lucide-react'
 import { franchises, categories } from '@/data/franchises'
+import JsonLd from '@/components/JsonLd'
 
 export const metadata: Metadata = {
   title: 'Ontario Franchise Categories — Browse by Industry',
@@ -13,6 +14,32 @@ export const metadata: Metadata = {
     title: 'Ontario Franchise Categories — Browse by Industry',
     description: 'Find franchise opportunities in your preferred industry across Ontario, Canada.',
     url: 'https://www.franchiseontario.com/categories',
+  },
+}
+
+const categoriesSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  '@id': 'https://www.franchiseontario.com/categories#webpage',
+  name: 'Ontario Franchise Categories — Browse by Industry',
+  url: 'https://www.franchiseontario.com/categories',
+  description: 'Browse Ontario franchise opportunities by industry category.',
+  breadcrumb: {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://www.franchiseontario.com' },
+      { '@type': 'ListItem', position: 2, name: 'Categories', item: 'https://www.franchiseontario.com/categories' },
+    ],
+  },
+  about: {
+    '@type': 'ItemList',
+    name: 'Franchise Industry Categories in Ontario',
+    itemListElement: categories.map((cat, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: cat.name,
+      url: `https://www.franchiseontario.com/directory?category=${encodeURIComponent(cat.name)}`,
+    })),
   },
 }
 
@@ -30,6 +57,7 @@ export default function CategoriesPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <JsonLd data={categoriesSchema} />
       {/* Header */}
       <div className="bg-white border-b border-gray-100 py-14 text-center">
         <div className="max-w-3xl mx-auto px-4">

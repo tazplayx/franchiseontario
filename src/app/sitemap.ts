@@ -23,6 +23,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { url: `${BASE}/faq`, priority: 0.75, changeFrequency: 'weekly' as const },
     { url: `${BASE}/register`, priority: 0.7, changeFrequency: 'monthly' as const },
     { url: `${BASE}/support`, priority: 0.6, changeFrequency: 'monthly' as const },
+    { url: `${BASE}/privacy`, priority: 0.5, changeFrequency: 'yearly' as const },
+    { url: `${BASE}/terms`, priority: 0.5, changeFrequency: 'yearly' as const },
   ]
 
   const franchisePages = franchises.map((f) => ({
