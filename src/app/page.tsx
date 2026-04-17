@@ -112,7 +112,7 @@ function Hero() {
                 { value: '$2B+', label: 'In Opportunities' },
               ].map((stat) => (
                 <div key={stat.label} className="border-l-2 pl-3" style={{ borderColor: 'var(--gold)' }}>
-                  <div className="text-2xl font-bold leading-none" style={{ color: 'var(--rust-deep)', fontFamily: 'DM Sans, sans-serif' }}>{stat.value}</div>
+                  <div className="text-2xl font-bold leading-none" style={{ color: 'var(--rust-deep)', fontFamily: 'Bricolage Grotesque, system-ui, sans-serif' }}>{stat.value}</div>
                   <div className="text-[11px] mt-1 font-semibold leading-tight" style={{ color: 'var(--text-muted)' }}>{stat.label}</div>
                 </div>
               ))}
@@ -156,7 +156,7 @@ function StatsBar() {
             {stats.map((s) => (
               <StaggerItem key={s.label}>
                 <div className="px-6 py-6 text-center">
-                  <div className="text-2xl lg:text-3xl font-black text-white mb-1" style={{ fontFamily: 'DM Sans, sans-serif' }}>{s.value}</div>
+                  <div className="text-2xl lg:text-3xl font-black text-white mb-1" style={{ fontFamily: 'Bricolage Grotesque, system-ui, sans-serif' }}>{s.value}</div>
                   <div className="text-[11px] font-semibold uppercase tracking-wider" style={{ color: 'rgba(229,193,133,0.75)' }}>{s.label}</div>
                 </div>
               </StaggerItem>
