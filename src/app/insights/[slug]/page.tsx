@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { Clock, ArrowLeft, Tag, ArrowRight } from 'lucide-react'
 import JsonLd from '@/components/JsonLd'
+import ShareButtons from '@/components/ShareButtons'
 import { blogPosts } from '@/data/blog-posts'
 import type { Metadata } from 'next'
 
@@ -153,11 +154,17 @@ export default function BlogPostPage({ params }: { params: { slug: string } }) {
             </div>
           </div>
 
+          {/* Share — top (before content) */}
+          <ShareButtons url={`/insights/${post.id}`} title={post.title} />
+
           {/* Article content */}
           <div
             className="blog-content"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />
+
+          {/* Share — bottom (after content) */}
+          <ShareButtons url={`/insights/${post.id}`} title={post.title} />
 
           {/* Tags */}
           <div className="mt-10 pt-6 border-t border-gray-100">
