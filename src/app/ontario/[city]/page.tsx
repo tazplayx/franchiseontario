@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import { MapPin, TrendingUp, Users, ArrowRight, ChevronRight, Building2 } from 'lucide-react'
 import JsonLd from '@/components/JsonLd'
-import { franchises } from '@/data/franchises'
+import { franchises, categories } from '@/data/franchises'
+import { getCategorySlug } from '@/lib/seo/queries'
 
 const BASE = 'https://www.franchiseontario.com'
 
@@ -458,6 +459,25 @@ export default function CityPage({ params }: { params: { city: string } }) {
               <Link href="/quiz" className="block text-center bg-white text-red-600 font-bold text-xs py-2 rounded-lg hover:bg-red-50 transition-colors">
                 Take the Franchise Fit Quiz →
               </Link>
+            </div>
+
+            {/* Browse by Category */}
+            <div className="bg-white rounded-2xl border border-gray-200 p-5">
+              <h3 className="font-bold text-gray-900 text-sm mb-3">Browse by Category in {city.name}</h3>
+              <div className="flex flex-wrap gap-2">
+                {categories.slice(0, 10).map((cat) => (
+                  <Link
+                    key={cat.name}
+                    href={`/franchises/${params.city}/${getCategorySlug(cat.name)}`}
+                    className="flex items-center gap-1 bg-gray-50 border border-gray-200 text-gray-600 text-[11px] font-medium px-2.5 py-1 rounded-full hover:border-red-300 hover:text-red-600 transition-all"
+                  >
+                    {cat.icon} {cat.name}
+                  </Link>
+                ))}
+                <Link href={`/ontario/${params.city}`} className="text-[11px] text-red-600 font-medium self-center mt-1 hover:underline">
+                  All categories →
+                </Link>
+              </div>
             </div>
 
             {/* Other Cities */}

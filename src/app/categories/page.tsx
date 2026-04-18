@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { TrendingUp, Star, MapPin } from 'lucide-react'
 import { franchises, categories } from '@/data/franchises'
 import JsonLd from '@/components/JsonLd'
+import { getCategorySlug } from '@/lib/seo/queries'
 
 export const metadata: Metadata = {
   title: 'Ontario Franchise Categories — Browse by Industry',
@@ -134,7 +135,7 @@ export default function CategoriesPage() {
                   </div>
                 </div>
                 <Link
-                  href={`/directory?category=${encodeURIComponent(cat.name)}`}
+                  href={`/franchises/category/${getCategorySlug(cat.name)}`}
                   className="hidden sm:flex items-center gap-1 text-xs font-semibold px-3 py-1.5 rounded-lg border"
                   style={{ color: cat.color, borderColor: `${cat.color}40`, background: `${cat.color}10` }}
                 >

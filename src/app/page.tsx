@@ -3,10 +3,12 @@ import Link from 'next/link'
 import {
   Search, TrendingUp, Award, Zap, Star, ArrowRight, Crown, ChevronRight,
   Newspaper, BarChart3, MapPin, Users, Sparkles, CheckCircle, Leaf,
-  ShieldCheck, Target,
+  ShieldCheck, Target, DollarSign,
 } from 'lucide-react'
 import { franchises, categories, getTopRanked } from '@/data/franchises'
 import { tickerItems, newsArticles } from '@/data/news'
+import { INVESTMENT_TIERS } from '@/lib/seo/data'
+import { getCategorySlug } from '@/lib/seo/queries'
 import FranchiseCard from '@/components/FranchiseCard'
 import JsonLd from '@/components/JsonLd'
 import HeroSearch from '@/components/HeroSearch'
@@ -218,7 +220,7 @@ function CategoryGrid() {
         <StaggerGroup className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3">
           {categories.map((cat) => (
             <StaggerItem key={cat.name}>
-              <Link href={`/categories?cat=${encodeURIComponent(cat.name)}`}
+              <Link href={`/franchises/category/${getCategorySlug(cat.name)}`}
                 className="group bg-white p-3 text-center border border-[#e8ddd5] transition-all card-hover hover:border-[#c7522a] hover:bg-[#fdeee7] block"
                 style={{ borderRadius: '1.25rem' }}>
                 <div className="w-10 h-10 rounded-xl mx-auto mb-2 flex items-center justify-center text-xl group-hover:scale-110 transition-transform" style={{ background: cat.bg }}>
@@ -330,6 +332,42 @@ function OntarioCities() {
   )
 }
 
+/* ── Invest by Budget ───────────────────────────────────────── */
+function InvestByBudget() {
+  return (
+    <section className="py-16 bg-white border-b" style={{ borderColor: 'var(--border)' }}>
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <FadeUp>
+          <div className="flex items-center justify-between mb-8">
+            <div>
+              <p className="section-label mb-1"><DollarSign size={10} /> Browse by Budget</p>
+              <h2 className="text-2xl font-bold" style={{ color: 'var(--rust-deep)' }}>Find Your Investment Range</h2>
+            </div>
+            <Link href="/directory" className="text-sm font-medium flex items-center gap-1 hidden sm:flex" style={{ color: 'var(--rust)' }}>
+              All Franchises <ChevronRight size={14} />
+            </Link>
+          </div>
+        </FadeUp>
+        <StaggerGroup className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {INVESTMENT_TIERS.map((tier) => (
+            <StaggerItem key={tier.slug}>
+              <Link
+                href={`/franchises/invest/${tier.slug}`}
+                className="group bg-white p-4 text-center border transition-all card-hover block"
+                style={{ borderRadius: '1.25rem', borderColor: 'var(--border)' }}
+              >
+                <div className="text-2xl mb-2">{tier.icon}</div>
+                <p className="text-xs font-bold mb-0.5" style={{ color: 'var(--rust-deep)' }}>{tier.label}</p>
+                <p className="text-[10px] leading-snug" style={{ color: 'var(--text-muted)' }}>{tier.shortDesc}</p>
+              </Link>
+            </StaggerItem>
+          ))}
+        </StaggerGroup>
+      </div>
+    </section>
+  )
+}
+
 /* ── Latest News ─────────────────────────────────────────────── */
 function LatestNews() {
   const featured = newsArticles.find((a) => a.isFeatured)!
@@ -348,7 +386,7 @@ function LatestNews() {
               </div>
               <h2 className="text-3xl md:text-4xl font-bold" style={{ color: 'var(--rust-deep)' }}>Franchise News — Ontario & Canada</h2>
             </div>
-            <Link href="/news" className="hidden sm:flex items-center gap-1 text-sm font-medium" style={{ color: 'var(--rust)' }}>
+            <Link href="/insights" className="hidden sm:flex items-center gap-1 text-sm font-medium" style={{ color: 'var(--rust)' }}>
               All News <ArrowRight size={14} />
             </Link>
           </div>
@@ -411,7 +449,7 @@ function LatestNews() {
                   </div>
                 </a>
               ))}
-              <Link href="/news" className="block text-center text-sm font-medium py-2" style={{ color: 'var(--rust)' }}>View All News →</Link>
+              <Link href="/insights" className="block text-center text-sm font-medium py-2" style={{ color: 'var(--rust)' }}>View All News →</Link>
             </div>
           </SlideInRight>
         </div>
@@ -642,6 +680,7 @@ export default function HomePage() {
       <ClientFeaturedSpotlight />
       <QuizCTA />
       <OntarioCities />
+      <InvestByBudget />
       <CategoryGrid />
       <ClientTopRanked />
       <EditorialFeature />

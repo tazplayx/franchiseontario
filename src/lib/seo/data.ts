@@ -87,6 +87,8 @@ export interface InvestmentTier {
   max: number | null
   headline: string
   description: string
+  icon: string
+  shortDesc: string
 }
 
 export const INVESTMENT_TIERS: InvestmentTier[] = [
@@ -97,6 +99,8 @@ export const INVESTMENT_TIERS: InvestmentTier[] = [
     max: 50000,
     headline: 'Low-Investment Franchise Opportunities in Ontario',
     description: 'Franchise opportunities in Ontario with a total investment under $50,000. These home-based, mobile, or service-based concepts let you enter franchising with minimal upfront capital.',
+    icon: '💡',
+    shortDesc: 'Home-based, mobile & service concepts',
   },
   {
     slug: 'under-100k',
@@ -105,6 +109,8 @@ export const INVESTMENT_TIERS: InvestmentTier[] = [
     max: 100000,
     headline: 'Franchise Opportunities in Ontario Under $100K',
     description: 'Browse Ontario franchises available for a total investment under $100,000 — from service businesses and mobile concepts to boutique retail and tutoring centres.',
+    icon: '🌱',
+    shortDesc: 'Service, mobile & boutique retail',
   },
   {
     slug: '100k-to-250k',
@@ -113,6 +119,8 @@ export const INVESTMENT_TIERS: InvestmentTier[] = [
     max: 250000,
     headline: 'Ontario Franchise Opportunities: $100K to $250K',
     description: 'Mid-range franchise investments between $100,000 and $250,000 — typically covering fitness studios, home services, specialty food, and professional service franchises.',
+    icon: '⚡',
+    shortDesc: 'Fitness, food & professional services',
   },
   {
     slug: '250k-to-500k',
@@ -121,6 +129,8 @@ export const INVESTMENT_TIERS: InvestmentTier[] = [
     max: 500000,
     headline: 'Ontario Franchise Investments: $250K to $500K',
     description: 'Established franchise brands in Ontario requiring an investment between $250,000 and $500,000, including QSR, casual dining, fitness, and multi-service concepts.',
+    icon: '🏆',
+    shortDesc: 'QSR, casual dining & multi-service',
   },
   {
     slug: 'over-500k',
@@ -129,6 +139,8 @@ export const INVESTMENT_TIERS: InvestmentTier[] = [
     max: null,
     headline: 'Premium Ontario Franchise Opportunities — $500K+',
     description: 'Ontario\'s highest-tier franchise investments above $500,000 — covering full-service restaurants, large-format retail, enterprise service brands, and flagship franchise locations.',
+    icon: '👑',
+    shortDesc: 'Full-service restaurants & enterprise brands',
   },
 ]
 
