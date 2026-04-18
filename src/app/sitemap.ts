@@ -1,6 +1,8 @@
 import { MetadataRoute } from 'next'
 import { franchises } from '@/data/franchises'
 import { blogPosts } from '@/data/blog-posts'
+import { ONTARIO_CITIES, INVESTMENT_TIERS } from '@/lib/seo/data'
+import { getAllCategoryParams, getCityCategoryParams } from '@/lib/seo/queries'
 
 const BASE = 'https://www.franchiseontario.com'
 
@@ -46,6 +48,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
     changeFrequency: 'weekly' as const,
   }))
 
+  // ── Programmatic SEO pages ───────────────────────────────────────────────
+  const seoInvestPages = INVESTMENT_TIERS.map((t) => ({
+    url: `${BASE}/franchises/invest/${t.slug}`,
+    priority: 0.8,
+    changeFrequency: 'weekly' as const,
+  }))
+
+  const seoCategoryPages = getAllCategoryParams().map(({ category }) => ({
+    url: `${BASE}/franchises/category/${category}`,
+    priority: 0.8,
+    changeFrequency: 'weekly' as const,
+  }))
+
+  const seoCityCategoryPages = getCityCategoryParams().map(({ city, category }) => ({
+    url: `${BASE}/franchises/${city}/${category}`,
+    priority: ONTARIO_CITIES.find((c) => c.slug === city)?.tier === 'major' ? 0.75 : 0.65,
+    changeFrequency: 'weekly' as const,
+  }))
+
   return [
     ...blogPages.map((p) => ({
       url: p.url,
@@ -66,6 +87,24 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: p.priority,
     })),
     ...cityPages.map((p) => ({
+      url: p.url,
+      lastModified: new Date(),
+      changeFrequency: p.changeFrequency,
+      priority: p.priority,
+    })),
+    ...seoInvestPages.map((p) => ({
+      url: p.url,
+      lastModified: new Date(),
+      changeFrequency: p.changeFrequency,
+      priority: p.priority,
+    })),
+    ...seoCategoryPages.map((p) => ({
+      url: p.url,
+      lastModified: new Date(),
+      changeFrequency: p.changeFrequency,
+      priority: p.priority,
+    })),
+    ...seoCityCategoryPages.map((p) => ({
       url: p.url,
       lastModified: new Date(),
       changeFrequency: p.changeFrequency,
