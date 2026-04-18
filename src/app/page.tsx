@@ -60,7 +60,7 @@ function Hero() {
   const categoryCount = new Set(franchises.map((f) => f.category)).size
 
   return (
-    <section className="relative overflow-hidden bg-white" style={{ minHeight: '88vh' }}>
+    <section className="relative overflow-hidden bg-white z-20" style={{ minHeight: '88vh' }}>
       {/* Top accent bar */}
       <div className="h-1 w-full" style={{ background: 'var(--rust)' }} />
 

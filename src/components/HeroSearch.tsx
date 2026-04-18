@@ -106,7 +106,7 @@ export default function HeroSearch() {
 
       {/* Live results dropdown */}
       {open && (brandResults.length > 0 || categoryResults.length > 0) && (
-        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-gray-200 shadow-2xl z-50 overflow-hidden">
+        <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-2xl border border-gray-200 shadow-2xl z-[200] overflow-hidden">
 
           {/* Category shortcuts */}
           {categoryResults.length > 0 && (
