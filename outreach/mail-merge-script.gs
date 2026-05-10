@@ -241,9 +241,9 @@ function sendOutreachBatch() {
     }
   }
 
-  // Log summary to console
+  // Log summary — view results in Apps Script > Execution log
   Logger.log(`\n=== OUTREACH BATCH COMPLETE ===\nSent: ${sentCount} emails\n\n${log.join('\n')}`);
-  SpreadsheetApp.getUi().alert(`Batch complete!\n\nSent: ${sentCount} emails\n\nCheck View > Logs for details.`);
+  console.log(`Batch done. Sent: ${sentCount}. Check Execution log for details.`);
 }
 
 // ─── SETUP DAILY TRIGGER ────────────────────────────────────────────────────
@@ -260,7 +260,7 @@ function setupTrigger() {
     .create();
 
   Logger.log('Daily trigger created — script will run every day at ~9am.');
-  SpreadsheetApp.getUi().alert('Daily trigger set! Emails will send automatically at 9am each day.');
+  console.log('Daily trigger set! Check Execution log to confirm.');
 }
 
 // ─── TEST SINGLE EMAIL ──────────────────────────────────────────────────────
@@ -280,7 +280,8 @@ function sendTestEmail() {
     replyTo  : REPLY_TO,
   });
 
-  SpreadsheetApp.getUi().alert(`Test email sent to ${TEST_EMAIL}! Check your inbox.`);
+  Logger.log(`Test email sent to ${TEST_EMAIL}! Check your inbox.`);
+  console.log(`Test email sent to ${TEST_EMAIL}`);
 }
 
 // ─── STATS DASHBOARD ────────────────────────────────────────────────────────
@@ -291,14 +292,14 @@ function showStats() {
   const headers = data[0].map(h => h.toString().trim().toLowerCase());
   const sentIdx = headers.indexOf('email_sent');
 
-  if (sentIdx === -1) { SpreadsheetApp.getUi().alert('No email_sent column found.'); return; }
+  if (sentIdx === -1) { Logger.log('No email_sent column found.'); return; }
 
   const total  = data.length - 1;
   const sent   = data.slice(1).filter(r => (r[sentIdx] || '').toString().toLowerCase() === 'true').length;
   const unsent = total - sent;
 
-  SpreadsheetApp.getUi().alert(
-    `📊 Outreach Stats\n\n` +
+  Logger.log(
+    `📊 Outreach Stats\n` +
     `Total contacts: ${total}\n` +
     `Emails sent:    ${sent}\n` +
     `Remaining:      ${unsent}\n` +
@@ -310,10 +311,6 @@ function showStats() {
 // Use carefully — clears all sent markers so you can re-send the campaign
 
 function resetSentStatus() {
-  const ui = SpreadsheetApp.getUi();
-  const confirm = ui.alert('⚠️ Reset all sent status?', 'This will clear all "email_sent" markers, allowing emails to be sent again to all contacts. Are you sure?', ui.ButtonSet.YES_NO);
-  if (confirm !== ui.Button.YES) return;
-
   const sheet   = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
   const data    = sheet.getDataRange().getValues();
   const headers = data[0].map(h => h.toString().trim().toLowerCase());
@@ -325,7 +322,7 @@ function resetSentStatus() {
     if (dateIdx !== -1) sheet.getRange(i + 1, dateIdx + 1).setValue('');
   }
 
-  ui.alert('Reset complete. All sent markers cleared.');
+  Logger.log('Reset complete. All sent markers cleared.');
 }
 
 // ─── HELPER FUNCTIONS ────────────────────────────────────────────────────────
