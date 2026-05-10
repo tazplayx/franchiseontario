@@ -16,6 +16,8 @@ export const metadata: Metadata = {
     shortcut: '/favicon.png',
     apple: '/favicon.png',
   },
+  manifest: '/manifest.json',
+  themeColor: '#ff000d',
   title: {
     default: "FranchiseOntario.com — Ontario-Focused. Canada-Wide Franchise Directory.",
     template: '%s | FranchiseOntario.com',

@@ -1,0 +1,43 @@
+{
+  "name": "FranchiseOntario.com",
+  "short_name": "FranchiseON",
+  "description": "Ontario's #1 franchise directory — browse 300+ Canadian franchise opportunities.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ff000d",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/favicon.png",
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo-icon.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any"
+    }
+  ],
+  "categories": ["business", "finance", "shopping"],
+  "lang": "en-CA",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "Browse Directory",
+      "short_name": "Directory",
+      "description": "Browse all Ontario franchise opportunities",
+      "url": "/directory",
+      "icons": [{ "src": "/favicon.png", "sizes": "any" }]
+    },
+    {
+      "name": "Franchise Fit Quiz",
+      "short_name": "Quiz",
+      "description": "Find your perfect franchise match",
+      "url": "/quiz",
+      "icons": [{ "src": "/favicon.png", "sizes": "any" }]
+    }
+  ]
+}
