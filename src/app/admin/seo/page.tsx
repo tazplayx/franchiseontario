@@ -4,7 +4,7 @@ import Link from 'next/link'
 import {
   Search, TrendingUp, MousePointerClick, Eye, ArrowUpRight,
   CheckCircle, AlertCircle, ExternalLink, RefreshCw, Info,
-  BarChart3, Globe, Zap,
+  BarChart3, Globe, Zap, Inbox,
 } from 'lucide-react'
 
 interface GscRow {

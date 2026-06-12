@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   LayoutDashboard, ListChecks, MessageSquare, Shield, LogOut, Building2,
   BarChart3, Users, Pencil, Trash2, X, Save, AlertTriangle, Plus,
-  KeyRound, Search, Crown, Zap,
+  KeyRound, Search, Crown, Zap, Inbox,
 } from 'lucide-react'
 import {
   getAccounts, updateAccount, resetAccountPassword, deleteAccount, registerAccount,
@@ -18,6 +18,7 @@ function AdminNav({ active }: { active: string }) {
     { label: 'Dashboard', href: '/admin/dashboard', icon: <LayoutDashboard size={16} /> },
     { label: 'Active Listings', href: '/admin/listings', icon: <Building2 size={16} /> },
     { label: 'Pending Listings', href: '/admin/franchises', icon: <ListChecks size={16} /> },
+    { label: 'All Leads', href: '/admin/leads', icon: <Inbox size={16} /> },
     { label: 'Claim Requests', href: '/admin/claims', icon: <Shield size={16} /> },
     { label: 'Support Tickets', href: '/admin/tickets', icon: <MessageSquare size={16} /> },
     { label: 'User Accounts', href: '/admin/users', icon: <Users size={16} /> },

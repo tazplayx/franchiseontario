@@ -91,6 +91,26 @@ export function updateLeadStatus(franchiseId: string, leadId: string, status: Le
   write(`${LEADS_PREFIX}${franchiseId}`, leads.map((l) => l.id === leadId ? { ...l, status, read: true } : l))
 }
 
+export function getAllLeads(): FranchiseLead[] {
+  if (typeof window === 'undefined') return []
+  const all: FranchiseLead[] = []
+  for (let i = 0; i < localStorage.length; i++) {
+    const key = localStorage.key(i)
+    if (key?.startsWith(LEADS_PREFIX)) {
+      try {
+        const leads = JSON.parse(localStorage.getItem(key) ?? '[]') as FranchiseLead[]
+        all.push(...leads)
+      } catch { /* skip corrupted keys */ }
+    }
+  }
+  return all.sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
+}
+
+export function deleteLeadById(franchiseId: string, leadId: string): void {
+  const leads = read<FranchiseLead[]>(`${LEADS_PREFIX}${franchiseId}`, [])
+  write(`${LEADS_PREFIX}${franchiseId}`, leads.filter((l) => l.id !== leadId))
+}
+
 // ── Franchisor accounts ────────────────────────────────────────────────────────
 
 function hashPassword(pw: string): string {
