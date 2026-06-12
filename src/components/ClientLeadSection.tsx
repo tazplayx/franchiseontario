@@ -6,6 +6,7 @@ import { addLead, getLeadCount, getAccountByFranchiseId, type FranchiseLead } fr
 interface Props {
   franchiseId: string
   franchiseName: string
+  franchiseEmail?: string
 }
 
 const BUDGETS = [
@@ -31,7 +32,7 @@ export function LeadCountBadge({ franchiseId }: { franchiseId: string }) {
 }
 
 // ── Contact Franchise button + modal ──────────────────────────────────────────
-export default function ClientLeadSection({ franchiseId, franchiseName }: Props) {
+export default function ClientLeadSection({ franchiseId, franchiseName, franchiseEmail }: Props) {
   const [open, setOpen] = useState(false)
   const [status, setStatus] = useState<'idle' | 'loading' | 'success'>('idle')
   const [count, setCount] = useState(0)
@@ -62,7 +63,7 @@ export default function ClientLeadSection({ franchiseId, franchiseName }: Props)
     addLead(lead)
     setCount((c) => c + 1)
 
-    // Notify owner via email (fire-and-forget)
+    // Notify owner + pitch franchise contact (fire-and-forget)
     const ownerAccount = getAccountByFranchiseId(franchiseId)
     fetch('/api/leads', {
       method: 'POST',
@@ -71,6 +72,7 @@ export default function ClientLeadSection({ franchiseId, franchiseName }: Props)
         lead: { name: form.name, email: form.email, phone: form.phone, city: form.city, investmentBudget: form.investmentBudget, message: form.message },
         ownerEmail: ownerAccount?.email ?? 'cdeneire@proton.me',
         franchiseName,
+        franchiseContactEmail: franchiseEmail,
       }),
     }).catch(() => {})
 

@@ -350,7 +350,7 @@ export default function ClientListingBody({ seed }: { seed: Franchise }) {
                   <Pencil size={14} /> Edit This Listing
                 </button>
               )}
-              <ClientLeadSection franchiseId={seed.id} franchiseName={f.name} />
+              <ClientLeadSection franchiseId={seed.id} franchiseName={f.name} franchiseEmail={f.email} />
               <a href={f.website} target="_blank" rel="noopener noreferrer" className="bg-white border border-gray-200 hover:border-gray-300 text-gray-700 px-6 py-2.5 rounded-xl font-semibold text-sm text-center transition-all">
                 Visit Website
               </a>
@@ -614,7 +614,7 @@ export default function ClientListingBody({ seed }: { seed: Franchise }) {
                   <a href={f.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-red-100 hover:text-white transition-colors"><Globe size={14} />{f.website.replace('https://', '')}</a>
                 )}
               </div>
-              <ClientLeadSection franchiseId={seed.id} franchiseName={f.name} />
+              <ClientLeadSection franchiseId={seed.id} franchiseName={f.name} franchiseEmail={f.email} />
             </div>
 
             {/* Arthur Wishart */}
