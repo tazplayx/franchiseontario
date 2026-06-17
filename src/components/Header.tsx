@@ -80,6 +80,7 @@ export default function Header() {
     { href: '/categories',label: 'Categories' },
     { href: '/insights',  label: 'Insights', dot: true },
     { href: '/resources', label: 'Resources' },
+    { href: '/manuals',   label: 'Manuals', dot: true },
     { href: '/faq',       label: 'FAQ' },
   ]
 
