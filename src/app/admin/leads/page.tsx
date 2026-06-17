@@ -7,7 +7,7 @@ import {
   Building2, Users, BarChart3, Inbox, Search, X, Phone, Mail,
   MapPin, DollarSign, Calendar, ChevronDown, Download, Eye, Trash2, TrendingUp,
 } from 'lucide-react'
-import { getAllLeads, updateLeadStatus, deleteLeadById, type FranchiseLead, type LeadStatus } from '@/lib/leads'
+import { type FranchiseLead, type LeadStatus } from '@/lib/leads'
 
 const STATUS_LABELS: Record<LeadStatus, string> = {
   new: 'New',
@@ -94,16 +94,23 @@ function exportCsv(leads: FranchiseLead[]) {
 export default function AdminLeadsPage() {
   const router = useRouter()
   const [leads, setLeads] = useState<FranchiseLead[]>([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | LeadStatus>('all')
   const [franchiseFilter, setFranchiseFilter] = useState('all')
   const [selected, setSelected] = useState<FranchiseLead | null>(null)
 
+  async function fetchLeads() {
+    const res = await fetch('/api/admin/leads')
+    if (res.ok) setLeads(await res.json() as FranchiseLead[])
+    setLoading(false)
+  }
+
   useEffect(() => {
     if (localStorage.getItem('fo_admin') !== 'authenticated') {
       router.push('/admin'); return
     }
-    setLeads(getAllLeads())
+    fetchLeads()
   }, [router])
 
   const franchiseNames = useMemo(() =>
@@ -127,17 +134,21 @@ export default function AdminLeadsPage() {
     wonCount: leads.filter((l) => l.status === 'closed_won').length,
   }), [leads])
 
-  function changeStatus(lead: FranchiseLead, status: LeadStatus) {
-    updateLeadStatus(lead.franchiseId, lead.id, status)
-    setLeads(getAllLeads())
+  async function changeStatus(lead: FranchiseLead, status: LeadStatus) {
+    setLeads((prev) => prev.map((l) => l.id === lead.id ? { ...l, status } : l))
     if (selected?.id === lead.id) setSelected({ ...lead, status })
+    await fetch(`/api/admin/leads?id=${encodeURIComponent(lead.id)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status }),
+    })
   }
 
-  function deleteLead(lead: FranchiseLead) {
+  async function deleteLead(lead: FranchiseLead) {
     if (!confirm(`Delete lead from ${lead.name}?`)) return
-    deleteLeadById(lead.franchiseId, lead.id)
-    setLeads(getAllLeads())
+    setLeads((prev) => prev.filter((l) => l.id !== lead.id))
     if (selected?.id === lead.id) setSelected(null)
+    await fetch(`/api/admin/leads?id=${encodeURIComponent(lead.id)}`, { method: 'DELETE' })
   }
 
   return (
@@ -210,7 +221,12 @@ export default function AdminLeadsPage() {
 
         {/* Table */}
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-          {filtered.length === 0 ? (
+          {loading ? (
+            <div className="py-20 text-center text-gray-400">
+              <div className="w-6 h-6 border-2 border-gray-200 border-t-red-500 rounded-full animate-spin mx-auto mb-3" />
+              <p className="text-sm font-medium">Loading leads…</p>
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="py-20 text-center text-gray-400">
               <Inbox size={32} className="mx-auto mb-3 opacity-30" />
               <p className="text-sm font-medium">No leads found</p>

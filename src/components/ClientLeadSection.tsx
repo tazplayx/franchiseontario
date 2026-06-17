@@ -63,12 +63,15 @@ export default function ClientLeadSection({ franchiseId, franchiseName, franchis
     addLead(lead)
     setCount((c) => c + 1)
 
-    // Notify owner + pitch franchise contact (fire-and-forget)
+    // Notify owner + pitch franchise contact + save to DB (fire-and-forget)
     const ownerAccount = getAccountByFranchiseId(franchiseId)
     fetch('/api/leads', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
+        leadId: lead.id,
+        franchiseId,
+        submittedAt: lead.submittedAt,
         lead: { name: form.name, email: form.email, phone: form.phone, city: form.city, investmentBudget: form.investmentBudget, message: form.message },
         ownerEmail: ownerAccount?.email ?? 'cdeneire@proton.me',
         franchiseName,

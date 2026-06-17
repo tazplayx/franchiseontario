@@ -1,8 +1,3 @@
-/**
- * POST /api/leads
- * Notifies franchise owner of a new lead via email (Resend).
- * The lead itself is persisted on the client in localStorage.
- */
 import { NextRequest, NextResponse } from 'next/server'
 
 export const dynamic = 'force-dynamic'
@@ -10,11 +5,14 @@ export const dynamic = 'force-dynamic'
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json()
-    const { lead, ownerEmail, franchiseName, franchiseContactEmail } = body as {
+    const { lead, leadId, franchiseId, submittedAt, ownerEmail, franchiseName, franchiseContactEmail } = body as {
       lead: {
         name: string; email: string; phone: string
         city: string; investmentBudget: string; message: string
       }
+      leadId?: string
+      franchiseId?: string
+      submittedAt?: string
       ownerEmail: string
       franchiseName: string
       franchiseContactEmail?: string
@@ -150,6 +148,35 @@ export async function POST(req: NextRequest) {
     }
 
     await Promise.allSettled(sends)
+
+    // Save lead to Supabase
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+    if (supabaseUrl && supabaseKey && leadId) {
+      await fetch(`${supabaseUrl}/rest/v1/leads`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': supabaseKey,
+          'Authorization': `Bearer ${supabaseKey}`,
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({
+          id: leadId,
+          franchise_id: franchiseId ?? franchiseName.toLowerCase().replace(/\s+/g, '-'),
+          franchise_name: franchiseName,
+          name: lead.name,
+          email: lead.email,
+          phone: lead.phone || null,
+          city: lead.city || null,
+          investment_budget: lead.investmentBudget,
+          message: lead.message || null,
+          status: 'new',
+          read: false,
+          submitted_at: submittedAt ?? new Date().toISOString(),
+        }),
+      }).catch((err) => console.error('[Leads] Supabase insert failed:', err))
+    }
 
     return NextResponse.json({ ok: true })
   } catch (err) {
