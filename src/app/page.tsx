@@ -57,7 +57,7 @@ function NewsTicker() {
 /* ── Hero ────────────────────────────────────────────────────── */
 function Hero() {
   const listingCount = franchises.length
-  const categoryCount = new Set(franchises.map((f) => f.category)).size
+  const categoryCount = categories.length
 
   return (
     <section className="relative bg-white z-20" style={{ minHeight: '88vh' }}>
@@ -144,8 +144,8 @@ function Hero() {
 /* ── Dark Stats Bar (overlaps hero bottom) ───────────────────── */
 function StatsBar() {
   const stats = [
-    { value: '330+', label: 'Franchise Listings' },
-    { value: '25', label: 'Industry Categories' },
+    { value: `${franchises.length}+`, label: 'Franchise Listings' },
+    { value: `${categories.length}`, label: 'Industry Categories' },
     { value: '2,500+', label: 'Monthly Buyers' },
     { value: '$2B+', label: 'In Opportunities' },
     { value: '100%', label: 'Free to Browse' },
