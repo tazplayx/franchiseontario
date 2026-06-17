@@ -15,6 +15,7 @@ import HeroSearch from '@/components/HeroSearch'
 import { ClientFeaturedSpotlight, ClientTopRanked } from '@/components/ClientHomepageSections'
 import { FadeUp, FadeIn, StaggerGroup, StaggerItem, SlideInLeft, SlideInRight } from '@/components/ScrollReveal'
 import { ParallaxImage, ParallaxSection } from '@/components/ParallaxImage'
+import { LiveListingCount } from '@/components/LiveListingCount'
 
 const BASE = 'https://www.franchiseontario.com'
 
@@ -56,7 +57,6 @@ function NewsTicker() {
 
 /* ── Hero ────────────────────────────────────────────────────── */
 function Hero() {
-  const listingCount = franchises.length
   const categoryCount = categories.length
 
   return (
@@ -108,7 +108,7 @@ function Hero() {
           <FadeUp delay={0.3}>
             <div className="grid grid-cols-4 gap-6 max-w-lg">
               {[
-                { value: `${listingCount}+`, label: 'Listings' },
+                { value: <LiveListingCount />, label: 'Listings' },
                 { value: String(categoryCount), label: 'Categories' },
                 { value: '2,500+', label: 'Monthly Visitors' },
                 { value: '$2B+', label: 'In Opportunities' },
@@ -144,7 +144,7 @@ function Hero() {
 /* ── Dark Stats Bar (overlaps hero bottom) ───────────────────── */
 function StatsBar() {
   const stats = [
-    { value: `${franchises.length}+`, label: 'Franchise Listings' },
+    { value: <LiveListingCount />, label: 'Franchise Listings' },
     { value: `${categories.length}`, label: 'Industry Categories' },
     { value: '2,500+', label: 'Monthly Buyers' },
     { value: '$2B+', label: 'In Opportunities' },
