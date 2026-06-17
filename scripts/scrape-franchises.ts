@@ -714,6 +714,13 @@ async function main() {
   console.log(`  Total sourced listings: ${allListings.length}`)
   console.log('═══════════════════════════════════════════\n')
 
+  // ── Safety guard: never overwrite with fewer than 10 listings ──
+  if (allListings.length < 10) {
+    console.error(`\n⛔ Safety guard: only ${allListings.length} listing(s) found — refusing to overwrite existing file.`)
+    console.error('  Check network connectivity and CFA/Algolia availability, then retry.')
+    process.exit(1)
+  }
+
   // ── Write output ──
   const outPath = path.join(__dirname, '../src/data/sourced-listings.ts')
   fs.writeFileSync(outPath, serializeToTS(allListings), 'utf-8')

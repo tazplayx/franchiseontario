@@ -161,6 +161,11 @@ export default function FranchiseCard({
           <span className="text-[10px] font-medium truncate" style={{ color: 'var(--text-muted)' }}>
             {franchise.category}
           </span>
+          {franchise.sourced && (
+            <span className="ml-auto shrink-0 text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-100">
+              Sourced
+            </span>
+          )}
         </div>
 
         {/* Name */}

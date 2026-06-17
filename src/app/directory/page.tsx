@@ -189,6 +189,17 @@ export default function DirectoryPage() {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Sourced-listings disclaimer */}
+      <div className="bg-amber-50 border-b border-amber-200 px-4 py-2.5">
+        <p className="max-w-7xl mx-auto text-[11px] text-amber-800 leading-relaxed">
+          <strong>Data Notice:</strong> Many listings on this directory are aggregated from publicly available third-party sources including the{' '}
+          <a href="https://cfa.ca/lookforafranchise/" target="_blank" rel="noopener noreferrer" className="underline font-semibold">Canadian Franchise Association (cfa.ca)</a>.
+          {' '}FranchiseOntario.com does not warrant the accuracy, completeness, or currency of sourced information. All investment figures and financial data must be independently verified.
+          {' '}Always request a Franchise Disclosure Document (FDD) and consult a qualified franchise lawyer before making any investment decision.
+          {' '}Sourced listings are marked <span className="inline-flex items-center px-1.5 py-0.5 rounded-full bg-blue-100 text-blue-700 font-bold text-[9px] border border-blue-200">Sourced</span>.
+        </p>
+      </div>
+
       {/* Page header */}
       <div className="bg-white border-b border-gray-200 py-10">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
