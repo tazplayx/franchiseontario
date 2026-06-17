@@ -38,12 +38,19 @@ export default function ManualsPage() {
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Hero */}
-      <div className="bg-[#00228e] text-white py-16 px-4">
-        <div className="max-w-5xl mx-auto text-center">
+      <div
+        className="relative text-white py-20 px-4 overflow-hidden"
+        style={{
+          backgroundImage: 'linear-gradient(135deg, rgba(0,22,100,0.88) 0%, rgba(0,34,142,0.80) 100%), url("https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=1920&q=80")',
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+        }}
+      >
+        <div className="max-w-5xl mx-auto text-center relative z-10">
           <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 text-sm font-semibold mb-6">
             <BookOpen size={14} /> Franchise Owner Resource Library
           </div>
-          <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight">
+          <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight text-white">
             Master Your Ontario Franchise
           </h1>
           <p className="text-lg text-blue-200 max-w-2xl mx-auto mb-8">
