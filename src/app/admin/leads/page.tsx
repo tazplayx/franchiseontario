@@ -7,7 +7,7 @@ import {
   Building2, Users, BarChart3, Inbox, Search, X, Phone, Mail,
   MapPin, DollarSign, Calendar, ChevronDown, Download, Eye, Trash2, TrendingUp,
 } from 'lucide-react'
-import { type FranchiseLead, type LeadStatus } from '@/lib/leads'
+import { type FranchiseLead, type LeadStatus, getAllLeads } from '@/lib/leads'
 
 const STATUS_LABELS: Record<LeadStatus, string> = {
   new: 'New',
@@ -95,14 +95,36 @@ export default function AdminLeadsPage() {
   const router = useRouter()
   const [leads, setLeads] = useState<FranchiseLead[]>([])
   const [loading, setLoading] = useState(true)
+  const [supabaseOk, setSupabaseOk] = useState<boolean | null>(null)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'all' | LeadStatus>('all')
   const [franchiseFilter, setFranchiseFilter] = useState('all')
   const [selected, setSelected] = useState<FranchiseLead | null>(null)
 
   async function fetchLeads() {
-    const res = await fetch('/api/admin/leads')
-    if (res.ok) setLeads(await res.json() as FranchiseLead[])
+    // Load localStorage leads immediately (works on any device where form was submitted)
+    const localLeads = getAllLeads()
+
+    // Try Supabase
+    let remoteLeads: FranchiseLead[] = []
+    try {
+      const res = await fetch('/api/admin/leads')
+      if (res.ok) {
+        remoteLeads = await res.json() as FranchiseLead[]
+        setSupabaseOk(true)
+      } else {
+        setSupabaseOk(false)
+      }
+    } catch {
+      setSupabaseOk(false)
+    }
+
+    // Merge: Supabase is authoritative; fill in any local-only leads by ID
+    const remoteIds = new Set(remoteLeads.map((l) => l.id))
+    const localOnly = localLeads.filter((l) => !remoteIds.has(l.id))
+    const merged = [...remoteLeads, ...localOnly]
+      .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
+    setLeads(merged)
     setLoading(false)
   }
 
@@ -170,6 +192,53 @@ export default function AdminLeadsPage() {
           </button>
         </div>
 
+        {/* Supabase status banner */}
+        {supabaseOk === false && (
+          <div className="mb-5 bg-amber-50 border border-amber-300 rounded-2xl p-4">
+            <p className="text-sm font-bold text-amber-800 mb-1">⚠ Database Offline — Showing Local Leads Only</p>
+            <p className="text-xs text-amber-700 leading-relaxed mb-3">
+              Supabase is not reachable. This usually means your free-tier project has been
+              auto-paused. Leads submitted from <strong>this browser</strong> are shown below from local
+              storage. Leads from other visitors will not appear until the database is restored.
+            </p>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <a
+                href="https://supabase.com/dashboard"
+                target="_blank" rel="noopener noreferrer"
+                className="inline-flex items-center gap-1.5 bg-amber-700 text-white font-bold px-3 py-1.5 rounded-lg hover:bg-amber-800 transition-colors"
+              >
+                Open Supabase Dashboard →
+              </a>
+              <span className="self-center text-amber-700">
+                Go to your project → click <strong>Restore project</strong>
+              </span>
+            </div>
+            <details className="mt-3">
+              <summary className="text-xs text-amber-700 font-semibold cursor-pointer">View leads table SQL (run once in Supabase SQL Editor)</summary>
+              <pre className="mt-2 bg-amber-100 text-amber-900 text-[11px] rounded-lg p-3 overflow-x-auto whitespace-pre-wrap select-all">{`create table if not exists leads (
+  id text primary key,
+  franchise_id text not null,
+  franchise_name text not null,
+  name text not null,
+  email text not null,
+  phone text,
+  city text,
+  investment_budget text,
+  message text,
+  status text default 'new',
+  read boolean default false,
+  submitted_at timestamptz default now()
+);
+alter table leads disable row level security;`}</pre>
+            </details>
+          </div>
+        )}
+        {supabaseOk === true && (
+          <div className="mb-5 flex items-center gap-2 text-xs text-green-700 font-semibold">
+            <span className="w-2 h-2 rounded-full bg-green-500" /> Database connected — showing all leads
+          </div>
+        )}
+
         {/* Stats */}
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-6">
           {[
@@ -230,7 +299,13 @@ export default function AdminLeadsPage() {
             <div className="py-20 text-center text-gray-400">
               <Inbox size={32} className="mx-auto mb-3 opacity-30" />
               <p className="text-sm font-medium">No leads found</p>
-              <p className="text-xs mt-1">Leads appear here when prospects submit inquiries on listing pages</p>
+              <p className="text-xs mt-1 max-w-xs mx-auto">
+                {leads.length > 0
+                  ? 'No leads match your current filters — clear them above.'
+                  : supabaseOk === false
+                    ? 'Supabase is offline. Restore it at supabase.com/dashboard, then refresh.'
+                    : 'Leads appear here when visitors click "Contact Franchise" on any listing page.'}
+              </p>
             </div>
           ) : (
             <div className="overflow-x-auto">
