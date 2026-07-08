@@ -41,6 +41,13 @@ export interface FranchisorSession {
   tier: 'basic' | 'premium' | 'enterprise'
 }
 
+// ── Base inquiry counts — seed social proof per franchise ──────────────────────
+// These are added on top of any locally stored form submissions so that a
+// new visitor sees a realistic starting count rather than 0.
+const BASE_INQUIRY_COUNTS: Record<string, number> = {
+  'chucks-roadhouse': 43,
+}
+
 // ── Storage keys ───────────────────────────────────────────────────────────────
 const LEADS_PREFIX = 'fo_leads_'
 const LEAD_COUNT_PREFIX = 'fo_lead_count_'
@@ -78,7 +85,9 @@ export function addLead(lead: FranchiseLead): void {
 }
 
 export function getLeadCount(franchiseId: string): number {
-  return read<number>(`${LEAD_COUNT_PREFIX}${franchiseId}`, 0)
+  const base = BASE_INQUIRY_COUNTS[franchiseId] ?? 0
+  const local = read<number>(`${LEAD_COUNT_PREFIX}${franchiseId}`, 0)
+  return base + local
 }
 
 export function markLeadRead(franchiseId: string, leadId: string): void {
