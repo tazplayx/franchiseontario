@@ -1,7 +1,10 @@
 'use client'
 import Link from 'next/link'
-import { MapPin, TrendingUp, Crown, Zap } from 'lucide-react'
+import { MapPin, Crown, Zap, BarChart2 } from 'lucide-react'
+import { useEffect, useState } from 'react'
 import type { Franchise } from '@/data/franchises'
+import WishlistButton from './WishlistButton'
+import { toggleCompare, getCompareIds } from './CompareBar'
 
 // Stock photos per category
 const CATEGORY_BG: Record<string, string> = {
@@ -78,6 +81,8 @@ export default function FranchiseCard({
 }) {
   const isEnterprise = franchise.tier === 'enterprise'
   const isPremium    = franchise.tier === 'premium'
+  const [comparing, setComparing] = useState(false)
+  useEffect(() => { setComparing(getCompareIds().includes(franchise.id)) }, [franchise.id])
 
   const borderStyle = isEnterprise
     ? '1.5px solid #d4a85a'
@@ -150,6 +155,25 @@ export default function FranchiseCard({
             <span className="rank-number text-xs font-black">#{franchise.rank}</span>
           </div>
         )}
+
+        {/* Action buttons — top-right of image */}
+        <div className="absolute top-2 right-2 z-20 flex gap-1">
+          <WishlistButton franchiseId={franchise.id} size="sm" />
+          <button
+            onClick={(e) => {
+              e.preventDefault()
+              e.stopPropagation()
+              const added = toggleCompare(franchise.id)
+              setComparing(added)
+              window.dispatchEvent(new Event('fo_compare_change'))
+            }}
+            aria-label="Compare"
+            className={`rounded-full p-1.5 transition-all hover:scale-110 ${comparing ? 'bg-blue-600 text-white' : 'bg-white/80 text-gray-400 hover:text-blue-600 hover:bg-blue-50'}`}
+            style={{ backdropFilter: 'blur(4px)' }}
+          >
+            <BarChart2 size={14} />
+          </button>
+        </div>
       </div>
 
       {/* Card body */}

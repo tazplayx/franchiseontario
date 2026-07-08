@@ -17,6 +17,10 @@ import {
 import { getListingOverrides, saveListing } from '@/lib/store'
 import { getSession } from '@/lib/leads'
 import ClientLeadSection, { LeadCountBadge } from '@/components/ClientLeadSection'
+import RelatedListings from '@/components/RelatedListings'
+import RecentlyViewed from '@/components/RecentlyViewed'
+import WishlistButton from '@/components/WishlistButton'
+import { recordView } from '@/lib/recently-viewed'
 import type { Franchise } from '@/data/franchises'
 
 const CATEGORY_BG: Record<string, string> = {
@@ -176,6 +180,8 @@ export default function ClientListingBody({ seed }: { seed: Franchise }) {
     if (adminAuth || (session && session.franchiseId === seed.id)) {
       setIsOwner(true)
     }
+    // Record view for recently-viewed strip
+    recordView(seed.id)
   }, [seed.id])
 
   function openEdit() {
@@ -359,6 +365,9 @@ export default function ClientListingBody({ seed }: { seed: Franchise }) {
                   <BadgeCheck size={14} /> Claim this Listing
                 </Link>
               )}
+              <div className="flex justify-center pt-1">
+                <WishlistButton franchiseId={seed.id} size="md" />
+              </div>
             </div>
           </div>
         </div>
@@ -645,6 +654,12 @@ export default function ClientListingBody({ seed }: { seed: Franchise }) {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Related + Recently Viewed */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+        <RelatedListings franchise={f} />
+        <RecentlyViewed excludeId={seed.id} />
       </div>
 
       {/* ── Edit Modal ────────────────────────────────────────────────────────── */}

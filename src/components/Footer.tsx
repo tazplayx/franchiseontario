@@ -1,6 +1,56 @@
+'use client'
 import Link from 'next/link'
-import { MapPin, Sparkles } from 'lucide-react'
+import { MapPin, Sparkles, CheckCircle } from 'lucide-react'
 import ContactForm from './ContactForm'
+import { useState } from 'react'
+
+function NewsletterInline() {
+  const [email, setEmail] = useState('')
+  const [status, setStatus] = useState<'idle' | 'loading' | 'done'>('idle')
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    if (!email) return
+    setStatus('loading')
+    await fetch('/api/newsletter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, source: 'footer' }),
+    }).catch(() => {})
+    setStatus('done')
+  }
+
+  return (
+    <div className="mt-5">
+      <p className="text-[11px] font-bold uppercase tracking-[0.10em] text-white mb-2">
+        Weekly Ontario Franchise Digest
+      </p>
+      {status === 'done' ? (
+        <div className="flex items-center gap-2 text-sm text-green-400">
+          <CheckCircle size={14} /> You&apos;re subscribed!
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit} className="flex gap-2">
+          <input
+            type="email"
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="your@email.com"
+            className="flex-1 min-w-0 rounded-lg px-3 py-2 text-xs bg-white/10 text-white placeholder-white/40 border border-white/15 focus:outline-none focus:border-white/40"
+          />
+          <button
+            type="submit"
+            disabled={status === 'loading'}
+            className="shrink-0 px-4 py-2 rounded-lg text-xs font-bold bg-white text-red-700 hover:bg-white/90 disabled:opacity-60 transition-opacity"
+          >
+            {status === 'loading' ? '…' : 'Subscribe'}
+          </button>
+        </form>
+      )}
+    </div>
+  )
+}
 
 export default function Footer() {
   return (
@@ -46,6 +96,7 @@ export default function Footer() {
               <MapPin size={13} style={{ color: 'var(--gold)', flexShrink: 0 }} />
               <span>Ontario, Canada</span>
             </div>
+            <NewsletterInline />
           </div>
 
           {/* Directory Links */}

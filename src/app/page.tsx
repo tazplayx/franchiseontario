@@ -16,6 +16,7 @@ import { ClientFeaturedSpotlight, ClientTopRanked } from '@/components/ClientHom
 import { FadeUp, FadeIn, StaggerGroup, StaggerItem, SlideInLeft, SlideInRight } from '@/components/ScrollReveal'
 import { ParallaxImage, ParallaxSection } from '@/components/ParallaxImage'
 import { LiveListingCount } from '@/components/LiveListingCount'
+import RecentlyViewed from '@/components/RecentlyViewed'
 
 const BASE = 'https://www.franchiseontario.com'
 
@@ -683,6 +684,9 @@ export default function HomePage() {
       <InvestByBudget />
       <CategoryGrid />
       <ClientTopRanked />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <RecentlyViewed />
+      </div>
       <EditorialFeature />
       <LatestNews />
       <PricingPromo />

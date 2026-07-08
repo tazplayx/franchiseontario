@@ -4,6 +4,8 @@ import './globals.css'
 import Header from '@/components/Header'
 import Footer from '@/components/Footer'
 import JsonLd from '@/components/JsonLd'
+import ExitIntentCapture from '@/components/ExitIntentCapture'
+import CompareBar from '@/components/CompareBar'
 
 const GA_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID
 
@@ -181,6 +183,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Header />
         <main className="flex-1">{children}</main>
         <Footer />
+        <ExitIntentCapture />
+        <CompareBar />
       </body>
     </html>
   )
