@@ -17,8 +17,8 @@ import {
 } from '@/lib/store'
 import type { Franchise, FranchiseCategory } from '@/data/franchises'
 import { franchises as seedFranchises } from '@/data/franchises'
-import { getAccounts } from '@/lib/leads'
-import { getApprovedListings, getPendingListings } from '@/lib/store'
+import { getAccounts, getAllLeads, type FranchiseLead } from '@/lib/leads'
+import { getApprovedListings, getPendingListings, updatePendingListingStatus, type PendingListing } from '@/lib/store'
 
 const PLAN_PRICE: Record<string, number> = { basic: 0, premium: 79, enterprise: 199 }
 
@@ -51,6 +51,48 @@ function pendingToFranchise(p: typeof allPending[0]): Franchise {
     website: '', phone: '', email: p.email, city: p.city, highlights: [], popularityScore: 0, rank: 999,
     badges: [], trainingWeeks: 0, territory: '', franchiseeCount: 0, parent: '', idealCandidate: [],
     supportOffered: [], mediaImages: [], videoUrl: '', faqs: [],
+  }
+}
+
+function userPendingToFranchise(p: PendingListing): Franchise {
+  const tierMap: Record<string, Franchise['tier']> = { Enterprise: 'enterprise', Premium: 'premium', Basic: 'basic' }
+  const initials = p.name.split(' ').filter(Boolean).slice(0, 3).map((w) => w[0]).join('').toUpperCase()
+  return {
+    id: p.id,
+    name: p.name,
+    tagline: p.description ? p.description.split('.')[0].trim() : p.name,
+    description: p.description || p.name,
+    longDescription: p.description || p.name,
+    category: (p.category || 'Business Services') as FranchiseCategory,
+    tier: tierMap[p.plan] ?? 'basic',
+    isVIP: p.plan === 'Enterprise',
+    isFeatured: false,
+    logoInitials: initials,
+    logoColor: '#FFFFFF',
+    logoBg: '#6B7280',
+    logoUrl: p.logoUrl || undefined,
+    locations: p.locations || 0,
+    rating: 0,
+    reviews: 0,
+    established: p.established || new Date().getFullYear(),
+    financials: { franchiseFee: 'Contact for details', royaltyRate: 'Contact for details', marketingFee: 'Contact for details', investmentMin: 0, investmentMax: 0, averageUnitVolume: 'Contact for details', netWorthRequired: 'Contact for details', liquidCapitalRequired: 'Contact for details' },
+    website: p.website || '',
+    phone: p.phone || '',
+    email: p.email,
+    city: p.city || 'Ontario',
+    highlights: [],
+    popularityScore: 0,
+    rank: 999,
+    badges: [],
+    trainingWeeks: 0,
+    territory: '',
+    franchiseeCount: 0,
+    parent: '',
+    idealCandidate: [],
+    supportOffered: [],
+    mediaImages: p.mediaImages ?? [],
+    videoUrl: p.videoUrl || '',
+    faqs: [],
   }
 }
 
@@ -133,6 +175,8 @@ export default function AdminDashboardPage() {
   const [notifications, setNotifications] = useState<NotificationEntry[]>([])
   const [paidAccounts, setPaidAccounts] = useState<ReturnType<typeof getAccounts>>([])
   const [mrr, setMrr] = useState(0)
+  const [recentLeads, setRecentLeads] = useState<FranchiseLead[]>([])
+  const [leadsDbOk, setLeadsDbOk] = useState(true)
 
   useEffect(() => {
     const live = applyListingStore(seedFranchises)
@@ -156,6 +200,22 @@ export default function AdminDashboardPage() {
     const paid = accounts.filter(a => a.tier !== 'basic')
     setPaidAccounts(paid)
     setMrr(accounts.reduce((sum, a) => sum + (PLAN_PRICE[a.tier] ?? 0), 0))
+
+    // Recent leads — Supabase (all browsers) merged with this browser's localStorage
+    const loadLeads = async () => {
+      const localLeads = getAllLeads()
+      let remoteLeads: FranchiseLead[] = []
+      try {
+        const res = await fetch('/api/admin/leads')
+        if (res.ok) { remoteLeads = await res.json() as FranchiseLead[]; setLeadsDbOk(true) }
+        else { setLeadsDbOk(false) }
+      } catch { setLeadsDbOk(false) }
+      const remoteIds = new Set(remoteLeads.map((l) => l.id))
+      const merged = [...remoteLeads, ...localLeads.filter((l) => !remoteIds.has(l.id))]
+        .sort((a, b) => new Date(b.submittedAt).getTime() - new Date(a.submittedAt).getTime())
+      setRecentLeads(merged.slice(0, 5))
+    }
+    loadLeads()
   }, [])
 
   const handleClearNotifications = () => {
@@ -163,24 +223,39 @@ export default function AdminDashboardPage() {
     setNotifications([])
   }
 
-  const handleQuickApprove = (id: string) => {
-    savePendingStatus(id, 'approved')
-    const listing = allPending.find(p => p.id === id)
-    if (listing) saveApprovedListing(pendingToFranchise(listing))
+  const refreshPendingUI = () => {
     const pendingStatuses = getPendingStatuses()
-    const stillPending = allPending.filter(p => !pendingStatuses[p.id] || pendingStatuses[p.id] === 'pending')
-    setPendingCount(stillPending.length)
-    setPendingListings(stillPending.slice(0, 3))
+    const userPending = getPendingListings().filter(p => p.status === 'pending')
+    const seedPending = allPending.filter(p => !pendingStatuses[p.id] || pendingStatuses[p.id] === 'pending')
+    const allStillPending = [...userPending.map(p => ({ id: p.id, name: p.name, category: p.category, city: p.city, plan: p.plan })), ...seedPending]
+    setPendingCount(allStillPending.length)
+    setPendingListings(allStillPending.slice(0, 3) as typeof allPending)
     setTotalListings(applyListingStore(seedFranchises).length)
   }
 
+  const handleQuickApprove = (id: string) => {
+    // User-submitted listings live in fo_pending_listings_v1 — publish those too
+    const userListing = getPendingListings().find(p => p.id === id)
+    if (userListing) {
+      updatePendingListingStatus(id, 'approved')
+      saveApprovedListing(userPendingToFranchise(userListing))
+    } else {
+      savePendingStatus(id, 'approved')
+      const listing = allPending.find(p => p.id === id)
+      if (listing) saveApprovedListing(pendingToFranchise(listing))
+    }
+    refreshPendingUI()
+  }
+
   const handleQuickReject = (id: string) => {
-    savePendingStatus(id, 'rejected')
+    const userListing = getPendingListings().find(p => p.id === id)
+    if (userListing) {
+      updatePendingListingStatus(id, 'rejected')
+    } else {
+      savePendingStatus(id, 'rejected')
+    }
     removeApprovedListing(id)
-    const pendingStatuses = getPendingStatuses()
-    const stillPending = allPending.filter(p => !pendingStatuses[p.id] || pendingStatuses[p.id] === 'pending')
-    setPendingCount(stillPending.length)
-    setPendingListings(stillPending.slice(0, 3))
+    refreshPendingUI()
   }
 
   const mrrDisplay = mrr > 0 ? `$${mrr.toLocaleString('en-CA')}` : '$0'
@@ -213,6 +288,47 @@ export default function AdminDashboardPage() {
               <div className="text-xs text-gray-400 mt-0.5">{stat.sub}</div>
             </div>
           ))}
+        </div>
+
+        {/* Recent leads */}
+        <div className="mb-6 bg-white rounded-2xl border border-gray-200 shadow-sm">
+          <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+            <div className="flex items-center gap-2">
+              <h2 className="font-bold text-gray-900 text-sm">Recent Leads</h2>
+              {!leadsDbOk && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">
+                  Database offline — showing this browser only
+                </span>
+              )}
+            </div>
+            <Link href="/admin/leads" className="text-xs text-red-600 hover:underline font-medium">View all →</Link>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {recentLeads.length === 0 ? (
+              <div className="px-5 py-6 text-center text-xs text-gray-400">
+                No leads yet — new form submissions will appear here.
+              </div>
+            ) : recentLeads.map((l) => (
+              <div key={l.id} className="px-5 py-3.5 flex items-center justify-between gap-3">
+                <div className="min-w-0">
+                  <div className="text-sm font-semibold text-gray-900 truncate">
+                    {l.name} <span className="font-normal text-gray-400">→</span> {l.franchiseName}
+                  </div>
+                  <div className="text-xs text-gray-400 truncate">
+                    {l.email}{l.city ? ` · ${l.city}` : ''} · {l.investmentBudget}
+                  </div>
+                </div>
+                <div className="shrink-0 text-right">
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${l.read ? 'bg-gray-100 text-gray-500' : 'bg-green-100 text-green-700'}`}>
+                    {l.read ? (l.status ?? 'viewed') : 'NEW'}
+                  </span>
+                  <div className="text-[10px] text-gray-400 mt-1">
+                    {new Date(l.submittedAt).toLocaleDateString('en-CA', { month: 'short', day: 'numeric' })}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { franchises } from '@/data/franchises'
+import { FRANCHISE_DEV_EMAILS } from '@/data/franchise-emails'
 
 export const dynamic = 'force-dynamic'
 
@@ -34,6 +36,23 @@ export async function POST(req: NextRequest) {
         body: JSON.stringify({ from: 'FranchiseOntario <noreply@franchiseontario.com>', to: [to], subject, html }),
       })
 
+    // ── Resolve the franchisor's development email server-side ────────────────
+    // Priority: manual dev-email map → listing's own email field → email passed
+    // by the client. Sourced listings usually carry 'See website', so without a
+    // map entry there is no one to notify — the admin email flags this.
+    const isValidPublicEmail = (e?: string) =>
+      !!e && e !== 'See website' && e.includes('@') && e !== ownerEmail
+
+    const listing = franchiseId ? franchises.find((f) => f.id === franchiseId) : undefined
+    const devEmail =
+      (franchiseId && FRANCHISE_DEV_EMAILS[franchiseId]) ||
+      (isValidPublicEmail(listing?.email) ? listing!.email : undefined) ||
+      (isValidPublicEmail(franchiseContactEmail) ? franchiseContactEmail : undefined)
+
+    const claimUrl = franchiseId
+      ? `https://www.franchiseontario.com/claim/${franchiseId}`
+      : 'https://www.franchiseontario.com/register'
+
     // ── 1. Notify the registered account owner ────────────────────────────────
     const ownerHtml = `
       <div style="font-family:sans-serif;max-width:580px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:12px">
@@ -51,8 +70,11 @@ export async function POST(req: NextRequest) {
           <tr><td style="padding:8px 0;color:#6b7280">Investment Budget</td><td style="padding:8px 0;font-weight:600;color:#111827">${lead.investmentBudget}</td></tr>
         </table>
         ${lead.message ? `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:20px"><p style="margin:0 0 6px;font-size:12px;color:#9ca3af;font-weight:600;text-transform:uppercase">Message</p><p style="margin:0;font-size:14px;color:#374151">${lead.message}</p></div>` : ''}
-        <a href="https://www.franchiseontario.com/dashboard" style="display:inline-block;background:#00228e;color:#fff;padding:11px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px">
-          View All Leads in Dashboard →
+        ${devEmail
+          ? `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-bottom:20px;font-size:13px;color:#166534">✅ Franchisor notified at <strong>${devEmail}</strong> with a "claim your listing" email (contact details withheld until they register).</div>`
+          : `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;margin-bottom:20px;font-size:13px;color:#92400e">⚠️ <strong>Franchisor NOT notified</strong> — no development email on file for ${franchiseName}.${listing?.website ? ` Find their franchising contact via <a href="${listing.website}" style="color:#92400e;font-weight:600">${listing.website}</a> and add it to <code>src/data/franchise-emails.ts</code> to automate this.` : ''}</div>`}
+        <a href="https://www.franchiseontario.com/admin/leads" style="display:inline-block;background:#00228e;color:#fff;padding:11px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px">
+          View All Leads in Admin Dashboard →
         </a>
         <p style="margin:20px 0 0;font-size:11px;color:#9ca3af">FranchiseOntario.com — your franchise lead management platform</p>
       </div>`
@@ -110,13 +132,13 @@ export async function POST(req: NextRequest) {
             <li>Upgrade your listing for priority placement</li>
           </ul>
 
-          <a href="https://www.franchiseontario.com/register" style="display:inline-block;background:#ff000d;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin-bottom:20px">
+          <a href="${claimUrl}" style="display:inline-block;background:#ff000d;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;margin-bottom:20px">
             Claim Your Listing &amp; View This Lead →
           </a>
 
           <p style="margin:0 0 14px;font-size:13px;color:#64748b;line-height:1.6">
             Already have an account?
-            <a href="https://www.franchiseontario.com/dashboard/login" style="color:#ff000d;text-decoration:none;font-weight:600">Sign in to your dashboard</a> to view the full lead details.
+            <a href="https://www.franchiseontario.com/dashboard" style="color:#ff000d;text-decoration:none;font-weight:600">Sign in to your dashboard</a> to view the full lead details.
           </p>
 
           <hr style="border:none;border-top:1px solid #e2e8f0;margin:20px 0 16px" />
@@ -133,14 +155,10 @@ export async function POST(req: NextRequest) {
       resend(ownerEmail, `New Lead: ${lead.name} is interested in ${franchiseName}`, ownerHtml),
     ]
 
-    // Only pitch the public contact if it's a real email and different from the owner
-    const isValidPublicEmail = (e?: string) =>
-      !!e && e !== 'See website' && e.includes('@') && e !== ownerEmail
-
-    if (isValidPublicEmail(franchiseContactEmail)) {
+    if (devEmail) {
       sends.push(
         resend(
-          franchiseContactEmail!,
+          devEmail,
           `New franchise lead captured for ${franchiseName} on FranchiseOntario.com`,
           pitchHtml,
         )
