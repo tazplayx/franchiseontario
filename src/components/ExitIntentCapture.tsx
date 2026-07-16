@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { X, Download, CheckCircle } from 'lucide-react'
 
 const SUPPRESS_KEY = 'fo_exit_intent_v1'
+const SESSION_KEY = 'fo_exit_intent_session'
 const SUPPRESS_DAYS = 7
 
 export default function ExitIntentCapture() {
@@ -13,18 +14,32 @@ export default function ExitIntentCapture() {
   useEffect(() => {
     const suppressed = localStorage.getItem(SUPPRESS_KEY)
     if (suppressed && Date.now() - Number(suppressed) < SUPPRESS_DAYS * 86400000) return
+    // Arm only once per browsing session — on the page the visitor landed on
+    if (sessionStorage.getItem(SESSION_KEY)) return
+    sessionStorage.setItem(SESSION_KEY, '1')
 
+    const armedPath = window.location.pathname
+    let fired = false
     let timer: ReturnType<typeof setTimeout>
-    // Fire after 45s idle
-    const timeoutTrigger = () => { timer = setTimeout(() => setShow(true), 45000) }
-    // Fire on exit intent (mouse leaves top of viewport)
-    const exitTrigger = (e: MouseEvent) => {
-      if (e.clientY <= 4) { clearTimeout(timer); setShow(true) }
-    }
 
-    timeoutTrigger()
+    const disarm = () => {
+      clearTimeout(timer)
+      document.removeEventListener('mouseleave', exitTrigger)
+    }
+    const fire = () => {
+      if (fired) return
+      fired = true
+      disarm()
+      // If the visitor already navigated off the landing page, never show
+      if (window.location.pathname !== armedPath) return
+      setShow(true)
+    }
+    // Fire on exit intent (mouse leaves top of viewport)
+    const exitTrigger = (e: MouseEvent) => { if (e.clientY <= 4) fire() }
+    // Or after 45s on the landing page
+    timer = setTimeout(fire, 45000)
     document.addEventListener('mouseleave', exitTrigger)
-    return () => { clearTimeout(timer); document.removeEventListener('mouseleave', exitTrigger) }
+    return disarm
   }, [])
 
   function dismiss() {
