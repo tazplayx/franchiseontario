@@ -32,6 +32,12 @@ export default function ExitIntentCapture() {
       disarm()
       // If the visitor already navigated off the landing page, never show
       if (window.location.pathname !== armedPath) return
+      // Another tab may have already shown it — check again before showing
+      const shownAt = localStorage.getItem(SUPPRESS_KEY)
+      if (shownAt && Date.now() - Number(shownAt) < SUPPRESS_DAYS * 86400000) return
+      // Suppress on show (not just on dismiss) so closing the tab, opening a
+      // new tab, or ignoring the popup all still count as "seen"
+      localStorage.setItem(SUPPRESS_KEY, String(Date.now()))
       setShow(true)
     }
     // Fire on exit intent (mouse leaves top of viewport)
