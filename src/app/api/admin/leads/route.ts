@@ -15,11 +15,21 @@ function headers() {
 
 // GET /api/admin/leads — fetch all leads ordered by submitted_at desc
 export async function GET() {
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
+  if (!url || !key) {
+    console.error('[AdminLeads] Missing env — url set:', !!url, 'key set:', !!key)
+    return NextResponse.json({ error: 'Database not configured' }, { status: 500 })
+  }
   const res = await fetch(
     `${supabaseUrl()}/rest/v1/leads?select=*&order=submitted_at.desc`,
     { headers: headers() }
-  )
-  if (!res.ok) return NextResponse.json({ error: 'Failed to fetch leads' }, { status: 500 })
+  ).catch((err) => { console.error('[AdminLeads] Fetch threw:', err?.message); return null })
+  if (!res || !res.ok) {
+    const detail = res ? `${res.status} ${await res.text().catch(() => '')}` : 'network error'
+    console.error('[AdminLeads] Supabase error:', detail)
+    return NextResponse.json({ error: 'Failed to fetch leads' }, { status: 500 })
+  }
   const rows = await res.json() as Record<string, unknown>[]
   // Map snake_case → camelCase for the frontend
   const leads = rows.map((r) => ({
