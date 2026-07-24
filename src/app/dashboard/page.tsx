@@ -1257,13 +1257,15 @@ function BillingTab({ session, successPlan }: { session: FranchisorSession | nul
               {portalLoading ? 'Opening…' : 'Manage Billing & Invoices'}
             </button>
             <button
-              onClick={() => handleSelectPlan('basic')}
-              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-red-200 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+              onClick={handleOpenPortal}
+              disabled={portalLoading}
+              className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-red-200 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors disabled:opacity-60"
             >
+              {portalLoading ? <Loader2 size={13} className="animate-spin" /> : <ExternalLink size={13} />}
               Cancel Subscription
             </button>
           </div>
-          <p className="text-[11px] text-gray-400 mt-3">Cancelling moves your listing to the free Basic tier immediately. You will not be charged again.</p>
+          <p className="text-[11px] text-gray-400 mt-3">Cancelling opens the secure Stripe billing portal, where you can end your subscription. You&apos;ll keep your paid features until the end of the current billing period, then move to the free Basic tier.</p>
         </div>
       )}
 
@@ -1640,36 +1642,54 @@ export default function DashboardPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const upgradeSuccess = params.get('upgrade_success')
-    const newTier = params.get('new_tier') as PlanTier | null
 
     // Check for real franchisor session first
     const session = getSession()
     if (session) {
-      // Handle return from successful Stripe payment
-      if (upgradeSuccess === 'true' && newTier && ['basic', 'premium', 'enterprise'].includes(newTier)) {
-        updateAccountTier(session.franchiseId, newTier)
-        const updatedSession: FranchisorSession = { ...session, tier: newTier }
-        setSession(updatedSession)
+      // Handle return from Stripe Checkout. SECURITY: never grant a tier from
+      // the URL param (it is forgeable). Instead verify the real subscription
+      // with Stripe server-side, then grant whatever Stripe actually confirms.
+      if (upgradeSuccess === 'true') {
+        void (async () => {
+          let verifiedTier: PlanTier = 'basic'
+          try {
+            const res = await fetch('/api/stripe/subscription-status', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: session.email }),
+            })
+            const data = await res.json()
+            if (data?.active && (data.tier === 'premium' || data.tier === 'enterprise')) {
+              verifiedTier = data.tier
+            }
+          } catch { /* fail closed → basic */ }
 
-        const approved = getApprovedListings()
-        const listing = approved.find((l) => l.id === session.franchiseId)
-        if (listing) {
-          saveApprovedListing({
-            ...listing,
-            tier: newTier,
-            isVIP: newTier === 'enterprise',
-            isFeatured: newTier === 'enterprise',
-          })
-        }
-
-        const planName = PLAN_INFO.find((p) => p.tier === newTier)?.name ?? newTier
-        setUpgradeSuccessPlan(planName)
-        setRealSession(updatedSession)
-        setLeadCount(getLeads(updatedSession.franchiseId).filter((l) => !l.read).length)
-        setActiveTab('billing')
-        setLoggedIn(true)
-        // Clean up URL params
-        window.history.replaceState({}, '', '/dashboard')
+          if (verifiedTier !== 'basic') {
+            updateAccountTier(session.franchiseId, verifiedTier)
+            const updatedSession: FranchisorSession = { ...session, tier: verifiedTier }
+            setSession(updatedSession)
+            const approved = getApprovedListings()
+            const listing = approved.find((l) => l.id === session.franchiseId)
+            if (listing) {
+              saveApprovedListing({
+                ...listing,
+                tier: verifiedTier,
+                isVIP: verifiedTier === 'enterprise',
+                isFeatured: verifiedTier === 'enterprise',
+              })
+            }
+            const planName = PLAN_INFO.find((p) => p.tier === verifiedTier)?.name ?? verifiedTier
+            setUpgradeSuccessPlan(planName)
+            setRealSession(updatedSession)
+          } else {
+            // Payment still settling or not found — show pending, don't grant
+            setRealSession(session)
+          }
+          setLeadCount(getLeads(session.franchiseId).filter((l) => !l.read).length)
+          setActiveTab('billing')
+          setLoggedIn(true)
+          window.history.replaceState({}, '', '/dashboard')
+        })()
         return
       }
 

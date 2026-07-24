@@ -55,8 +55,16 @@ export async function POST(req: NextRequest) {
       // Pre-fill customer info if provided
       customer_email: email || undefined,
 
-      // Collect billing address
+      // Collect billing address (required for tax calculation)
       billing_address_collection: 'required',
+
+      // Automatically calculate + add Ontario HST/GST at checkout.
+      // Gated behind STRIPE_TAX_ENABLED so checkout never breaks: enabling
+      // automatic_tax before Stripe Tax is turned on in the Dashboard
+      // (Settings → Tax, with the Ontario registration) makes session
+      // creation fail. Once Stripe Tax is configured, set the env var to
+      // 'true' and HST/GST is collected automatically.
+      automatic_tax: { enabled: process.env.STRIPE_TAX_ENABLED === 'true' },
 
       // Metadata attached to the Checkout Session and carried to webhooks
       metadata: {

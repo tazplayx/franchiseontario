@@ -252,7 +252,7 @@ Requirements:
 Output ONLY the HTML content — nothing else, no markdown, no preamble.`
 
   const message = await client.messages.create({
-    model: 'claude-opus-4-5',
+    model: 'claude-opus-4-8',
     max_tokens: 2048,
     messages: [
       {
@@ -272,7 +272,20 @@ Output ONLY the HTML content — nothing else, no markdown, no preamble.`
 
   // Build new post object
   const now = new Date().toISOString()
-  const id = slugify(topic.title)
+  // Ensure a unique id — topics wrap around after all are used, so a bare
+  // slug would collide with an earlier post and break routing + sitemap.
+  const baseId = slugify(topic.title)
+  const existingIds = new Set(existingPosts.map((p) => p.id))
+  let id = baseId
+  if (existingIds.has(id)) {
+    const datePart = now.slice(0, 10) // YYYY-MM-DD
+    id = `${baseId}-${datePart}`
+    let n = 2
+    while (existingIds.has(id)) {
+      id = `${baseId}-${datePart}-${n}`
+      n += 1
+    }
+  }
 
   const newPost = {
     id,
