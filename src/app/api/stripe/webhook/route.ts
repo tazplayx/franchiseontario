@@ -1,6 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
+import { sbInsert, sbUpdate, supabaseConfigured } from '@/lib/supabase-server'
 import Stripe from 'stripe'
+
+// ── Persist a subscription to the DB and sync the account/listing tier ───────
+async function persistSubscription(sub: Stripe.Subscription, statusOverride?: string) {
+  if (!supabaseConfigured()) return
+  const md = sub.metadata ?? {}
+  const plan = (md.plan ?? '').toLowerCase()
+  const franchiseId = md.franchiseId ?? ''
+  const email = (md.contactEmail ?? '').toLowerCase()
+  const status = statusOverride ?? sub.status
+  const item = sub.items?.data?.[0] as unknown as { current_period_end?: number } | undefined
+  const periodEnd = item?.current_period_end ? new Date(item.current_period_end * 1000).toISOString() : null
+  const customerId = typeof sub.customer === 'string' ? sub.customer : sub.customer?.id ?? ''
+
+  try {
+    await sbInsert('subscriptions', {
+      id: sub.id,
+      customer_id: customerId,
+      email,
+      franchise_id: franchiseId,
+      plan,
+      status,
+      current_period_end: periodEnd,
+      updated_at: new Date().toISOString(),
+    }, true)
+  } catch (e) { console.error('[Webhook] subscription upsert failed:', e) }
+
+  const active = status === 'active' || status === 'trialing'
+  const tier = active
+    ? (plan === 'enterprise' ? 'enterprise' : plan === 'premium' ? 'premium' : 'basic')
+    : 'basic'
+
+  try {
+    if (franchiseId) {
+      await sbUpdate('accounts', `franchise_id=eq.${encodeURIComponent(franchiseId)}`, { tier })
+      await sbUpdate('listings', `id=eq.${encodeURIComponent(franchiseId)}`, {
+        tier,
+        is_vip: tier === 'enterprise',
+        is_featured: tier === 'enterprise',
+        updated_at: new Date().toISOString(),
+      })
+    } else if (email) {
+      await sbUpdate('accounts', `email=eq.${encodeURIComponent(email)}`, { tier })
+    }
+  } catch (e) { console.error('[Webhook] tier sync failed:', e) }
+}
 
 // ── Internal helper — fire-and-forget email from webhook ──────────────────────
 async function fireEmail(to: string, type: string, data: Record<string, unknown>) {
@@ -59,6 +105,8 @@ export async function POST(req: NextRequest) {
         if (session.subscription) {
           try {
             const sub = await getStripe().subscriptions.retrieve(session.subscription as string)
+            // Persist paid tier durably + sync account/listing
+            await persistSubscription(sub)
             const item = sub.items.data[0]
             if (item?.price) {
               const cents = item.price.unit_amount ?? 0
@@ -101,8 +149,9 @@ export async function POST(req: NextRequest) {
 
         console.log(`[Webhook] Subscription updated — ${franchiseName} → ${plan}`)
 
-        // TODO: Update listing tier in database
-        // await db.listing.update({ subscriptionId: subscription.id, plan })
+        // Persist the new state + re-sync tier (handles upgrade/downgrade,
+        // cancel-at-period-end, past_due → active, etc.)
+        await persistSubscription(subscription)
 
         break
       }
@@ -114,8 +163,8 @@ export async function POST(req: NextRequest) {
 
         console.log(`[Webhook] Subscription cancelled — ${franchiseName}`)
 
-        // TODO: Downgrade listing to Basic (free) tier
-        // await db.listing.update({ subscriptionId: subscription.id, plan: 'basic' })
+        // Downgrade account + listing to Basic and mark the sub canceled
+        await persistSubscription(subscription, 'canceled')
 
         // Notify customer that their subscription has ended
         if (contactEmail) {
