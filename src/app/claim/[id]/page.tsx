@@ -1,11 +1,11 @@
 'use client'
+import { dbRegister, dbSubmitClaim, dbLogin } from '@/lib/db-client'
 import { useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { ChevronRight, CheckCircle, AlertCircle, Shield, ExternalLink, Loader2, Eye, EyeOff } from 'lucide-react'
 import { franchises } from '@/data/franchises'
-import { saveClaim } from '@/lib/store'
-import { registerAccount, getAccountByFranchiseId, setSession } from '@/lib/leads'
+import { setSession } from '@/lib/leads'
 
 function domainFromEmail(email: string): string {
   return email.split('@')[1]?.toLowerCase() ?? ''
@@ -34,23 +34,6 @@ export default function ClaimListingPage() {
     )
   }
 
-  const existingAccount = getAccountByFranchiseId(franchise.id)
-  if (existingAccount) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-        <div className="bg-white rounded-2xl border border-gray-200 p-10 max-w-sm w-full text-center shadow-sm">
-          <CheckCircle className="mx-auto mb-3 text-green-500" size={32} />
-          <h2 className="font-bold text-gray-900 mb-2">This listing is already claimed</h2>
-          <p className="text-gray-500 text-sm mb-5">
-            {franchise.name} already has an owner account. Sign in to your dashboard to manage leads.
-          </p>
-          <Link href="/dashboard" className="btn-red px-6 py-2.5 rounded-xl font-semibold text-sm inline-block">
-            Go to Dashboard
-          </Link>
-        </div>
-      </div>
-    )
-  }
 
   if (!franchise.sourced) {
     return (
@@ -86,32 +69,38 @@ export default function ClaimListingPage() {
     setErrorMsg('')
     if (!franchise) return
 
-    // Register the franchisor account (basic tier)
-    const account = registerAccount({
-      franchiseId: franchise.id,
+    // Create the franchisor account in the database (basic tier) — 409 means it already exists
+    const reg = await dbRegister({
       franchiseName: franchise.name,
-      name: form.name,
-      email: form.email,
+      contactName: form.name,
       title: form.title,
-      tier: 'basic',
+      email: form.email,
       password: form.password,
+      plan: 'Basic',
     })
+    if (!reg.ok && reg.status !== 409) {
+      setErrorMsg(reg.error)
+      setStatus('error')
+      return
+    }
 
-    // Save claim record
-    saveClaim({
-      id: `claim-${Date.now()}`,
+    // Save the claim for admin review
+    const claim = await dbSubmitClaim({
       franchiseId: franchise.id,
       franchiseName: franchise.name,
       claimantName: form.name,
       claimantEmail: form.email,
       claimantTitle: form.title,
       message: form.message,
-      submittedAt: new Date().toISOString(),
-      status: 'pending',
       domainMatch,
       sourceListingUrl: franchise.sourceListingUrl,
       sourceSite: franchise.sourceSite,
     })
+    if (!claim.ok) {
+      setErrorMsg(claim.error)
+      setStatus('error')
+      return
+    }
 
     // Notify admin
     fetch('/api/claim', {
@@ -126,7 +115,12 @@ export default function ClaimListingPage() {
     }).catch(() => {})
 
     // Start session and redirect to dashboard
-    setSession({ franchiseId: account.franchiseId, franchiseName: account.franchiseName, email: account.email, name: account.name, tier: account.tier })
+    let session = reg.ok ? reg.data.session : null
+    if (!session) {
+      const login = await dbLogin(form.email, form.password)
+      if (login.ok) session = login.data.session
+    }
+    if (session) setSession(session)
     router.push('/dashboard')
   }
 

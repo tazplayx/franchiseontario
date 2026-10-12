@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { Eye, EyeOff, Loader2, AlertCircle, Zap } from 'lucide-react'
 import { getAccountByEmail, verifyPassword, setSession, registerAccount } from '@/lib/leads'
+import { dbLogin } from '@/lib/db-client'
 
 const DEMO_EMAIL = 'demo@franchiseontario.com'
 const DEMO_PASSWORD = 'Demo1234!'
@@ -37,20 +38,14 @@ export default function DashboardLoginPage() {
     setStatus('loading')
     setErrorMsg('')
 
-    const account = getAccountByEmail(form.email)
-    if (!account || !verifyPassword(account, form.password)) {
-      setErrorMsg('Invalid email or password.')
+    const result = await dbLogin(form.email, form.password)
+    if (!result.ok) {
+      setErrorMsg(result.status === 401 ? 'Invalid email or password.' : result.error)
       setStatus('error')
       return
     }
 
-    setSession({
-      franchiseId: account.franchiseId,
-      franchiseName: account.franchiseName,
-      email: account.email,
-      name: account.name,
-      tier: account.tier,
-    })
+    setSession(result.data.session)
     router.push('/dashboard')
   }
 

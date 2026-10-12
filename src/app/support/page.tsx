@@ -1,5 +1,6 @@
 'use client'
 import { useState } from 'react'
+import { dbSubmitTicket } from '@/lib/db-client'
 import Link from 'next/link'
 import { CheckCircle, Loader2 } from 'lucide-react'
 
@@ -31,6 +32,8 @@ export default function SupportPage() {
     setLoading(true)
     setError('')
     try {
+      // Save the ticket to the database so it appears in the admin Tickets page
+      void dbSubmitTicket({ name: form.name, email: form.email, category: form.category, subject: form.subject, message: form.message })
       const res = await fetch('/api/contact', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

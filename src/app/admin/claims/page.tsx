@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutDashboard, Building2, ListChecks, MessageSquare, Shield, LogOut, CheckCircle, XCircle, ExternalLink, Clock, AlertCircle, BarChart3, Users  , Inbox } from 'lucide-react'
-import { getClaims, updateClaimStatus, type ListingClaim } from '@/lib/store'
+import type { ListingClaim } from '@/lib/store'
+import { dbFetchClaims, dbSetClaimStatus } from '@/lib/db-client'
 
 function useAdminAuth() {
   const router = useRouter()
@@ -76,12 +77,13 @@ export default function AdminClaimsPage() {
   const [filter, setFilter] = useState<'all' | 'pending' | 'approved' | 'rejected'>('pending')
 
   useEffect(() => {
-    setClaims(getClaims())
+    dbFetchClaims().then(setClaims)
   }, [])
 
-  function handleDecision(id: string, decision: 'approved' | 'rejected') {
-    updateClaimStatus(id, decision)
-    setClaims(getClaims())
+  async function handleDecision(id: string, decision: 'approved' | 'rejected') {
+    const res = await dbSetClaimStatus(id, decision)
+    if (!res.ok) { alert(`Could not update claim: ${res.error}`); return }
+    setClaims(await dbFetchClaims())
   }
 
   const filtered = filter === 'all' ? claims : claims.filter((c) => c.status === filter)

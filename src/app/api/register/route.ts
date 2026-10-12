@@ -66,8 +66,10 @@ export async function POST(req: NextRequest) {
       registered_at: new Date().toISOString(),
     })
 
-    // Create the pending listing for admin review
-    await sbInsert('listings', {
+    // Create the pending listing for admin review — but never overwrite an existing listing
+    // (e.g. a live approved listing being claimed)
+    const existingListing = await sbSelect('listings', `id=eq.${encodeURIComponent(franchiseId)}&select=id`)
+    if (existingListing.length === 0) await sbInsert('listings', {
       id: franchiseId,
       name: b.franchiseName,
       category: b.category ?? '',
@@ -87,7 +89,7 @@ export async function POST(req: NextRequest) {
       video_url: b.videoUrl ?? '',
       status: 'pending',
       submitted_at: new Date().toISOString(),
-    }, true)
+    })
 
     return NextResponse.json({ ok: true, franchiseId, email, franchiseName: b.franchiseName, name: b.contactName, tier: 'basic' })
   } catch (err) {

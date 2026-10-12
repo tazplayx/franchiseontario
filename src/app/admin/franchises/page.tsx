@@ -1,4 +1,5 @@
 'use client'
+import { dbFetchPendingListings, dbSetListingStatus } from '@/lib/db-client'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
@@ -225,14 +226,16 @@ export default function AdminFranchisesPage() {
     }
   }, [router])
 
-  const buildListings = (): DisplayListing[] => {
+  const [dbPending, setDbPending] = useState<PendingListing[]>([])
+
+  const buildListings = (pending: PendingListing[] = dbPending): DisplayListing[] => {
     const statuses = getPendingStatuses()
     const seed = initialPending.map((l) =>
       toDisplayListing(statuses[l.id] ? { ...l, status: statuses[l.id] as PendingStatus } : l)
     )
     // User-submitted listings from localStorage — exclude any whose ID matches a seed entry
     const seedIds = new Set(initialPending.map((l) => l.id))
-    const userSubmitted = getPendingListings()
+    const userSubmitted = pending
       .filter((l) => !seedIds.has(l.id))
       .map(userPendingToDisplay)
     return [...userSubmitted, ...seed]
@@ -241,7 +244,7 @@ export default function AdminFranchisesPage() {
   const buildOrphaned = () => {
     const accounts = getAccounts()
     const pendingIds = new Set([
-      ...getPendingListings().map((l) => l.id),
+      ...dbPending.map((l) => l.id),
       ...initialPending.map((l) => l.id),
       ...getApprovedListings().map((l) => l.id),
     ])
@@ -255,8 +258,11 @@ export default function AdminFranchisesPage() {
 
   // Re-apply store on mount (handles SSR hydration)
   useEffect(() => {
-    setListings(buildListings())
-    setOrphaned(buildOrphaned())
+    dbFetchPendingListings().then((rows) => {
+      setDbPending(rows)
+      setListings(buildListings(rows))
+      setOrphaned(buildOrphaned())
+    })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -284,20 +290,17 @@ export default function AdminFranchisesPage() {
     setOrphaned(buildOrphaned())
   }
 
-  const update = (id: string, status: 'approved' | 'rejected') => {
-    // Check user-submitted listings first
-    const userListing = getPendingListings().find((l) => l.id === id)
+  const update = async (id: string, status: 'approved' | 'rejected') => {
+    // Franchisor submissions live in the database; approving publishes them for every visitor
+    const userListing = dbPending.find((l) => l.id === id)
     if (userListing) {
-      updatePendingListingStatus(id, status)
-      if (status === 'approved') {
-        saveApprovedListing(userPendingToFranchise(userListing))
-        sendEmail(userListing.email, 'listing-approved', { franchiseName: userListing.name, plan: userListing.plan })
-      } else {
-        removeApprovedListing(id)
-        sendEmail(userListing.email, 'listing-rejected', { franchiseName: userListing.name })
-      }
+      const res = await dbSetListingStatus(id, status)
+      if (!res.ok) { alert(`Could not ${status === 'approved' ? 'approve' : 'reject'} this listing: ${res.error}`); return }
+      setDbPending((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)))
+      sendEmail(userListing.email, status === 'approved' ? 'listing-approved' : 'listing-rejected',
+        status === 'approved' ? { franchiseName: userListing.name, plan: userListing.plan } : { franchiseName: userListing.name })
     } else {
-      // Seed listing
+      // Seed listing (built-in pending examples)
       savePendingStatus(id, status)
       const listing = initialPending.find((l) => l.id === id)
       if (listing) {

@@ -10,10 +10,10 @@
  */
 import { Suspense, useEffect, useState } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
+import { dbRegister, dbLogin } from '@/lib/db-client'
 import Link from 'next/link'
 import { CheckCircle, XCircle, Loader2, Mail } from 'lucide-react'
-import { registerAccount, setSession, getAccountByEmail } from '@/lib/leads'
-import { savePendingListing } from '@/lib/store'
+import { setSession } from '@/lib/leads'
 
 type Status = 'loading' | 'creating' | 'success' | 'error' | 'expired'
 
@@ -66,48 +66,36 @@ function VerifyEmailContent() {
             // Only use the draft if it matches the verified email
             if (draft.email.toLowerCase() === verifiedEmail.toLowerCase()) {
               setStatus('creating')
-              // Create account if it doesn't already exist
-              let account = getAccountByEmail(verifiedEmail)
-              if (!account) {
-                account = registerAccount({
-                  franchiseId: draft.franchiseId,
+              void (async () => {
+                const plan = draft.tier ? draft.tier.charAt(0).toUpperCase() + draft.tier.slice(1) : 'Basic'
+                const reg = await dbRegister({
                   franchiseName: draft.franchiseName,
-                  name: draft.name,
-                  email: draft.email,
+                  category: draft.category ?? '',
+                  contactName: draft.name,
                   title: draft.title || 'Franchise Owner',
-                  tier: draft.tier || 'basic',
+                  email: draft.email,
+                  phone: draft.phone ?? '',
                   password: draft.password,
+                  website: draft.website ?? '',
+                  established: Number(draft.established) || undefined,
+                  locations: Number(draft.locations) || 0,
+                  description: draft.description ?? '',
+                  logoUrl: draft.logoPreview ?? '',
+                  mediaImages: draft.galleryPreviews ?? [],
+                  videoUrl: draft.videoUrl ?? '',
+                  plan,
                 })
-              }
-              setSession({
-                franchiseId: account.franchiseId,
-                franchiseName: account.franchiseName,
-                email: account.email,
-                name: account.name,
-                tier: account.tier,
-              })
-              // Save to admin pending queue with all available form data
-              savePendingListing({
-                id: account.franchiseId,
-                name: account.franchiseName,
-                category: draft.category ?? '',
-                plan: draft.tier.charAt(0).toUpperCase() + draft.tier.slice(1),
-                email: account.email,
-                contactName: account.name,
-                phone: draft.phone ?? '',
-                website: draft.website ?? '',
-                city: '',
-                description: draft.description ?? '',
-                locations: Number(draft.locations) || 0,
-                established: Number(draft.established) || new Date().getFullYear(),
-                logoUrl: draft.logoPreview ?? '',
-                mediaImages: draft.galleryPreviews ?? [],
-                videoUrl: draft.videoUrl ?? '',
-                submittedAt: new Date().toISOString(),
-                status: 'pending',
-              })
-              localStorage.removeItem('fo_reg_draft')
-              router.replace('/dashboard')
+                let session = reg.ok ? reg.data.session : null
+                if (!reg.ok && reg.status === 409) {
+                  // Account already created (e.g. page reloaded) — sign in instead
+                  const login = await dbLogin(draft.email, draft.password)
+                  if (login.ok) session = login.data.session
+                }
+                if (!session) { setStatus('error'); return }
+                setSession(session)
+                localStorage.removeItem('fo_reg_draft')
+                router.replace('/dashboard')
+              })()
               return
             }
           } catch { /* bad draft — ignore */ }

@@ -19,6 +19,7 @@ import type { Franchise, FranchiseCategory } from '@/data/franchises'
 import { franchises as seedFranchises } from '@/data/franchises'
 import { getAccounts, getAllLeads, type FranchiseLead } from '@/lib/leads'
 import { getApprovedListings, getPendingListings, updatePendingListingStatus, type PendingListing } from '@/lib/store'
+import { dbFetchPendingListings, dbSetListingStatus } from '@/lib/db-client'
 
 const PLAN_PRICE: Record<string, number> = { basic: 0, premium: 79, enterprise: 199 }
 
@@ -182,13 +183,8 @@ export default function AdminDashboardPage() {
     const live = applyListingStore(seedFranchises)
     setTotalListings(live.length)
 
-    const pendingStatuses = getPendingStatuses()
-    // Merge seed pending + user-submitted pending (exclude approved/rejected)
-    const userPending = getPendingListings().filter(p => p.status === 'pending')
-    const seedPending = allPending.filter(p => !pendingStatuses[p.id] || pendingStatuses[p.id] === 'pending')
-    const allStillPending = [...userPending.map(p => ({ id: p.id, name: p.name, category: p.category, city: p.city, plan: p.plan })), ...seedPending]
-    setPendingCount(allStillPending.length)
-    setPendingListings(allStillPending.slice(0, 3) as typeof allPending)
+    // Pending franchisor submissions come from the database
+    void refreshPendingUI()
 
     const allTickets = applyTicketStore(seedTickets)
     setOpenTickets(allTickets.filter(t => t.status === 'Open').length)
@@ -223,9 +219,9 @@ export default function AdminDashboardPage() {
     setNotifications([])
   }
 
-  const refreshPendingUI = () => {
+  const refreshPendingUI = async () => {
     const pendingStatuses = getPendingStatuses()
-    const userPending = getPendingListings().filter(p => p.status === 'pending')
+    const userPending = (await dbFetchPendingListings()).filter(p => p.status === 'pending')
     const seedPending = allPending.filter(p => !pendingStatuses[p.id] || pendingStatuses[p.id] === 'pending')
     const allStillPending = [...userPending.map(p => ({ id: p.id, name: p.name, category: p.category, city: p.city, plan: p.plan })), ...seedPending]
     setPendingCount(allStillPending.length)
@@ -233,29 +229,30 @@ export default function AdminDashboardPage() {
     setTotalListings(applyListingStore(seedFranchises).length)
   }
 
-  const handleQuickApprove = (id: string) => {
-    // User-submitted listings live in fo_pending_listings_v1 — publish those too
-    const userListing = getPendingListings().find(p => p.id === id)
-    if (userListing) {
-      updatePendingListingStatus(id, 'approved')
-      saveApprovedListing(userPendingToFranchise(userListing))
+  const handleQuickApprove = async (id: string) => {
+    const dbRows = await dbFetchPendingListings()
+    const dbListing = dbRows.find(p => p.id === id)
+    if (dbListing) {
+      const res = await dbSetListingStatus(id, 'approved')
+      if (!res.ok) { alert(`Could not approve: ${res.error}`); return }
     } else {
       savePendingStatus(id, 'approved')
       const listing = allPending.find(p => p.id === id)
       if (listing) saveApprovedListing(pendingToFranchise(listing))
     }
-    refreshPendingUI()
+    await refreshPendingUI()
   }
 
-  const handleQuickReject = (id: string) => {
-    const userListing = getPendingListings().find(p => p.id === id)
-    if (userListing) {
-      updatePendingListingStatus(id, 'rejected')
+  const handleQuickReject = async (id: string) => {
+    const dbRows = await dbFetchPendingListings()
+    if (dbRows.some(p => p.id === id)) {
+      const res = await dbSetListingStatus(id, 'rejected')
+      if (!res.ok) { alert(`Could not reject: ${res.error}`); return }
     } else {
       savePendingStatus(id, 'rejected')
+      removeApprovedListing(id)
     }
-    removeApprovedListing(id)
-    refreshPendingUI()
+    await refreshPendingUI()
   }
 
   const mrrDisplay = mrr > 0 ? `$${mrr.toLocaleString('en-CA')}` : '$0'

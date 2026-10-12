@@ -1,6 +1,7 @@
 'use client'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { dbLogin, dbSubmitTicket } from '@/lib/db-client'
 import {
   LayoutDashboard, FileText, CreditCard, LifeBuoy, LogOut,
   Pencil, Trash2, X, Save, AlertTriangle, CheckCircle,
@@ -14,7 +15,6 @@ import {
   removeUserFranchise,
   removeListing,
   isUserFranchiseRemoved,
-  addUserTicket,
   removePendingListing,
   getApprovedListings,
   saveApprovedListing,
@@ -133,28 +133,20 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email || !password) { setError('Please enter your email and password.'); return }
     setLoading(true)
     setError('')
 
-    // Real credential check against localStorage accounts
-    const account = getAccountByEmail(email)
-    if (!account || !verifyPassword(account, password)) {
-      setError('Incorrect email or password. Please try again.')
+    const result = await dbLogin(email, password)
+    if (!result.ok) {
+      setError(result.status === 401 ? 'Incorrect email or password. Please try again.' : result.error)
       setLoading(false)
       return
     }
 
-    // Set the session and log in
-    setSession({
-      franchiseId: account.franchiseId,
-      franchiseName: account.franchiseName,
-      email: account.email,
-      name: account.name,
-      tier: account.tier,
-    })
+    setSession(result.data.session)
     onLogin()
   }
 
@@ -1416,15 +1408,12 @@ function SupportTab({ session }: { session: FranchisorSession | null }) {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!form.subject || !form.message) return
-    addUserTicket({
-      id: `user_${Date.now()}`,
+    void dbSubmitTicket({
       name: displayName,
       email: displayEmail,
       category: form.category,
       subject: form.subject,
       message: form.message,
-      status: 'Open',
-      submittedAt: new Date().toISOString().split('T')[0],
     })
     setSubmitted(true)
   }

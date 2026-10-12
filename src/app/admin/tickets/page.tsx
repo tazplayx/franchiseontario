@@ -3,7 +3,8 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { LayoutDashboard, ListChecks, MessageSquare, Shield, LogOut, Mail, Building2, BarChart3, Users  , Inbox } from 'lucide-react'
-import { applyTicketStore, saveTicketStatus, type StoredTicket } from '@/lib/store'
+import type { StoredTicket } from '@/lib/store'
+import { dbFetchTickets, dbSetTicketStatus } from '@/lib/db-client'
 
 const seedTickets: StoredTicket[] = [
   { id: 't1', name: 'Sarah M.', email: 'sarah.m@email.com', category: 'Billing & Payments', subject: 'Charged twice for Premium plan in March', message: 'Hello, I noticed I was billed twice for my Premium listing on March 1st and March 3rd. Could you please look into this and issue a refund for the duplicate charge? My invoice number is #PRE-2024-0891.', status: 'Open', submittedAt: '2026-03-25' },
@@ -57,17 +58,18 @@ export default function AdminTicketsPage() {
     }
   }, [router])
 
-  const [tickets, setTickets] = useState<StoredTicket[]>(() => applyTicketStore(seedTickets))
+  const [tickets, setTickets] = useState<StoredTicket[]>([])
   const [filter, setFilter] = useState<'all' | 'Open' | 'Resolved'>('all')
   const [selected, setSelected] = useState<StoredTicket | null>(null)
 
   // Re-apply store on mount to pick up any user-submitted tickets added since render
   useEffect(() => {
-    setTickets(applyTicketStore(seedTickets))
+    dbFetchTickets().then(setTickets)
   }, [])
 
-  const resolve = (id: string) => {
-    saveTicketStatus(id, 'Resolved')
+  const resolve = async (id: string) => {
+    const res = await dbSetTicketStatus(id, 'Resolved')
+    if (!res.ok) { alert(`Could not update ticket: ${res.error}`); return }
     setTickets((prev) => prev.map((t) => (t.id === id ? { ...t, status: 'Resolved' } : t)))
     setSelected(null)
   }

@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react'
 import { Check, ArrowRight, Loader2, Upload, X, ImagePlus, Video, Image as ImageIcon, Mail, RefreshCw, Eye, EyeOff } from 'lucide-react'
 import { sendEmail } from '@/lib/email'
 import { registerAccount, getAccountByEmail, setSession } from '@/lib/leads'
-import { savePendingListing } from '@/lib/store'
+import { dbRegister, dbLogin } from '@/lib/db-client'
 import { categories } from '@/data/franchises'
 
 type Step = 'plan' | 'details' | 'verify' | 'confirm'
@@ -750,52 +750,30 @@ export default function RegisterPage() {
                 <button
                   onClick={async () => {
                     const franchiseId = formData.franchiseName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
-                    // Create account if it doesn't already exist (may have been created at verify step)
-                    let account = getAccountByEmail(formData.email)
-                    if (!account) {
-                      try {
-                        account = registerAccount({
-                          franchiseId,
-                          franchiseName: formData.franchiseName,
-                          name: formData.contactName,
-                          email: formData.email,
-                          title: formData.title || 'Franchise Owner',
-                          tier: 'basic',
-                          password: formData.password,
-                        })
-                      } catch { /* account may already exist */ }
-                      account = getAccountByEmail(formData.email)
+                    // Create the account + pending listing in the database (409 = already created at verify step)
+                    const reg = await dbRegister({
+                      franchiseName: formData.franchiseName,
+                      category: formData.category,
+                      contactName: formData.contactName,
+                      title: formData.title || 'Franchise Owner',
+                      email: formData.email,
+                      phone: formData.phone,
+                      password: formData.password,
+                      website: formData.website,
+                      established: Number(formData.established) || undefined,
+                      locations: Number(formData.locations) || 0,
+                      description: formData.description,
+                      logoUrl: formData.logoPreview,
+                      mediaImages: formData.galleryPreviews,
+                      videoUrl: formData.videoUrl,
+                      plan: 'Basic',
+                    })
+                    let session = reg.ok ? reg.data.session : null
+                    if (!reg.ok && reg.status === 409) {
+                      const login = await dbLogin(formData.email, formData.password)
+                      if (login.ok) session = login.data.session
                     }
-                    // Set session so header shows logged-in state
-                    if (account) {
-                      setSession({
-                        franchiseId: account.franchiseId,
-                        franchiseName: account.franchiseName,
-                        email: account.email,
-                        name: account.name,
-                        tier: account.tier,
-                      })
-                      // Save to admin pending queue with full form data
-                      savePendingListing({
-                        id: account.franchiseId,
-                        name: formData.franchiseName,
-                        category: formData.category,
-                        plan: 'Basic',
-                        email: formData.email,
-                        contactName: formData.contactName,
-                        phone: formData.phone,
-                        website: formData.website,
-                        city: '',
-                        description: formData.description,
-                        locations: Number(formData.locations) || 0,
-                        established: Number(formData.established) || new Date().getFullYear(),
-                        logoUrl: formData.logoPreview,
-                        mediaImages: formData.galleryPreviews,
-                        videoUrl: formData.videoUrl,
-                        submittedAt: new Date().toISOString(),
-                        status: 'pending',
-                      })
-                    }
+                    if (session) setSession(session)
                     // Notify admin
                     await fetch('/api/email/send', {
                       method: 'POST',
