@@ -6,7 +6,7 @@ import { franchises, categories } from '@/data/franchises'
 import type { Franchise, FranchiseTier } from '@/data/franchises'
 import FranchiseCard from '@/components/FranchiseCard'
 import Link from 'next/link'
-import { applyListingStore } from '@/lib/store'
+import { applyListingStore, syncServerListings } from '@/lib/store'
 
 type SortKey = 'rank' | 'rating' | 'newest' | 'alpha' | 'locations'
 type InvestmentBracket = 'all' | 'under150' | '150to350' | '350to600' | 'over600'
@@ -43,6 +43,7 @@ export default function DirectoryPage() {
   const SEED_IDS = useMemo(() => new Set(franchises.map((f) => f.id)), [])
   useEffect(() => {
     setLiveListings(applyListingStore(franchises))
+    syncServerListings().then(() => setLiveListings(applyListingStore(franchises)))
   }, [])
 
   // Seed filters from URL params (?q=… and ?category=…)

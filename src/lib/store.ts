@@ -103,10 +103,26 @@ export function removeApprovedListing(id: string): void {
  * Returns a new array with edits merged, removed entries excluded, and approved
  * pending listings appended (unless they have since been removed).
  */
+// Listings approved on the server (database). Populated by syncServerListings()
+// so every visitor sees admin-approved franchisor listings, not just the admin's browser.
+let serverApprovedCache: Franchise[] = []
+
+/** Fetch admin-approved listings from the database. Safe to call repeatedly; keeps the last good copy on failure. */
+export async function syncServerListings(): Promise<Franchise[]> {
+  if (typeof window === 'undefined') return serverApprovedCache
+  try {
+    const res = await fetch('/api/listings', { cache: 'no-store' })
+    if (res.ok) serverApprovedCache = (await res.json()) as Franchise[]
+  } catch { /* keep cache */ }
+  return serverApprovedCache
+}
+
 export function applyListingStore(base: Franchise[]): Franchise[] {
   const overrides = getListingOverrides()
   const removed   = new Set(getRemovedIds())
-  const approved  = getApprovedListings()
+  const localApproved = getApprovedListings()
+  const serverIds = new Set(serverApprovedCache.map((f) => f.id))
+  const approved = [...serverApprovedCache, ...localApproved.filter((f) => !serverIds.has(f.id))]
 
   const baseMerged = base
     .filter((f) => !removed.has(f.id))
