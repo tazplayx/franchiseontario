@@ -231,6 +231,9 @@ async function getCFASlugs(): Promise<string[]> {
           'Content-Type': 'application/json',
           'X-Algolia-Application-Id': 'ZP0Y2QB2N6',
           'X-Algolia-API-Key': '4c2dca04ff292d661a99a3f61803aa6b',
+          // Algolia rejects requests without a cfa.ca origin (403 "Invalid Application-ID or API key")
+          'Origin': 'https://cfa.ca',
+          'Referer': 'https://cfa.ca/',
         },
         body: JSON.stringify({ query: '', hitsPerPage: 1000, attributesToRetrieve: ['permalink', 'post_title'] }),
       }
@@ -441,7 +444,7 @@ async function rewriteDescription(raw: string, franchiseName: string): Promise<{
 
   try {
     const body = {
-      model: 'claude-haiku-4-5-20251001',
+      model: 'claude-haiku-5-5',
       max_tokens: 400,
       system: `You are writing franchise directory listings for FranchiseOntario.ca — Canada's leading Ontario franchise directory.
 Rewrite the provided franchise description in fresh, engaging Canadian English suitable for prospective franchise buyers in Ontario.
