@@ -6117,7 +6117,7 @@ export const sourcedListings: Franchise[] = [
     sourceListingUrl: `https://cfa.ca/lookforafranchise/listing/t-o-s-kathi-roll-eatery-holy-shakes/`,
   },
   {
-    id: `sourced-venture-x`,
+    id: `sourced-venture-x-2`,
     name: `Venture X`,
     tagline: `Venture X is a trendy co-sharing workspace franchise that is a blend of boutique.`,
     description: `Venture X is a trendy co-sharing workspace franchise that is a blend of boutique hotel and modern office styles with a high level of design that feels professional and welcoming. With several membersh`,
