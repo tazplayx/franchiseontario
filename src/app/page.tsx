@@ -17,6 +17,7 @@ import { FadeUp, FadeIn, StaggerGroup, StaggerItem, SlideInLeft, SlideInRight } 
 import { ParallaxImage, ParallaxSection } from '@/components/ParallaxImage'
 import { LiveListingCount } from '@/components/LiveListingCount'
 import RecentlyViewed from '@/components/RecentlyViewed'
+import Billboard from '@/components/Billboard'
 
 const BASE = 'https://www.franchiseontario.com'
 
@@ -676,6 +677,9 @@ export default function HomePage() {
       <JsonLd data={breadcrumbSchema} />
       <NewsTicker />
       <Hero />
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <Billboard slot="home-hero" />
+      </div>
       <StatsBar />
       <ValueProps />
       <ClientFeaturedSpotlight />

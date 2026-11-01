@@ -19,6 +19,7 @@ import { getSession } from '@/lib/leads'
 import ClientLeadSection, { LeadCountBadge } from '@/components/ClientLeadSection'
 import RelatedListings from '@/components/RelatedListings'
 import RecentlyViewed from '@/components/RecentlyViewed'
+import Billboard from '@/components/Billboard'
 import WishlistButton from '@/components/WishlistButton'
 import { recordView } from '@/lib/recently-viewed'
 import type { Franchise } from '@/data/franchises'
@@ -635,6 +636,9 @@ export default function ClientListingBody({ seed }: { seed: Franchise }) {
               <p className="text-[11px] text-amber-800 leading-relaxed mb-2">As an Ontario franchise buyer, you are protected by the <strong>Arthur Wishart Act (Franchise Disclosure), 2000</strong>. Franchisors must provide a complete FDD at least <strong>14 days</strong> before signing any agreement or paying any money.</p>
               <a href="/resources#arthur-wishart" className="text-[11px] text-amber-700 hover:underline font-medium">Learn about your legal rights →</a>
             </div>
+
+            {/* Advertising billboard */}
+            <Billboard slot="listing-sidebar" />
 
             {/* Compare */}
             <div className="bg-white rounded-xl border border-gray-200 p-4 text-center">

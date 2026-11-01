@@ -6,6 +6,7 @@ import { franchises, categories } from '@/data/franchises'
 import type { Franchise, FranchiseTier } from '@/data/franchises'
 import FranchiseCard from '@/components/FranchiseCard'
 import Link from 'next/link'
+import Billboard from '@/components/Billboard'
 import { applyListingStore, syncServerListings } from '@/lib/store'
 
 type SortKey = 'rank' | 'rating' | 'newest' | 'alpha' | 'locations'
@@ -383,6 +384,9 @@ export default function DirectoryPage() {
         </div>
       )}
 
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8">
+        <Billboard slot="directory-top" />
+      </div>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Sidebar filters */}
