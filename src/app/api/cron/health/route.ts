@@ -146,11 +146,13 @@ function checkContent(): Check[] {
   })
   const postIds = posts.map((p) => p.id)
   const dupPosts = postIds.filter((id, i) => postIds.indexOf(id) !== i)
-  out.push({ name: 'Blog URL uniqueness', ok: dupPosts.length === 0, detail: dupPosts.length ? `${dupPosts.length} duplicate ids` : 'all unique', fix: 'Run the blog dedupe or fix generate-blog-post.mjs id logic.' })
+  const dupPostIds = Array.from(new Set(dupPosts))
+  out.push({ name: 'Blog URL uniqueness', ok: dupPostIds.length === 0, detail: dupPostIds.length ? `duplicate URLs: ${dupPostIds.join(', ')}` : 'all unique', fix: 'Give each duplicate post a unique id in src/data/blog-posts.json.' })
 
   const ids = franchises.map((f) => f.id)
   const dupListings = ids.filter((id, i) => ids.indexOf(id) !== i)
-  out.push({ name: 'Directory uniqueness', ok: dupListings.length === 0, detail: dupListings.length ? `${dupListings.length} duplicate listing ids` : 'all unique', fix: 'Duplicate listing ids break pages. Check src/data/sourced-listings.ts.' })
+  const dupListingIds = Array.from(new Set(dupListings))
+  out.push({ name: 'Directory uniqueness', ok: dupListingIds.length === 0, detail: dupListingIds.length ? `duplicate listing ids: ${dupListingIds.join(', ')}` : 'all unique', fix: 'Duplicate listing ids break pages. The scraper now prevents this; re-run the directory scrape.' })
 
   const sourced = franchises.filter((f) => f.sourced).length
   out.push({ name: 'Sourced directory listings', ok: sourced >= 300, detail: `${sourced} sourced listings`, fix: sourced >= 300 ? undefined : 'The directory scraper is returning too few listings. Check the "Scrape Franchise Listings" GitHub Action.' })

@@ -507,6 +507,15 @@ async function scrapeBetheBoss(): Promise<SourcedFranchise[]> {
 }
 
 // ── Build a full SourcedFranchise from scraped partial data ───────────────────
+// Guarantee unique listing ids: two source listings with the same name would otherwise share an id
+const usedListingIds = new Set<string>()
+function uniqueListingId(base: string): string {
+  let id = base, n = 2
+  while (usedListingIds.has(id)) id = `${base}-${n++}`
+  usedListingIds.add(id)
+  return id
+}
+
 async function buildListing(
   partial: Partial<SourcedFranchise> & { rawDescription?: string },
   index: number
@@ -524,7 +533,7 @@ async function buildListing(
   if (locs >= 200) badges.push('National Brand')
 
   return {
-    id: `sourced-${slugify(name)}`,
+    id: uniqueListingId(`sourced-${slugify(name)}`),
     name,
     tagline: description.split('.')[0]?.slice(0, 80) + '.' || `${name} franchise opportunity in Ontario`,
     description,
