@@ -35,6 +35,17 @@ export default function Billboard({ slot, className = '' }: { slot: string; clas
     return () => { cancelled = true }
   }, [slot])
 
+  // Count one impression each time a live advertisement is shown
+  useEffect(() => {
+    if (!chosen) return
+    fetch('/api/ads/event', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ campaignId: chosen.id, type: 'impression' }),
+      keepalive: true,
+    }).catch(() => {})
+  }, [chosen])
+
   if (!config) return null
 
   if (chosen) {

@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import AdvertisingTab from '@/components/AdvertisingTab'
 import Link from 'next/link'
 import { dbLogin, dbSubmitTicket } from '@/lib/db-client'
 import { fetchFranchisorLeads, patchLead, unlockLead, type FranchisorLeadView } from '@/lib/franchisor-leads-client'
@@ -8,7 +9,7 @@ import {
   Pencil, Trash2, X, Save, AlertTriangle, CheckCircle,
   ExternalLink, Star, Crown, TrendingUp, Eye, Loader2,
   Users, Mail, Phone, MapPin, DollarSign, MessageSquare,
-  Clock, Lock, Zap, Download, Receipt,
+  Clock, Lock, Zap, Download, Receipt, Megaphone,
 } from 'lucide-react'
 import {
   getUserFranchiseOverrides,
@@ -77,12 +78,13 @@ type EditForm = {
   investmentMax: string
 }
 
-type ActiveTab = 'leads' | 'listing' | 'billing' | 'support'
+type ActiveTab = 'leads' | 'listing' | 'ads' | 'billing' | 'support'
 
 function DashNav({ active, onTab, onLogout, email, unread }: { active: ActiveTab; onTab: (t: ActiveTab) => void; onLogout: () => void; email: string; unread?: number }) {
   const nav: { label: string; tab: ActiveTab; icon: React.ReactNode; badge?: number }[] = [
     { label: 'Leads', tab: 'leads', icon: <Users size={16} />, badge: unread },
     { label: 'My Listing', tab: 'listing', icon: <LayoutDashboard size={16} /> },
+    { label: 'Advertising', tab: 'ads', icon: <Megaphone size={16} /> },
     { label: 'Billing', tab: 'billing', icon: <CreditCard size={16} /> },
     { label: 'Support', tab: 'support', icon: <LifeBuoy size={16} /> },
   ]
@@ -1716,6 +1718,7 @@ export default function DashboardPage() {
         </div>
         {activeTab === 'leads' && <LeadsTab session={realSession} />}
         {activeTab === 'listing' && <ListingTab session={realSession} />}
+        {activeTab === 'ads' && <AdvertisingTab />}
         {activeTab === 'billing' && <BillingTab session={realSession} successPlan={upgradeSuccessPlan} />}
         {activeTab === 'support' && <SupportTab session={realSession} />}
       </main>

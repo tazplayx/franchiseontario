@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getStripe } from '@/lib/stripe'
-import { sbInsert, sbUpdate, supabaseConfigured } from '@/lib/supabase-server'
+import { sbInsert, sbSelect, sbUpdate, supabaseConfigured } from '@/lib/supabase-server'
 import Stripe from 'stripe'
 
 // ── Persist a subscription to the DB and sync the account/listing tier ───────
@@ -93,6 +93,19 @@ export async function POST(req: NextRequest) {
       // ── New subscription paid ────────────────────────────────────────
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
+
+        // Advertising booking paid: take it live for its booked period
+        if (session.metadata?.kind === 'ad_campaign') {
+          if (session.payment_status === 'paid' && session.metadata.campaignId) {
+            const weeks = Number((await sbSelect<{ weeks: number }>('ad_campaigns', `id=eq.${encodeURIComponent(session.metadata.campaignId)}&select=weeks`))[0]?.weeks ?? 1)
+            const start = new Date()
+            const end = new Date(start.getTime() + weeks * 7 * 86400000)
+            await sbUpdate('ad_campaigns', `id=eq.${encodeURIComponent(session.metadata.campaignId)}`, {
+              status: 'active', paid_at: start.toISOString(), start_at: start.toISOString(), end_at: end.toISOString(),
+            })
+          }
+          break
+        }
 
         // One-time lead unlock (pay-per-lead): record it once payment has succeeded
         if (session.metadata?.kind === 'lead_unlock') {

@@ -117,3 +117,35 @@ alter table public.subscriptions enable row level security;
 create index if not exists idx_subscriptions_email on public.subscriptions(email);
 create index if not exists idx_subscriptions_franchise on public.subscriptions(franchise_id);
 create index if not exists idx_listings_status on public.listings(status);
+
+-- ── Advertising (billboard bookings) ───────────────────────────────────
+create table if not exists public.ad_campaigns (
+  id text primary key,
+  franchise_id text not null,
+  account_email text not null,
+  slot_id text not null,
+  weeks int not null,
+  title text not null,
+  body text not null,
+  image_url text,
+  cta_url text not null,
+  cta_label text not null,
+  amount_cents int not null,
+  status text not null default 'pending_payment',   -- pending_payment | active | cancelled
+  stripe_session_id text,
+  paid_at timestamptz,
+  start_at timestamptz,
+  end_at timestamptz,
+  created_at timestamptz default now()
+);
+alter table public.ad_campaigns enable row level security;
+create index if not exists idx_ad_campaigns_slot on public.ad_campaigns(slot_id, status);
+
+create table if not exists public.ad_events (
+  id bigint generated always as identity primary key,
+  campaign_id text not null,
+  type text not null,                                -- impression | click
+  created_at timestamptz default now()
+);
+alter table public.ad_events enable row level security;
+create index if not exists idx_ad_events_campaign on public.ad_events(campaign_id);

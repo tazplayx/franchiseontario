@@ -63,3 +63,18 @@ export function monthlyVisitors(): number {
 export function formatCad(cents: number): string {
   return `$${(cents / 100).toLocaleString('en-CA', { maximumFractionDigits: 0 })}`
 }
+
+/** Booking lengths. Longer bookings are discounted. */
+export const AD_DURATIONS = [
+  { weeks: 1, discount: 0 },
+  { weeks: 2, discount: 0.05 },
+  { weeks: 4, discount: 0.1 },
+  { weeks: 12, discount: 0.2 },
+] as const
+
+/** Total price in cents for a slot and duration, after the duration discount. */
+export function priceFor(slot: AdSlot, weeks: number): number {
+  const d = AD_DURATIONS.find((x) => x.weeks === weeks)
+  if (!d) return 0
+  return Math.round(slot.weeklyCents * weeks * (1 - d.discount))
+}
