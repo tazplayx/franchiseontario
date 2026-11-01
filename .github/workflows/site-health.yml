@@ -1,0 +1,32 @@
+name: Site Health Check
+
+# Checks the live site, database, payments, email, scheduled jobs and AI account every 6 hours.
+# Emails the owner when something needs attention (via the site's /api/cron/health endpoint).
+
+on:
+  schedule:
+    - cron: '0 */6 * * *'   # every 6 hours
+  workflow_dispatch:          # run on demand from the Actions tab
+
+permissions:
+  actions: read               # read the status of the other scheduled workflows
+
+jobs:
+  health:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run site health checks
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          SITE_URL: https://www.franchiseontario.com
+        run: node scripts/site-health.mjs
