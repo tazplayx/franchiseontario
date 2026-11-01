@@ -3,10 +3,6 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Eye, EyeOff, Lock } from 'lucide-react'
 
-// Admin credentials — change ADMIN_PASSWORD to your preferred password
-const ADMIN_EMAIL = 'cdeneire@proton.me'
-const ADMIN_PASSWORD = 'FranchiseON2026!'
-
 export default function AdminLoginPage() {
   const router = useRouter()
   const [email, setEmail] = useState('')
@@ -15,20 +11,28 @@ export default function AdminLoginPage() {
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError('')
-
-    setTimeout(() => {
-      if (email === ADMIN_EMAIL && password === ADMIN_PASSWORD) {
-        localStorage.setItem('fo_admin', 'authenticated')
+    try {
+      // Credentials are checked on the server; the session is an HTTP-only signed cookie
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      if (res.ok) {
+        localStorage.setItem('fo_admin', 'authenticated') // UI convenience only; the server enforces access
         router.push('/admin/dashboard')
-      } else {
-        setError('Invalid email or password.')
-        setLoading(false)
+        return
       }
-    }, 600)
+      const data = await res.json().catch(() => ({}))
+      setError(data.error ?? 'Invalid email or password.')
+    } catch {
+      setError('Network error. Please try again.')
+    }
+    setLoading(false)
   }
 
   return (

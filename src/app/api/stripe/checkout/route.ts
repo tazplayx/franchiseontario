@@ -29,13 +29,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid plan' }, { status: 400 })
     }
 
+    // Stripe cannot put a weekly price and a monthly price on one subscription.
+    // The Homepage Spotlight is therefore purchased on its own.
+    if (addFeatureSpotlight && plan !== 'feature_spotlight') {
+      return NextResponse.json(
+        { error: 'The Homepage Spotlight is billed weekly and must be purchased separately from a monthly plan.' },
+        { status: 400 },
+      )
+    }
+
     const lineItems: { price: string; quantity: number }[] = [
       { price: planConfig.priceId, quantity: 1 },
     ]
 
-    if (addFeatureSpotlight) {
-      lineItems.push({ price: PLANS.feature_spotlight.priceId, quantity: 1 })
-    }
 
     const baseUrl = process.env.NEXT_PUBLIC_BASE_URL ?? 'https://www.franchiseontario.com'
 

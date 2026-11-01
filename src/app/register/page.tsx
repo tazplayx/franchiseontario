@@ -305,7 +305,7 @@ export default function RegisterPage() {
               {planOptions.map((plan) => (
                 <button
                   key={plan.id}
-                  onClick={() => setSelectedPlan(plan.id)}
+                  onClick={() => { setSelectedPlan(plan.id); if (plan.id !== 'basic') setAddFeature(false) }}
                   className={`relative p-5 rounded-2xl border-2 text-left transition-all ${
                     selectedPlan === plan.id
                       ? 'border-red-600 bg-red-50 shadow-lg shadow-red-100'
@@ -338,10 +338,11 @@ export default function RegisterPage() {
 
             {/* Featured add-on */}
             <div
-              className={`border-2 rounded-xl p-4 cursor-pointer transition-all mb-8 ${
-                addFeature ? 'border-amber-400 bg-amber-50' : 'border-gray-200 bg-white hover:border-amber-300'
+              className={`border-2 rounded-xl p-4 transition-all mb-8 ${
+                selectedPlan !== 'basic' ? 'opacity-60 cursor-not-allowed border-gray-200 bg-white'
+                : addFeature ? 'cursor-pointer border-amber-400 bg-amber-50' : 'cursor-pointer border-gray-200 bg-white hover:border-amber-300'
               }`}
-              onClick={() => setAddFeature(!addFeature)}
+              onClick={() => { if (selectedPlan === 'basic') setAddFeature(!addFeature) }}
             >
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
@@ -706,7 +707,8 @@ export default function RegisterPage() {
                 <span className="text-red-600">
                   {selectedPlan === 'basic' && !addFeature
                     ? 'Free'
-                    : `$${(selectedPlan === 'premium' ? 79 : selectedPlan === 'enterprise' ? 199 : 0) + (addFeature ? 14.99 : 0)} CAD`}
+                    : addFeature && selectedPlan === 'basic' ? '$14.99 CAD / week (Spotlight only)'
+                    : `$${selectedPlan === 'premium' ? 79 : selectedPlan === 'enterprise' ? 199 : 0} CAD / month`}
                 </span>
               </div>
             </div>
@@ -801,8 +803,9 @@ export default function RegisterPage() {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                          plan: selectedPlan,
-                          addFeatureSpotlight: addFeature,
+                          // Spotlight is billed weekly, so it is sold on its own (never combined with a monthly plan)
+                          plan: addFeature && selectedPlan === 'basic' ? 'feature_spotlight' : selectedPlan,
+                          addFeatureSpotlight: false,
                           franchiseName: formData.franchiseName,
                           contactName: formData.contactName,
                           email: formData.email,

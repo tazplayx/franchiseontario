@@ -122,7 +122,7 @@ function AdminNav({ active }: { active: string }) {
   ]
 
   const logout = () => {
-    localStorage.removeItem('fo_admin')
+    void fetch('/api/admin/login', { method: 'DELETE' }); localStorage.removeItem('fo_admin')
     router.push('/admin')
   }
 

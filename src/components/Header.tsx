@@ -47,7 +47,7 @@ export default function Header() {
   const handleSignOut = () => {
     clearSession()
     localStorage.removeItem('fo_user')
-    localStorage.removeItem('fo_admin')
+    void fetch('/api/admin/login', { method: 'DELETE' }); localStorage.removeItem('fo_admin')
     setRealSession(null)
     setDemoLoggedIn(false)
     setAdminLoggedIn(false)

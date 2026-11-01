@@ -15,8 +15,8 @@ jobs:
     steps:
       - name: Ping database via site API
         run: |
-          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://www.franchiseontario.com/api/admin/leads")
-          echo "Leads API responded: HTTP $STATUS"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 30 "https://www.franchiseontario.com/api/listings")
+          echo "Listings API (database) responded: HTTP $STATUS"
           if [ "$STATUS" != "200" ]; then
             echo "::warning::Database may be paused or unhealthy (HTTP $STATUS). Check https://supabase.com/dashboard"
             exit 1
