@@ -27,6 +27,7 @@ async function call<T>(url: string, init?: RequestInit): Promise<ApiResult<T>> {
 }
 
 export interface RegisterPayload {
+  franchiseId?: string
   franchiseName: string
   category?: string
   contactName: string

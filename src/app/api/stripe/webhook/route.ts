@@ -93,6 +93,18 @@ export async function POST(req: NextRequest) {
       // ── New subscription paid ────────────────────────────────────────
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session
+
+        // One-time lead unlock (pay-per-lead): record it once payment has succeeded
+        if (session.metadata?.kind === 'lead_unlock') {
+          if (session.payment_status === 'paid' && session.metadata.leadId) {
+            await sbUpdate('leads', `id=eq.${encodeURIComponent(session.metadata.leadId)}`, {
+              unlocked_at: new Date().toISOString(),
+              unlocked_by: session.metadata.email ?? '',
+            })
+          }
+          break
+        }
+
         const { plan, franchiseName, contactName, isUpgrade } = session.metadata ?? {}
         const customerEmail = session.customer_email ?? ''
 

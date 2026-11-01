@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sbSelect, sbInsert, supabaseConfigured } from '@/lib/supabase-server'
 import { hashPassword } from '@/lib/password'
+import { FRANCHISOR_COOKIE, FRANCHISOR_SESSION_MS, createFranchisorToken } from '@/lib/franchisor-session'
 
 export const dynamic = 'force-dynamic'
 
@@ -13,6 +14,7 @@ function slugify(s: string): string {
 }
 
 interface Body {
+  franchiseId?: string // set when claiming an existing listing so the id stays linked
   franchiseName: string
   category?: string
   contactName: string
@@ -48,7 +50,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'An account with this email already exists. Please sign in.' }, { status: 409 })
     }
 
-    const franchiseId = slugify(b.franchiseName)
+    const franchiseId = b.franchiseId ? slugify(b.franchiseId) || slugify(b.franchiseName) : slugify(b.franchiseName)
     const plan = b.plan ?? 'Basic'
     const tier = plan.toLowerCase() as 'basic' | 'premium' | 'enterprise'
 
@@ -93,7 +95,10 @@ export async function POST(req: NextRequest) {
       submitted_at: new Date().toISOString(),
     })
 
-    return NextResponse.json({ ok: true, franchiseId, email, franchiseName: b.franchiseName, name: b.contactName, tier: 'basic' })
+    const token = await createFranchisorToken(email)
+    const res = NextResponse.json({ ok: true, franchiseId, email, franchiseName: b.franchiseName, name: b.contactName, tier: 'basic' })
+    if (token) res.cookies.set(FRANCHISOR_COOKIE, token, { httpOnly: true, secure: true, sameSite: 'strict', path: '/', maxAge: FRANCHISOR_SESSION_MS / 1000 })
+    return res
   } catch (err) {
     console.error('[register] Error:', err)
     return NextResponse.json({ error: 'Registration failed. Please try again.' }, { status: 500 })

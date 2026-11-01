@@ -71,6 +71,7 @@ export default function ClaimListingPage() {
 
     // Create the franchisor account in the database (basic tier) — 409 means it already exists
     const reg = await dbRegister({
+      franchiseId: franchise.id,
       franchiseName: franchise.name,
       contactName: form.name,
       title: form.title,

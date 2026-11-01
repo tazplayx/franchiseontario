@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { ADMIN_COOKIE, verifyAdminToken } from '@/lib/admin-session'
+import { FRANCHISOR_COOKIE, verifyFranchisorToken } from '@/lib/franchisor-session'
 
 /**
  * Server-side admin protection.
@@ -17,6 +18,13 @@ export async function middleware(req: NextRequest) {
     (pathname === '/api/claims' || pathname === '/api/tickets') && req.method === 'POST'
   if (isPublicSubmission) return NextResponse.next()
 
+  // Franchisor routes need a franchisor session (their own leads only)
+  if (pathname.startsWith('/api/franchisor/')) {
+    const email = await verifyFranchisorToken(req.cookies.get(FRANCHISOR_COOKIE)?.value)
+    if (email) return NextResponse.next()
+    return NextResponse.json({ error: 'Please sign in.' }, { status: 401 })
+  }
+
   const authed = await verifyAdminToken(req.cookies.get(ADMIN_COOKIE)?.value)
   if (authed) return NextResponse.next()
 
@@ -27,5 +35,5 @@ export async function middleware(req: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/admin/:path*', '/api/admin/:path*', '/api/claims', '/api/tickets'],
+  matcher: ['/admin/:path*', '/api/admin/:path*', '/api/franchisor/:path*', '/api/claims', '/api/tickets'],
 }

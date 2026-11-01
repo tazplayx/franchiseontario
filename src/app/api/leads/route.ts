@@ -54,6 +54,13 @@ export async function POST(req: NextRequest) {
       : 'https://www.franchiseontario.com/register'
 
     // ── 1. Notify the registered account owner ────────────────────────────────
+    // Franchisors see a masked teaser; full contact details are only shown in the admin's own emails.
+    // Franchisors unlock contact details in their dashboard (pay-per-lead or included with a membership).
+    const isAdminOwner = ownerEmail.toLowerCase() === (process.env.ADMIN_EMAIL ?? '').toLowerCase()
+    const shown = isAdminOwner
+      ? lead
+      : { ...lead, name: `${lead.name.charAt(0)}•••`, email: 'Hidden until unlocked', phone: 'Hidden until unlocked', message: '' }
+
     const ownerHtml = `
       <div style="font-family:sans-serif;max-width:580px;margin:0 auto;padding:24px;background:#f9fafb;border-radius:12px">
         <div style="background:#00228e;color:#fff;padding:14px 24px;border-radius:8px 8px 0 0;margin:-24px -24px 24px">
@@ -63,18 +70,18 @@ export async function POST(req: NextRequest) {
           A potential franchisee has submitted their information via FranchiseOntario.com.
         </p>
         <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:20px">
-          <tr><td style="padding:8px 0;color:#6b7280;width:140px">Name</td><td style="padding:8px 0;font-weight:600;color:#111827">${lead.name}</td></tr>
-          <tr><td style="padding:8px 0;color:#6b7280">Email</td><td style="padding:8px 0"><a href="mailto:${lead.email}" style="color:#00228e">${lead.email}</a></td></tr>
-          <tr><td style="padding:8px 0;color:#6b7280">Phone</td><td style="padding:8px 0;color:#374151">${lead.phone || 'Not provided'}</td></tr>
-          <tr><td style="padding:8px 0;color:#6b7280">City</td><td style="padding:8px 0;color:#374151">${lead.city || 'Not provided'}</td></tr>
-          <tr><td style="padding:8px 0;color:#6b7280">Investment Budget</td><td style="padding:8px 0;font-weight:600;color:#111827">${lead.investmentBudget}</td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280;width:140px">Name</td><td style="padding:8px 0;font-weight:600;color:#111827">${shown.name}</td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280">Email</td><td style="padding:8px 0"><a href="mailto:${shown.email}" style="color:#00228e">${shown.email}</a></td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280">Phone</td><td style="padding:8px 0;color:#374151">${shown.phone || 'Not provided'}</td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280">City</td><td style="padding:8px 0;color:#374151">${shown.city || 'Not provided'}</td></tr>
+          <tr><td style="padding:8px 0;color:#6b7280">Investment Budget</td><td style="padding:8px 0;font-weight:600;color:#111827">${shown.investmentBudget}</td></tr>
         </table>
-        ${lead.message ? `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:20px"><p style="margin:0 0 6px;font-size:12px;color:#9ca3af;font-weight:600;text-transform:uppercase">Message</p><p style="margin:0;font-size:14px;color:#374151">${lead.message}</p></div>` : ''}
+        ${shown.message ? `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:8px;padding:14px;margin-bottom:20px"><p style="margin:0 0 6px;font-size:12px;color:#9ca3af;font-weight:600;text-transform:uppercase">Message</p><p style="margin:0;font-size:14px;color:#374151">${shown.message}</p></div>` : ''}
         ${devEmail
           ? `<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:12px 14px;margin-bottom:20px;font-size:13px;color:#166534">✅ Franchisor notified at <strong>${devEmail}</strong> with a "claim your listing" email (contact details withheld until they register).</div>`
           : `<div style="background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:12px 14px;margin-bottom:20px;font-size:13px;color:#92400e">⚠️ <strong>Franchisor NOT notified</strong> — no development email on file for ${franchiseName}.${listing?.website ? ` Find their franchising contact via <a href="${listing.website}" style="color:#92400e;font-weight:600">${listing.website}</a> and add it to <code>src/data/franchise-emails.ts</code> to automate this.` : ''}</div>`}
-        <a href="https://www.franchiseontario.com/admin/leads" style="display:inline-block;background:#00228e;color:#fff;padding:11px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px">
-          View All Leads in Admin Dashboard →
+        <a href="${isAdminOwner ? 'https://www.franchiseontario.com/admin/leads' : 'https://www.franchiseontario.com/dashboard'}" style="display:inline-block;background:#00228e;color:#fff;padding:11px 22px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px">
+          ${isAdminOwner ? 'View All Leads in Admin Dashboard' : 'Unlock This Lead in Your Dashboard'} →
         </a>
         <p style="margin:20px 0 0;font-size:11px;color:#9ca3af">FranchiseOntario.com — your franchise lead management platform</p>
       </div>`
@@ -104,17 +111,17 @@ export async function POST(req: NextRequest) {
             <table style="width:100%;border-collapse:collapse;font-size:13px">
               <tr>
                 <td style="padding:6px 0;color:#6b7280;width:130px">Name</td>
-                <td style="padding:6px 0;font-weight:700;color:#0a1428">${lead.name}</td>
+                <td style="padding:6px 0;font-weight:700;color:#0a1428">${shown.name}</td>
               </tr>
               <tr>
                 <td style="padding:6px 0;color:#6b7280">Location</td>
-                <td style="padding:6px 0;color:#374151">${lead.city || 'Ontario'}</td>
+                <td style="padding:6px 0;color:#374151">${shown.city || 'Ontario'}</td>
               </tr>
               <tr>
                 <td style="padding:6px 0;color:#6b7280">Investment Budget</td>
-                <td style="padding:6px 0;font-weight:700;color:#ff000d">${lead.investmentBudget}</td>
+                <td style="padding:6px 0;font-weight:700;color:#ff000d">${shown.investmentBudget}</td>
               </tr>
-              ${lead.message ? `<tr><td style="padding:6px 0;color:#6b7280;vertical-align:top">Message</td><td style="padding:6px 0;color:#374151;font-style:italic">"${lead.message}"</td></tr>` : ''}
+              ${shown.message ? `<tr><td style="padding:6px 0;color:#6b7280;vertical-align:top">Message</td><td style="padding:6px 0;color:#374151;font-style:italic">"${shown.message}"</td></tr>` : ''}
             </table>
             <div style="margin-top:14px;padding-top:14px;border-top:1px solid #f1f5f9;font-size:12px;color:#94a3b8">
               ⚠️ Full contact details (email &amp; phone) are available in your franchisor dashboard after creating a free account.

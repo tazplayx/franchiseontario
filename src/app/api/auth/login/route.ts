@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { sbSelect, supabaseConfigured } from '@/lib/supabase-server'
 import { verifyPassword } from '@/lib/password'
+import { FRANCHISOR_COOKIE, FRANCHISOR_SESSION_MS, createFranchisorToken } from '@/lib/franchisor-session'
 
 export const dynamic = 'force-dynamic'
 
@@ -31,8 +32,9 @@ export async function POST(req: NextRequest) {
     if (!account || !verifyPassword(password, account.password_hash)) {
       return NextResponse.json({ error: 'Incorrect email or password.' }, { status: 401 })
     }
-    // Return the session payload (no password hash)
-    return NextResponse.json({
+    const token = await createFranchisorToken(account.email)
+    if (!token) return NextResponse.json({ error: 'Login is temporarily unavailable.' }, { status: 503 })
+    const res = NextResponse.json({
       ok: true,
       session: {
         franchiseId: account.franchise_id,
@@ -42,6 +44,8 @@ export async function POST(req: NextRequest) {
         tier: account.tier,
       },
     })
+    res.cookies.set(FRANCHISOR_COOKIE, token, { httpOnly: true, secure: true, sameSite: 'strict', path: '/', maxAge: FRANCHISOR_SESSION_MS / 1000 })
+    return res
   } catch (err) {
     console.error('[login] Error:', err)
     return NextResponse.json({ error: 'Login failed. Please try again.' }, { status: 500 })

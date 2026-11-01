@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { dbLogin, dbSubmitTicket } from '@/lib/db-client'
+import { fetchFranchisorLeads, patchLead, unlockLead, type FranchisorLeadView } from '@/lib/franchisor-leads-client'
 import {
   LayoutDashboard, FileText, CreditCard, LifeBuoy, LogOut,
   Pencil, Trash2, X, Save, AlertTriangle, CheckCircle,
@@ -322,6 +323,10 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
     ? session.tier.charAt(0).toUpperCase() + session.tier.slice(1)
     : (MOCK_USER.franchise as Record<string, unknown>).plan as string ?? 'Basic'
   const [isEditing, setIsEditing] = useState(false)
+  const [dashLeads, setDashLeads] = useState<FranchisorLeadView[]>([])
+  useEffect(() => {
+    fetchFranchisorLeads().then((r) => { if (r.ok) setDashLeads(r.data.leads) })
+  }, [])
   const [removeConfirm, setRemoveConfirm] = useState(false)
   const [removing, setRemoving] = useState(false)
   const [removed, setRemoved] = useState(false)
@@ -504,7 +509,7 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
 
       {/* Stats row — real data from localStorage */}
       {(() => {
-        const leads = getLeads(franchise.id)
+        const leads = dashLeads
         const totalLeads = leads.length
         const unreadLeads = leads.filter((l) => !l.read).length
         const realStats = [
@@ -680,276 +685,251 @@ function ListingTab({ session }: { session: FranchisorSession | null }) {
 }
 
 // ── Leads tab ─────────────────────────────────────────────────────────────────
+const FUNNEL_STAGES: { value: LeadStatus; label: string; color: string }[] = [
+  { value: 'new', label: 'New', color: 'bg-blue-100 text-blue-700' },
+  { value: 'contacted', label: 'Contacted', color: 'bg-purple-100 text-purple-700' },
+  { value: 'qualified', label: 'Qualified', color: 'bg-amber-100 text-amber-700' },
+  { value: 'meeting_scheduled', label: 'Meeting Scheduled', color: 'bg-orange-100 text-orange-700' },
+  { value: 'proposal_sent', label: 'Proposal Sent', color: 'bg-indigo-100 text-indigo-700' },
+  { value: 'closed_won', label: 'Closed Won', color: 'bg-green-100 text-green-700' },
+  { value: 'closed_lost', label: 'Closed Lost', color: 'bg-red-100 text-red-700' },
+]
+
 function LeadsTab({ session }: { session: FranchisorSession | null }) {
-  const franchiseId = session?.franchiseId ?? ''
-  const tier = session?.tier ?? 'basic'
-  const [leads, setLeads] = useState<FranchiseLead[]>([])
-  const [selectedLead, setSelectedLead] = useState<FranchiseLead | null>(null)
-  const [statusLead, setStatusLead] = useState<FranchiseLead | null>(null)
+  const [leads, setLeads] = useState<FranchisorLeadView[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [priceCents, setPriceCents] = useState(7500)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [busyId, setBusyId] = useState<string | null>(null)
+  const [notice, setNotice] = useState('')
+  const isMember = session?.tier === 'premium' || session?.tier === 'enterprise'
+  const selected = leads.find((l) => l.id === selectedId) ?? null
+  const price = `$${(priceCents / 100).toFixed(0)}`
 
-  const FUNNEL_STAGES: { value: LeadStatus; label: string; color: string }[] = [
-    { value: 'new', label: 'New', color: 'bg-blue-100 text-blue-700' },
-    { value: 'contacted', label: 'Contacted', color: 'bg-purple-100 text-purple-700' },
-    { value: 'qualified', label: 'Qualified', color: 'bg-amber-100 text-amber-700' },
-    { value: 'meeting_scheduled', label: 'Meeting Scheduled', color: 'bg-orange-100 text-orange-700' },
-    { value: 'proposal_sent', label: 'Proposal Sent', color: 'bg-indigo-100 text-indigo-700' },
-    { value: 'closed_won', label: 'Closed Won', color: 'bg-green-100 text-green-700' },
-    { value: 'closed_lost', label: 'Closed Lost', color: 'bg-red-100 text-red-700' },
-  ]
-
-  const getStatusBadge = (status?: LeadStatus) => {
-    const stage = FUNNEL_STAGES.find(s => s.value === (status ?? 'new')) ?? FUNNEL_STAGES[0]
-    return <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${stage.color}`}>{stage.label}</span>
+  const load = async () => {
+    setLoading(true)
+    const r = await fetchFranchisorLeads()
+    if (r.ok) {
+      setError('')
+      setLeads(r.data.leads)
+      setPriceCents(r.data.leadPriceCents)
+    } else {
+      setError(r.error)
+    }
+    setLoading(false)
   }
 
   useEffect(() => {
-    if (franchiseId) setLeads(getLeads(franchiseId))
-  }, [franchiseId])
+    const q = new URLSearchParams(window.location.search)
+    if (q.get('lead_unlocked')) {
+      setNotice('Payment received. Your lead is being unlocked…')
+      setTimeout(load, 2500) // the webhook records the unlock a moment after payment
+    }
+    if (q.get('lead_cancelled')) setNotice('Payment cancelled. You have not been charged.')
+    load()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  function handleView(lead: FranchiseLead) {
-    setSelectedLead(lead)
-    if (!lead.read && franchiseId) {
-      markLeadRead(franchiseId, lead.id)
-      setLeads((prev) => prev.map((l) => l.id === lead.id ? { ...l, read: true } : l))
+  const unlock = async (lead: FranchisorLeadView) => {
+    setBusyId(lead.id)
+    const r = await unlockLead(lead.id)
+    if (r.ok && r.data.url) { window.location.href = r.data.url; return }
+    if (r.ok) { await load(); setBusyId(null); return }
+    setNotice(r.error)
+    setBusyId(null)
+  }
+
+  const open = (lead: FranchisorLeadView) => {
+    setSelectedId(lead.id)
+    if (!lead.read) {
+      void patchLead(lead.id, { read: true })
+      setLeads((prev) => prev.map((l) => (l.id === lead.id ? { ...l, read: true } : l)))
     }
   }
 
-  const isBasic = tier === 'basic'
-  const visibleLeads = isBasic ? leads.slice(0, FREE_LEAD_LIMIT) : leads
-  const lockedLeads = isBasic ? leads.slice(FREE_LEAD_LIMIT) : []
-  const locked = lockedLeads.length
+  const setStage = async (lead: FranchisorLeadView, status: string) => {
+    const r = await patchLead(lead.id, { status, read: true })
+    if (!r.ok) { setNotice(r.error); return }
+    setLeads((prev) => prev.map((l) => (l.id === lead.id ? { ...l, status, read: true } : l)))
+  }
+
+  const stageBadge = (status: string) => {
+    const stage = FUNNEL_STAGES.find((s) => s.value === status) ?? FUNNEL_STAGES[0]
+    return <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${stage.color}`}>{stage.label}</span>
+  }
+
+  const timeAgo = (iso: string) => {
+    const mins = Math.floor((Date.now() - new Date(iso).getTime()) / 60000)
+    if (mins < 60) return `${mins}m ago`
+    const hrs = Math.floor(mins / 60)
+    return hrs < 24 ? `${hrs}h ago` : `${Math.floor(hrs / 24)}d ago`
+  }
+
+  const unlockButton = (lead: FranchisorLeadView, full = false) => (
+    <button
+      onClick={() => unlock(lead)}
+      disabled={busyId === lead.id}
+      className={`${full ? 'w-full py-2.5' : 'px-3 py-1.5'} btn-red rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 disabled:opacity-60`}
+    >
+      <Lock size={12} /> {busyId === lead.id ? 'Opening payment…' : isMember ? 'Unlock (included)' : `Unlock contact · ${price}`}
+    </button>
+  )
+
+  if (error && /sign in/i.test(error)) {
+    return (
+      <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 text-center">
+        <Lock size={28} className="mx-auto mb-3 text-gray-300" />
+        <p className="font-semibold text-gray-700 mb-1">Please sign in again</p>
+        <p className="text-sm text-gray-400 mb-4">For your security, leads are now protected by a new sign-in.</p>
+        <Link href="/dashboard/login" className="btn-red inline-block px-5 py-2 rounded-xl text-sm font-semibold">Sign in</Link>
+      </div>
+    )
+  }
 
   return (
     <div>
       {/* Lead detail modal */}
-      {selectedLead && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedLead(null)}>
+      {selected && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setSelectedId(null)}>
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md" onClick={(e) => e.stopPropagation()}>
             <div className="flex items-center justify-between p-6 border-b border-gray-100">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center font-bold text-red-600 uppercase">
-                  {selectedLead.name.charAt(0)}
-                </div>
-                <div>
-                  <p className="font-bold text-gray-900">{selectedLead.name}</p>
-                  <p className="text-xs text-gray-400">{new Date(selectedLead.submittedAt).toLocaleString('en-CA', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
-                </div>
+              <div>
+                <p className="font-bold text-gray-900">{selected.name}</p>
+                <p className="text-xs text-gray-400">{new Date(selected.submittedAt).toLocaleString('en-CA', { month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</p>
               </div>
-              <button onClick={() => setSelectedLead(null)} className="p-1.5 hover:bg-gray-100 rounded-lg"><X size={16} className="text-gray-500" /></button>
+              <button onClick={() => setSelectedId(null)} className="p-1.5 hover:bg-gray-100 rounded-lg"><X size={16} className="text-gray-500" /></button>
             </div>
             <div className="p-6 space-y-3">
               <div className="grid grid-cols-2 gap-3">
                 <div className="bg-gray-50 rounded-xl p-3">
                   <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">Email</p>
-                  <a href={`mailto:${selectedLead.email}`} className="text-sm text-red-600 font-medium hover:underline flex items-center gap-1"><Mail size={11} /> {selectedLead.email}</a>
+                  {selected.unlocked
+                    ? <a href={`mailto:${selected.email}`} className="text-sm text-red-600 font-medium hover:underline flex items-center gap-1"><Mail size={11} /> {selected.email}</a>
+                    : <span className="text-sm text-gray-400">Locked</span>}
                 </div>
                 <div className="bg-gray-50 rounded-xl p-3">
                   <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">Phone</p>
-                  {selectedLead.phone
-                    ? <a href={`tel:${selectedLead.phone}`} className="text-sm text-gray-800 font-medium hover:text-red-600 flex items-center gap-1"><Phone size={11} /> {selectedLead.phone}</a>
-                    : <span className="text-sm text-gray-400">Not provided</span>}
+                  {selected.unlocked
+                    ? (selected.phone ? <a href={`tel:${selected.phone}`} className="text-sm text-gray-800 font-medium flex items-center gap-1"><Phone size={11} /> {selected.phone}</a> : <span className="text-sm text-gray-400">Not provided</span>)
+                    : <span className="text-sm text-gray-400">Locked</span>}
                 </div>
                 <div className="bg-gray-50 rounded-xl p-3">
                   <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">City</p>
-                  <p className="text-sm text-gray-800 font-medium flex items-center gap-1"><MapPin size={11} /> {selectedLead.city}</p>
+                  <p className="text-sm text-gray-800 font-medium flex items-center gap-1"><MapPin size={11} /> {selected.city || '—'}</p>
                 </div>
                 <div className="bg-gray-50 rounded-xl p-3">
                   <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">Budget</p>
-                  <p className="text-sm text-gray-800 font-medium flex items-center gap-1"><DollarSign size={11} /> {selectedLead.investmentBudget}</p>
+                  <p className="text-sm text-gray-800 font-medium flex items-center gap-1"><DollarSign size={11} /> {selected.investmentBudget || '—'}</p>
                 </div>
               </div>
-              {selectedLead.message && (
+              {selected.unlocked && selected.message && (
                 <div className="bg-gray-50 rounded-xl p-3">
                   <p className="text-[10px] font-semibold text-gray-400 uppercase mb-1">Message</p>
-                  <p className="text-sm text-gray-700 leading-relaxed">{selectedLead.message}</p>
+                  <p className="text-sm text-gray-700 leading-relaxed">{selected.message}</p>
+                </div>
+              )}
+              {!selected.unlocked && (
+                <div className="bg-amber-50 border border-amber-200 rounded-xl p-4 space-y-2">
+                  <p className="text-sm font-semibold text-gray-900">Unlock this lead to see their contact details</p>
+                  <p className="text-xs text-gray-600">{isMember ? 'Included with your membership.' : `One-time ${price} CAD. Or upgrade to Premium or Enterprise for unlimited leads.`}</p>
+                  {unlockButton(selected, true)}
                 </div>
               )}
               <div className="bg-gray-50 rounded-xl p-3">
                 <p className="text-[10px] font-semibold text-gray-400 uppercase mb-2">Sales Stage</p>
                 <div className="flex flex-wrap gap-1.5">
-                  {FUNNEL_STAGES.map((stage) => {
-                    const isCurrent = (selectedLead.status ?? 'new') === stage.value
-                    return (
-                      <button
-                        key={stage.value}
-                        onClick={() => {
-                          if (franchiseId) {
-                            updateLeadStatus(franchiseId, selectedLead.id, stage.value)
-                            setLeads((prev) => prev.map((l) => l.id === selectedLead.id ? { ...l, status: stage.value, read: true } : l))
-                            setSelectedLead((prev) => prev ? { ...prev, status: stage.value } : null)
-                          }
-                        }}
-                        className={`text-[10px] font-bold px-2.5 py-1 rounded-full transition-colors ${isCurrent ? stage.color + ' ring-2 ring-offset-1 ring-blue-400' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
-                      >
-                        {stage.label}
-                      </button>
-                    )
-                  })}
+                  {FUNNEL_STAGES.map((stage) => (
+                    <button
+                      key={stage.value}
+                      onClick={() => setStage(selected, stage.value)}
+                      className={`text-[10px] font-bold px-2.5 py-1 rounded-full transition-colors ${selected.status === stage.value ? stage.color + ' ring-2 ring-offset-1 ring-blue-400' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}
+                    >
+                      {stage.label}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <div className="flex gap-2 pt-1">
-                <a href={`mailto:${selectedLead.email}?subject=Your Inquiry About ${encodeURIComponent(selectedLead.franchiseName)}&body=Hi ${encodeURIComponent(selectedLead.name)},%0A%0AThank you for your interest in ${encodeURIComponent(selectedLead.franchiseName)}.`}
-                  className="flex-1 btn-red py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2">
-                  <Mail size={13} /> Send Email
-                </a>
-                {selectedLead.phone && (
-                  <a href={`tel:${selectedLead.phone}`}
-                    className="flex-1 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-colors">
-                    <Phone size={13} /> Call Now
+              {selected.unlocked && (
+                <div className="flex gap-2 pt-1">
+                  <a href={`mailto:${selected.email}?subject=Your Inquiry About ${encodeURIComponent(selected.franchiseName)}&body=Hi ${encodeURIComponent(selected.name)},%0A%0AThank you for your interest in ${encodeURIComponent(selected.franchiseName)}.`}
+                    className="flex-1 btn-red py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2">
+                    <Mail size={13} /> Send Email
                   </a>
-                )}
-              </div>
+                  {selected.phone && (
+                    <a href={`tel:${selected.phone}`} className="flex-1 border border-gray-200 bg-white hover:bg-gray-50 text-gray-700 py-2.5 rounded-xl font-semibold text-sm flex items-center justify-center gap-2">
+                      <Phone size={13} /> Call Now
+                    </a>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
       )}
 
-      {/* Status picker modal */}
-      {statusLead && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm" onClick={() => setStatusLead(null)}>
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm" onClick={(e) => e.stopPropagation()}>
-            <div className="flex items-center justify-between p-5 border-b border-gray-100">
-              <div>
-                <p className="font-bold text-gray-900 text-sm">Update Lead Status</p>
-                <p className="text-xs text-gray-400 mt-0.5">{statusLead.name}</p>
-              </div>
-              <button onClick={() => setStatusLead(null)} className="p-1.5 hover:bg-gray-100 rounded-lg"><X size={16} className="text-gray-500" /></button>
-            </div>
-            <div className="p-4 space-y-2">
-              {FUNNEL_STAGES.map((stage) => {
-                const isCurrent = (statusLead.status ?? 'new') === stage.value
-                return (
-                  <button
-                    key={stage.value}
-                    onClick={() => {
-                      if (franchiseId) {
-                        updateLeadStatus(franchiseId, statusLead.id, stage.value)
-                        setLeads((prev) => prev.map((l) => l.id === statusLead.id ? { ...l, status: stage.value, read: true } : l))
-                      }
-                      setStatusLead(null)
-                    }}
-                    className={`w-full flex items-center justify-between px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
-                      isCurrent ? 'ring-2 ring-blue-400 ' + stage.color : 'hover:bg-gray-50 text-gray-700'
-                    }`}
-                  >
-                    <span>{stage.label}</span>
-                    {isCurrent && <CheckCircle size={14} className="text-blue-500" />}
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        </div>
-      )}
-
-      <div className="mb-6 flex items-center justify-between">
+      <div className="mb-6 flex items-center justify-between flex-wrap gap-3">
         <div>
           <h2 className="text-xl font-black text-gray-900">Leads</h2>
-          <p className="text-sm text-gray-400 mt-0.5">{leads.length} total leads for {session?.franchiseName ?? 'your listing'}</p>
+          <p className="text-sm text-gray-400 mt-0.5">{leads.length} total for {session?.franchiseName ?? 'your listing'}</p>
         </div>
-        {isBasic && locked > 0 && (
-          <button className="btn-red px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-1.5">
-            <Zap size={13} /> Upgrade to Unlock {locked} More
-          </button>
-        )}
+        <p className="text-xs text-gray-500 bg-gray-50 border border-gray-200 rounded-xl px-3 py-2">
+          {isMember ? 'Your membership includes all lead contact details.' : `Unlock any lead for ${price} CAD, or get unlimited leads with Premium.`}
+        </p>
       </div>
 
-      {/* Upgrade banner */}
-      {isBasic && locked > 0 && (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-5 flex items-center gap-4 mb-5">
-          <div className="w-10 h-10 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
-            <Lock size={18} className="text-amber-600" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-semibold text-gray-900 text-sm">{locked} lead{locked !== 1 ? 's' : ''} locked — upgrade to view</p>
-            <p className="text-xs text-gray-500 mt-0.5">Basic accounts see the first {FREE_LEAD_LIMIT} leads. Upgrade to Premium or Enterprise for unlimited access.</p>
-          </div>
-        </div>
-      )}
+      {notice && <div className="mb-4 bg-blue-50 border border-blue-200 text-blue-800 text-sm rounded-xl px-4 py-3">{notice}</div>}
+      {error && <div className="mb-4 bg-red-50 border border-red-200 text-red-700 text-sm rounded-xl px-4 py-3">{error}</div>}
 
-      {leads.length === 0 ? (
+      {loading ? (
+        <div className="text-sm text-gray-400 py-10 text-center">Loading leads…</div>
+      ) : leads.length === 0 ? (
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-10 text-center">
           <Users size={32} className="mx-auto mb-3 text-gray-300" />
           <p className="font-semibold text-gray-700 mb-1">No leads yet</p>
           <p className="text-sm text-gray-400">When prospects contact your franchise, they&apos;ll appear here.</p>
           {session && (
-            <Link href={`/directory/${session.franchiseId}`} className="mt-4 inline-block text-sm text-red-600 font-semibold hover:underline">
-              View your listing →
-            </Link>
+            <Link href={`/directory/${session.franchiseId}`} className="mt-4 inline-block text-sm text-red-600 font-semibold hover:underline">View your listing →</Link>
           )}
         </div>
       ) : (
         <div className="space-y-3">
-          {visibleLeads.map((lead) => {
-            const timeAgo = (() => {
-              const diff = Date.now() - new Date(lead.submittedAt).getTime()
-              const mins = Math.floor(diff / 60000)
-              if (mins < 60) return `${mins}m ago`
-              const hrs = Math.floor(mins / 60)
-              if (hrs < 24) return `${hrs}h ago`
-              return `${Math.floor(hrs / 24)}d ago`
-            })()
-            return (
-              <div key={lead.id} className={`bg-white rounded-2xl border ${lead.read ? 'border-gray-200' : 'border-red-200'} p-5 shadow-sm flex items-center gap-4`}>
-                {!lead.read && <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />}
-                <div className="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center font-bold text-red-600 text-sm shrink-0 uppercase">
-                  {lead.name.charAt(0)}
+          {leads.map((lead) => (
+            <div key={lead.id} className={`bg-white rounded-2xl border ${lead.read ? 'border-gray-200' : 'border-red-200'} p-5 shadow-sm flex items-center gap-4 flex-wrap`}>
+              {!lead.read && <span className="w-2 h-2 rounded-full bg-red-500 shrink-0" />}
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center font-bold text-sm shrink-0 uppercase ${lead.unlocked ? 'bg-red-100 text-red-600' : 'bg-gray-100 text-gray-400'}`}>
+                {lead.unlocked ? lead.name.charAt(0) : <Lock size={14} />}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-semibold text-gray-900 text-sm">{lead.name}</p>
+                  {stageBadge(lead.status)}
+                  {lead.unlocked && <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700">Unlocked</span>}
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <p className="font-semibold text-gray-900 text-sm">{lead.name}</p>
-                    {getStatusBadge(lead.status)}
-                  </div>
-                  <div className="flex flex-wrap gap-3 text-xs text-gray-400 mt-0.5">
-                    <span className="flex items-center gap-1"><MapPin size={9} /> {lead.city}</span>
-                    <span className="flex items-center gap-1"><DollarSign size={9} /> {lead.investmentBudget}</span>
-                    {lead.message && <span className="flex items-center gap-1"><MessageSquare size={9} /> Has message</span>}
-                    <span className="flex items-center gap-1"><Clock size={9} /> {timeAgo}</span>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2 shrink-0">
-                  <button onClick={() => setStatusLead(lead)} className="text-xs text-gray-500 font-semibold flex items-center gap-1 hover:text-gray-700 border border-gray-200 rounded-lg px-2 py-1 hover:bg-gray-50 transition-colors">
-                    Set Status
-                  </button>
-                  <button onClick={() => handleView(lead)} className="text-xs text-red-600 font-semibold flex items-center gap-1 hover:underline">
-                    <Eye size={12} /> View
-                  </button>
+                <div className="flex flex-wrap gap-3 text-xs text-gray-400 mt-0.5">
+                  <span className="flex items-center gap-1"><MapPin size={9} /> {lead.city || '—'}</span>
+                  <span className="flex items-center gap-1"><DollarSign size={9} /> {lead.investmentBudget || '—'}</span>
+                  <span className="flex items-center gap-1"><Clock size={9} /> {timeAgo(lead.submittedAt)}</span>
                 </div>
               </div>
-            )
-          })}
-          {lockedLeads.map((lead) => (
-            <div key={lead.id} className="relative bg-white rounded-2xl border border-gray-200 p-5 shadow-sm overflow-hidden">
-              <div className="filter blur-sm select-none pointer-events-none flex items-center gap-4">
-                <div className="w-9 h-9 rounded-full bg-gray-200 flex items-center justify-center font-bold text-gray-400 text-sm shrink-0">?</div>
-                <div>
-                  <p className="font-semibold text-gray-400 text-sm">Hidden Contact</p>
-                  <div className="flex gap-3 text-xs text-gray-300 mt-0.5">
-                    <span>Hidden City</span>
-                    <span>$???K – $???K</span>
-                  </div>
-                </div>
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center bg-white/70 rounded-2xl">
-                <div className="text-center">
-                  <Lock size={16} className="mx-auto mb-1 text-amber-500" />
-                  <p className="text-xs font-semibold text-gray-700">Upgrade to unlock</p>
-                </div>
+              <div className="flex items-center gap-2 shrink-0">
+                {lead.unlocked ? (
+                  <button onClick={() => open(lead)} className="text-xs text-red-600 font-semibold flex items-center gap-1 hover:underline"><Eye size={12} /> View</button>
+                ) : (
+                  unlockButton(lead)
+                )}
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* Bottom upgrade CTA */}
-      {isBasic && (
-        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-2xl p-6 text-white text-center mt-6">
+      {!isMember && leads.some((l) => !l.unlocked) && (
+        <div className="bg-gray-900 rounded-2xl p-6 text-white text-center mt-6">
           <Zap size={22} className="mx-auto mb-2 text-amber-400" />
-          <h3 className="font-bold text-base mb-1">Upgrade to Premium</h3>
-          <p className="text-sm text-gray-300 mb-4">Unlock all leads, priority placement, a verified badge, and advanced analytics.</p>
-          <button className="bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-xl font-semibold text-sm transition-colors">
-            See Pricing
-          </button>
+          <h3 className="font-bold text-base mb-1">Get every lead, every time</h3>
+          <p className="text-sm text-gray-300 mb-4">Premium includes unlimited lead contact details, priority placement and analytics.</p>
+          <Link href="/pricing" className="inline-block bg-red-600 hover:bg-red-700 text-white px-5 py-2 rounded-xl font-semibold text-sm">See membership options</Link>
         </div>
       )}
     </div>
@@ -1626,6 +1606,10 @@ export default function DashboardPage() {
   const [activeTab, setActiveTab] = useState<ActiveTab>('leads')
   const [realSession, setRealSession] = useState<FranchisorSession | null>(null)
   const [leadCount, setLeadCount] = useState(0)
+  const refreshUnreadCount = async () => {
+    const r = await fetchFranchisorLeads()
+    if (r.ok) setLeadCount(r.data.leads.filter((l) => !l.read).length)
+  }
   const [upgradeSuccessPlan, setUpgradeSuccessPlan] = useState<string | null>(null)
 
   useEffect(() => {
@@ -1674,7 +1658,7 @@ export default function DashboardPage() {
             // Payment still settling or not found — show pending, don't grant
             setRealSession(session)
           }
-          setLeadCount(getLeads(session.franchiseId).filter((l) => !l.read).length)
+          void refreshUnreadCount()
           setActiveTab('billing')
           setLoggedIn(true)
           window.history.replaceState({}, '', '/dashboard')
@@ -1683,7 +1667,7 @@ export default function DashboardPage() {
       }
 
       setRealSession(session)
-      setLeadCount(getLeads(session.franchiseId).filter((l) => !l.read).length)
+      void refreshUnreadCount()
       setLoggedIn(true)
       // Honour ?tab= from nav dropdown links
       const tabParam = params.get('tab') as ActiveTab | null
@@ -1711,7 +1695,7 @@ export default function DashboardPage() {
     const session = getSession()
     if (session) {
       setRealSession(session)
-      setLeadCount(getLeads(session.franchiseId).filter((l) => !l.read).length)
+      void refreshUnreadCount()
     }
     setLoggedIn(true)
     setActiveTab('listing')
