@@ -74,7 +74,8 @@ export async function POST(req: NextRequest) {
       name: b.franchiseName,
       category: b.category ?? '',
       plan,
-      tier: tier === 'premium' || tier === 'enterprise' ? tier : 'basic',
+      // Paid tiers are only applied by the verified Stripe webhook, never at sign-up
+      tier: 'basic',
       email,
       contact_name: b.contactName,
       phone: b.phone ?? '',
@@ -87,7 +88,8 @@ export async function POST(req: NextRequest) {
       logo_url: b.logoUrl ?? '',
       media_images: b.mediaImages ?? [],
       video_url: b.videoUrl ?? '',
-      status: 'pending',
+      // Listings go live automatically; set AUTO_APPROVE_LISTINGS=false to route them to the admin queue instead
+      status: process.env.AUTO_APPROVE_LISTINGS === 'false' ? 'pending' : 'approved',
       submitted_at: new Date().toISOString(),
     })
 
