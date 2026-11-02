@@ -227,6 +227,18 @@ export default function Footer() {
         </div>
       </div>
 
+      {/* Sourcing notice */}
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }} className="py-4">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <p className="text-[11px] leading-relaxed" style={{ color: 'rgba(255,255,255,0.45)' }}>
+            <strong style={{ color: 'rgba(255,255,255,0.7)' }}>Data notice:</strong> Many listings on this directory are aggregated from publicly available third-party sources, including the{' '}
+            <a href="https://cfa.ca/lookforafranchise/" target="_blank" rel="noopener noreferrer" className="underline hover:text-white">Canadian Franchise Association (cfa.ca)</a>.
+            FranchiseOntario.com does not warrant the accuracy, completeness, or currency of sourced information. Investment figures and financial data must be independently verified.
+            Always request a Franchise Disclosure Document (FDD) and consult a qualified franchise lawyer before making any investment decision. Sourced listings are marked <strong>Sourced</strong>.
+          </p>
+        </div>
+      </div>
+
       {/* Bottom bar */}
       <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-[12px]" style={{ color: 'rgba(255,255,255,0.30)' }}>
